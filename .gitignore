@@ -1,4 +1,4 @@
-# Datasets (mounted, never committed)
+# Datasets — never committed regardless of mount location
 /data/
 *.tar.gz
 *.zip

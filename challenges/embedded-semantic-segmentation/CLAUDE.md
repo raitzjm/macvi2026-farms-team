@@ -10,11 +10,11 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
 - LaRS: /home/farms/data/lars/ (train: 2607, val: 200, test: 1205 images)
-- Test set has NO segmentation masks 
+- Test set has NO segmentation masks
 - External data allowed but must be disclosed
 
 ## Workspace
-- mmseg-macvi/: copied from github.com/lojzezust/mmsegmentation-macvi
+- mmsegmentation-macvi/: copied from github.com/lojzezust/mmsegmentation-macvi
 - Training resolution: 768x384 (CRITICAL - always train at target resolution)
 
 ## Key Dependencies
@@ -30,7 +30,7 @@ Phase 4: External data - conditional, only if distribution analysis shows gaps
 Phases can be modified, reordered, added, or skipped as the project evolves.
 
 ## Current Status: SETUP
-Setting up container, environment, and validating mmseg-macvi installation.
+Setting up container, environment, and validating mmsegmentation-macvi installation.
 Next milestone: Phase 1 baselines (DeepLabv3+ ResNet-101, BiSeNetv2, STDC1/2).
 
 ## Published Baselines (from challenge website, for validation)
