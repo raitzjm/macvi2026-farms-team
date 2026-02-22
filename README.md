@@ -51,10 +51,10 @@ All training and experimentation is done inside the container.
 ### Run
 
 ```bash
-# Minimal (no data, no SSH)
-./container/scripts/run.sh
+# Minimal — manual training work, no agentic features
+./container/scripts/run.sh --data-dir /path/to/datasets
 
-# With datasets and SSH key forwarding
+# Full setup — agentic work with Claude Code
 ./container/scripts/run.sh \
   --data-dir /path/to/datasets \
   --ssh-dir ~/.ssh
@@ -69,20 +69,32 @@ All training and experimentation is done inside the container.
 |------|---------|-------------|
 | `--podman` | — | Use Podman instead of Docker |
 | `--data-dir DIR` | — | Dataset root; mounted read-only at `/home/farms/data/` |
-| `--ssh-dir DIR` | — | SSH directory; mounted read-only (for git over SSH) |
-| `--claude-dir DIR` | `~/.claude` | Claude Code config directory |
-| `--gitconfig FILE` | `~/.gitconfig` | Git config file |
+| `--ssh-dir DIR` | — | SSH directory; mounted read-only at `/home/farms/.ssh/` |
+| `--claude-dir DIR` | `~/.claude` | Claude Code config and memory directory |
+| `--gitconfig FILE` | `~/.gitconfig` | Git user config (name, email) |
 
 The container mounts the repository at `/home/farms/macvi2026-farms-team/`.
 Datasets are mounted at `/home/farms/data/` and are **read-only**.
 
-### Required environment variable
+### Agentic work (Claude Code)
+
+The following mounts and environment variable are only needed when running
+Claude Code inside the container for AI-assisted work. They are not required
+for manually running training scripts.
+
+| What | How | Why |
+|------|-----|-----|
+| `--claude-dir` | Mounts `~/.claude` into the container | Claude Code stores its settings, credentials, and persistent memory here. Without it, Claude Code cannot authenticate or retain context across sessions. |
+| `--ssh-dir` | Mounts `~/.ssh` read-only | Needed for git operations over SSH (push, pull, clone). Without it, git remotes must use HTTPS with a token. |
+| `--gitconfig` | Mounts `~/.gitconfig` read-only | Provides git author name and email so commits are attributed correctly. Already has a sensible default (`~/.gitconfig`). |
+| `MACVI_GH_TOKEN` | Passed as `GH_TOKEN` env var | GitHub CLI (`gh`) uses this to manage issues, PRs, and comments. Required for any agent GitHub interaction. |
+
+Set the token before running:
 
 ```bash
 export MACVI_GH_TOKEN=<your_github_pat>
+./container/scripts/run.sh --data-dir /path/to/datasets --ssh-dir ~/.ssh
 ```
-
-The token is passed into the container as `GH_TOKEN` for the GitHub CLI.
 
 ## Workflow
 
