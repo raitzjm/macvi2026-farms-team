@@ -18,7 +18,10 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - Training resolution: 768x384 (CRITICAL - always train at target resolution)
 
 ## Key Dependencies
-- Python 3.12, CUDA 12.1, PyTorch 2.4.x, mmcv 2.2.0
+- Python: Ubuntu 22.04 ships with 3.10 as the system default (`python3`);
+  the Dockerfile does not install 3.12 explicitly. Both 3.10 and 3.12 have
+  been used — verify which works best during dependency setup.
+- CUDA 12.1, PyTorch 2.4.x, mmcv 2.2.0
 - Install mmcv prebuilt: pip install mmcv==2.2.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.4/index.html
 
 ## Experiment Phases
