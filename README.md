@@ -70,8 +70,8 @@ All training and experimentation is done inside the container.
 | `--podman` | — | Use Podman instead of Docker |
 | `--data-dir DIR` | — | Dataset root; mounted read-only at `/home/farms/data/` |
 | `--ssh-dir DIR` | — | SSH directory; mounted read-only at `/home/farms/.ssh/` |
-| `--claude-dir DIR` | `~/.claude` | Claude Code config and memory directory |
-| `--gitconfig FILE` | `~/.gitconfig` | Git user config (name, email) |
+| `--claude-dir DIR` | — | Claude Code config and memory directory |
+| `--gitconfig FILE` | — | Git user config (name, email) |
 
 The container mounts the repository at `/home/farms/macvi2026-farms-team/`.
 Datasets are mounted at `/home/farms/data/` and are **read-only**.

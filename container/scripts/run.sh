@@ -8,9 +8,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNTIME="docker"
 
-# Defaults
-CLAUDE_DIR="${HOME}/.claude"
-GITCONFIG="${HOME}/.gitconfig"
+# Defaults — all mounts are optional
+CLAUDE_DIR=""
+GITCONFIG=""
 SSH_DIR=""
 DATA_DIR=""
 
@@ -41,10 +41,12 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --podman            Use Podman instead of Docker"
-            echo "  --claude-dir DIR    Path to .claude directory (default: ~/.claude)"
-            echo "  --gitconfig FILE    Path to .gitconfig file (default: ~/.gitconfig)"
-            echo "  --ssh-dir DIR       Path to .ssh directory (mounted read-only, skipped if omitted)"
+            echo "  --claude-dir DIR    Path to .claude directory (for Claude Code / agentic work)"
+            echo "  --gitconfig FILE    Path to .gitconfig file (for correct git commit attribution)"
+            echo "  --ssh-dir DIR       Path to .ssh directory (for git over SSH)"
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
+            echo ""
+            echo "All mounts are optional; omitted ones are simply not mounted."
             exit 0
             ;;
         *)
@@ -54,11 +56,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-VOLUMES=(
-    -v "${SCRIPT_DIR}/../../:/home/farms/macvi2026-farms-team"
-    -v "${CLAUDE_DIR}:/home/farms/.claude"
-    -v "${GITCONFIG}:/home/farms/.gitconfig:ro"
-)
+VOLUMES=(-v "${SCRIPT_DIR}/../../:/home/farms/macvi2026-farms-team")
+
+if [[ -n "$CLAUDE_DIR" ]]; then
+    VOLUMES+=(-v "${CLAUDE_DIR}:/home/farms/.claude")
+fi
+
+if [[ -n "$GITCONFIG" ]]; then
+    VOLUMES+=(-v "${GITCONFIG}:/home/farms/.gitconfig:ro")
+fi
 
 if [[ -n "$SSH_DIR" ]]; then
     VOLUMES+=(-v "${SSH_DIR}:/home/farms/.ssh:ro")
