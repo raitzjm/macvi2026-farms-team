@@ -10,7 +10,7 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
 - LaRS: /home/farms/data/lars/ (train: 2607, val: 200, test: 1205 images)
-- Test set has NO segmentation masks (server-side evaluation only)
+- Test set has NO segmentation masks 
 - External data allowed but must be disclosed
 
 ## Workspace
