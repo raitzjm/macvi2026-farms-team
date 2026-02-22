@@ -66,6 +66,7 @@ ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 #Set shell profile
 ENV TERM="xterm-256color"
+ENV COLORTERM="truecolor"
 
 #Restore Debian Frontend ENV
 ENV DEBIAN_FRONTEND=""
