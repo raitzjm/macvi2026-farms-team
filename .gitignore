@@ -1,0 +1,57 @@
+# Datasets (mounted, never committed)
+/data/
+*.tar.gz
+*.zip
+
+# Model weights and outputs
+*.pth
+*.onnx
+*.bin
+*.engine
+*.trt
+outputs/
+work_dirs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.conda/
+.pixi/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (keep experiment-log.md, ignore training logs)
+*.log
+*.out
+*.err
+
+# Credentials and tokens
+.env
+*.token
+.secrets/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Claude Code local settings (credentials mounted, not committed)
+.claude/settings.local.json
