@@ -18,6 +18,7 @@ RUN apt-get update && apt upgrade -y && \
     python3 \
     python3-pip \
     python3-venv \
+    # Required by opencv-python (pulled in by mmsegmentation-macvi)
     libxcb1 \
     libxcb-xinerama0 \
     libgl1 \
@@ -61,47 +62,81 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 #Install local packages
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# --- ML dependency stack: conda + Python 3.11 + PyTorch 2.1.2 + mmcv-full 1.7.2 ---
 
-# Miniforge (conda-forge base)
+# =============================================================================
+# ML DEPENDENCY STACK
+# Option B: Miniforge (conda) + Python 3.11 + PyTorch 2.1.2 + mmcv-full 1.7.2
+#
+# To swap the dependency approach in the future, replace everything in this
+# section (between the ==== markers) and update the PATH line at the bottom.
+# =============================================================================
+
+# --- Miniforge ---
+# Installs conda (conda-forge channel) into /home/farms/miniforge3.
+# Provides the Python version and base package management.
 RUN curl -fsSL \
         https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh \
         -o /tmp/miniforge.sh && \
     bash /tmp/miniforge.sh -b -p /home/farms/miniforge3 && \
     rm /tmp/miniforge.sh
 
-# macvi conda env: Python 3.11
+# --- Conda env ---
+# All ML packages live in the "macvi" env, isolated from the system Python.
 RUN /home/farms/miniforge3/bin/conda create -n macvi python=3.11 -y
 
-# PyTorch 2.1.2 + CUDA 12.1 (prebuilt wheel)
+# --- PyTorch 2.1.2 + CUDA 12.1 ---
+# Prebuilt wheel from the official PyTorch index; matches the container's CUDA version.
 RUN /home/farms/miniforge3/envs/macvi/bin/pip install \
         torch==2.1.2 torchvision==0.16.2 \
         --index-url https://download.pytorch.org/whl/cu121
 
-# mmcv-full 1.7.2 prebuilt wheel (cu121 + torch2.1; no source build needed)
+# --- mmcv-full 1.7.2 ---
+# mmsegmentation 0.30.0 requires mmcv 1.x (asserted in mmseg/__init__.py).
+# A prebuilt wheel exists for cu121+torch2.1, so no source compile is needed.
+# Note: mmcv 2.x wheels exist for newer torch but are incompatible with this fork.
 RUN /home/farms/miniforge3/envs/macvi/bin/pip install \
         mmcv-full==1.7.2 \
         -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
 
-# setuptools<70: conda-forge 82.x dropped pkg_resources (required by mmcv)
-# numpy<2: mmcv-full 1.7.2 was compiled against NumPy 1.x ABI
+# --- Compatibility pins ---
+# setuptools<70: conda-forge 82.x dropped pkg_resources, which mmcv still imports.
+# numpy<2: mmcv-full 1.7.2 was compiled against the NumPy 1.x C ABI.
 RUN /home/farms/miniforge3/envs/macvi/bin/pip install "setuptools<70" "numpy<2"
 
-# Patch mmcv scatter: PyTorch 2.1.x passes int device ids to _get_stream(),
-# which now expects torch.device — one-line fix applied at build time
+# --- mmcv scatter patch ---
+# PyTorch 2.1.x changed _get_stream() to require torch.device instead of int.
+# mmcv/parallel/_functions.py still passes a plain int, causing a runtime error
+# on any multi-GPU scatter operation. One-line fix applied directly to site-packages.
 RUN sed -i \
     's/streams = \[_get_stream(device) for device in target_gpus\]/streams = [_get_stream(torch.device("cuda", device) if isinstance(device, int) else device) for device in target_gpus]/' \
     /home/farms/miniforge3/envs/macvi/lib/python3.11/site-packages/mmcv/parallel/_functions.py
 
-# Copy and install mmsegmentation-macvi (non-editable; upstream code, never modified)
-COPY --chown=farms:farms \
-    challenges/embedded-semantic-segmentation/mmsegmentation-macvi \
-    /opt/macvi-env/mmsegmentation-macvi
-RUN /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
-    /home/farms/miniforge3/envs/macvi/bin/pip install /opt/macvi-env/mmsegmentation-macvi
+# --- mmsegmentation-macvi ---
+# Installed non-editable into site-packages so it is fully baked into the image.
+#
+# How this works:
+#   --mount=type=bind makes the source tree available inside this RUN step only,
+#   directly from the build context (repo root), without creating a layer for it.
+#   After pip copies the package into site-packages, the mount disappears.
+#   Nothing is left in the image except the installed package — no source copy.
+#
+# At runtime the workspace is mounted at /home/farms/macvi2026-farms-team/, which
+# also contains mmsegmentation-macvi/, but Python does NOT import from there.
+# A non-editable install has no link back to the source — imports always resolve
+# from site-packages. The workspace copy is just for reference.
+#
+# If mmsegmentation-macvi is updated from upstream, rebuild the image.
+RUN --mount=type=bind,source=challenges/embedded-semantic-segmentation/mmsegmentation-macvi,target=/tmp/mmseg-macvi \
+    /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
+    /home/farms/miniforge3/envs/macvi/bin/pip install /tmp/mmseg-macvi
 
-# Put macvi env first on PATH (active by default)
+# Put the macvi env on PATH so it is active by default in every shell session.
 ENV PATH="/home/farms/miniforge3/envs/macvi/bin:$PATH"
+
+# =============================================================================
+# END ML DEPENDENCY STACK
+# =============================================================================
+
 
 # Set workspace directory
 ENV MACVI_WS="/home/${USERNAME}/macvi2026-farms-team"
