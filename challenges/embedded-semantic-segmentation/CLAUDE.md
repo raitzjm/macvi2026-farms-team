@@ -9,20 +9,66 @@ Winner: highest F1 detection score (FPS tiebreaker). Must achieve >=30 FPS at 76
 Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
-- LaRS: /home/farms/data/lars/ (train: 2607, val: 200, test: 1205 images)
+- LaRS: /home/farms/data/lars_dataset/ (train: 2605, val: 198, test images)
+  Note: images and masks are split into separate img_dir/ and ann_dir/ trees.
+  A symlink tree at /home/farms/lars_linked/ reconciles this for LaRSDataset.
 - Test set has NO segmentation masks
 - External data allowed but must be disclosed
 
 ## Workspace
-- mmsegmentation-macvi/: copied from github.com/lojzezust/mmsegmentation-macvi
+- mmsegmentation-macvi/: copied from https://github.com/lojzezust/mmsegmentation-macvi
+  (fork of open-mmlab/mmsegmentation 0.x, adds LaRSDataset, MaSTrDataset, and 25 LaRS configs)
+  We use the ORIGINAL version (not any ported/updated fork) to ensure a clean baseline.
+  Do NOT commit any changes to this directory — it must stay at upstream state.
 - Training resolution: 768x384 (CRITICAL - always train at target resolution)
 
-## Key Dependencies
-- Python: Ubuntu 22.04 ships with 3.10 as the system default (`python3`);
-  the Dockerfile does not install 3.12 explicitly. Both 3.10 and 3.12 have
-  been used — verify which works best during dependency setup.
-- CUDA 12.1, PyTorch 2.4.x, mmcv 2.2.0
-- Install mmcv prebuilt: pip install mmcv==2.2.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.4/index.html
+## Key Dependencies (baked into Docker image — Option C: Pixi)
+- Python 3.11 (conda-forge via Pixi)
+- CUDA 12.1 (container base image: nvidia/cuda:12.1.1-devel-ubuntu22.04)
+- PyTorch 2.1.2+cu121 (prebuilt wheel)
+- mmcv-full 1.7.2 (prebuilt wheel for cu121+torch2.1 — NO source build needed)
+  mmseg/__init__.py asserts: MMCV_MIN='1.3.13', MMCV_MAX='1.8.0'. mmcv 2.x will NOT work.
+- numpy<2 (mmcv-full 1.7.2 compiled with NumPy 1.x ABI)
+- setuptools<70 (restores pkg_resources removed in setuptools 82.x)
+- System libs (apt): libxcb1 libxcb-xinerama0 libgl1 libglib2.0-0
+
+## Environment Setup (first time, inside container)
+The Docker image pre-installs the core ML stack. On first use, add the editable
+mmseg install (required for custom LaRSDataset / MaSTrDataset classes):
+
+    pip install -e /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi/
+
+This uses the base env already on PATH. Alternatively, use pixi's dev environment
+for a fully managed setup (also adds mmseg editable):
+
+    cd /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation
+    pixi install          # installs default (dev) env with editable mmseg
+
+## mmcv scatter patch (already applied in Docker image)
+PyTorch 2.1.x passes GPU device IDs as plain int but mmcv's _get_stream()
+expects torch.device. A one-line patch in mmcv/parallel/_functions.py line 75
+fixes this (applied automatically during image build).
+
+## Dataset symlink tree (must be rebuilt on each fresh container)
+LaRSDataset expects: data_root/images/ and data_root/semantic_masks/
+The LaRS dataset stores images and masks in separate trees. Build the symlink
+tree once per container session:
+
+    mkdir -p /home/farms/lars_linked/train /home/farms/lars_linked/val
+    ln -sf /home/farms/data/lars_dataset/img_dir/train/images    /home/farms/lars_linked/train/images
+    ln -sf /home/farms/data/lars_dataset/ann_dir/train/semantic_masks /home/farms/lars_linked/train/semantic_masks
+    ln -sf /home/farms/data/lars_dataset/img_dir/train/image_list.txt /home/farms/lars_linked/train/image_list.txt
+    ln -sf /home/farms/data/lars_dataset/img_dir/val/images      /home/farms/lars_linked/val/images
+    ln -sf /home/farms/data/lars_dataset/ann_dir/val/semantic_masks   /home/farms/lars_linked/val/semantic_masks
+    ln -sf /home/farms/data/lars_dataset/img_dir/val/image_list.txt   /home/farms/lars_linked/val/image_list.txt
+
+Then use data_root = '/home/farms/lars_linked/' in training configs.
+
+## Building from source
+If any package must be built from source (e.g. mmcv-full with CUDA ops), always use all
+available CPU cores to avoid multi-hour compile times:
+    MAX_JOBS=$(nproc) MMCV_WITH_OPS=1 pip install mmcv-full==1.7.2 --no-build-isolation
+MAX_JOBS controls the number of parallel ninja/make jobs for CUDA extension compilation.
 
 ## Experiment Phases
 Phase 1: Baselines - default mmseg-macvi configs, LaRS-only, no changes

@@ -77,6 +77,8 @@ When installing new system or Python dependencies:
 - Datasets mounted read-only at /home/farms/data/ (pass --data-dir to run.sh)
 - Training outputs go to challenges/{challenge}/outputs/
 - See challenge-specific CLAUDE.md files for task details
+- **Agents always run INSIDE the container** — never on the local host system.
+  Do not attempt to detect or interact with the host environment.
 
 ## Container Scripts
 - `container/scripts/build.sh` — builds the image; Docker by default, `--podman` to use Podman

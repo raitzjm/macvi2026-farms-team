@@ -57,6 +57,7 @@ All training and experimentation is done inside the container.
 # Full setup — agentic work with Claude Code
 ./container/scripts/run.sh \
   --data-dir /path/to/datasets \
+  --claude-dir ~/.claude \
   --ssh-dir ~/.ssh
 
 # Podman

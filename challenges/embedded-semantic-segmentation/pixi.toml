@@ -1,0 +1,49 @@
+[workspace]
+name = "macvi-segmentation"
+version = "0.1.0"
+description = "MaCVi 2026 embedded semantic segmentation (Option C: Pixi)"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+# ---------- Base dependencies (all environments) ----------
+[dependencies]
+# Python 3.11 — prebuilt mmcv-full 1.7.2 wheels exist for 3.11 + cu121 + torch2.1
+python = "3.11.*"
+# setuptools<70 restores pkg_resources removed in 82.x (needed by mmcv runtime)
+# Installed via conda so it does not conflict with the PyTorch custom PyPI index
+setuptools = "<70"
+
+[pypi-options]
+# PyTorch CUDA 12.1 prebuilt wheels
+extra-index-urls = ["https://download.pytorch.org/whl/cu121"]
+# mmcv-full 1.7.2 prebuilt for cu121+torch2.1 (find-links style HTML index)
+find-links = [{url = "https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html"}]
+
+[pypi-dependencies]
+# PyTorch with CUDA 12.1
+torch = "==2.1.2+cu121"
+torchvision = "==0.16.2+cu121"
+# mmcv 1.x — required by mmseg 0.30.0 (mmseg/__init__.py asserts MMCV_MIN=1.3.13, MMCV_MAX=1.8.0)
+mmcv-full = "==1.7.2"
+# numpy<2 — mmcv-full 1.7.2 compiled with NumPy 1.x ABI
+numpy = "<2"
+# mmseg optional deps
+cityscapesscripts = "*"
+prettytable = "*"
+
+# ---------- Dev feature: editable mmseg for local development ----------
+# mmsegmentation-macvi must be present at the path below relative to this file.
+# This works when running inside the container with the workspace mounted.
+[feature.dev.pypi-dependencies]
+mmsegmentation = {path = "mmsegmentation-macvi", editable = true}
+
+# ---------- Environments ----------
+# "default" — full dev environment (use inside container with workspace mounted)
+#   pixi install            → installs default env with editable mmseg
+#   pixi run python ...     → uses this env
+#
+# "base" — pre-baked Docker environment (no editable mmseg)
+#   pixi install -e base    → installs base env; mmseg added at runtime via pip
+[environments]
+default = ["dev"]
+base = []
