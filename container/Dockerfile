@@ -67,18 +67,27 @@ RUN sudo apt-get update && sudo apt-get install -y --no-install-recommends \
 RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH="/home/farms/.pixi/bin:$PATH"
 
-# Copy the workspace pixi manifest to a fixed system location for Docker baking.
-# We install the "base" environment here (no editable mmseg install — that is
-# done at runtime once the workspace is mounted; see challenge CLAUDE.md).
+# Copy the pixi manifest and mmsegmentation-macvi source into the image.
+# mmsegmentation-macvi is never modified (upstream-only, per project rules),
+# so a non-editable install baked at build time is correct and sufficient.
 COPY --chown=farms:farms \
     challenges/embedded-semantic-segmentation/pixi.toml \
     /opt/macvi-env/pixi.toml
+COPY --chown=farms:farms \
+    challenges/embedded-semantic-segmentation/mmsegmentation-macvi \
+    /opt/macvi-env/mmsegmentation-macvi
 
 # Pre-install the base conda+PyPI environment:
 #   Python 3.11, PyTorch 2.1.2+cu121, mmcv-full 1.7.2 (prebuilt wheel), numpy<2
 # UV_HTTP_TIMEOUT=300 is required: mmcv-full is ~500 MB and the default 30 s times out.
 RUN UV_HTTP_TIMEOUT=300 pixi install -e base \
         --manifest-path /opt/macvi-env/pixi.toml
+
+# Install mmsegmentation-macvi (non-editable) into the base env.
+# Using the copied source at /opt/macvi-env/mmsegmentation-macvi so the install
+# is fully self-contained and requires nothing from the runtime workspace mount.
+RUN /opt/macvi-env/.pixi/envs/base/bin/pip install \
+        /opt/macvi-env/mmsegmentation-macvi
 
 # Apply mmcv scatter patch: PyTorch 2.1.x passes GPU ids as plain int to
 # _get_stream(), but newer PyTorch requires torch.device. One-line fix:
@@ -89,8 +98,8 @@ RUN MMCV_FUNCS=$(/opt/macvi-env/.pixi/envs/base/bin/python -c \
         "$MMCV_FUNCS"
 
 # Put the pre-baked pixi "base" env on PATH so it is always active.
-# When the workspace is mounted, run `pip install -e mmsegmentation-macvi/`
-# to add the editable mmseg install (see challenge CLAUDE.md for instructions).
+# mmseg, torch, mmcv are all ready to use immediately on container start —
+# no post-start setup required.
 ENV PATH="/opt/macvi-env/.pixi/envs/base/bin:$PATH"
 # ─────────────────────────────────────────────────────────────────────────────
 

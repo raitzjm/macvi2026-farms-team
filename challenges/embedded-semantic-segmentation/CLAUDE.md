@@ -32,17 +32,13 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - setuptools<70 (restores pkg_resources removed in setuptools 82.x)
 - System libs (apt): libxcb1 libxcb-xinerama0 libgl1 libglib2.0-0
 
-## Environment Setup (first time, inside container)
-The Docker image pre-installs the core ML stack. On first use, add the editable
-mmseg install (required for custom LaRSDataset / MaSTrDataset classes):
+## Environment Setup
+The Docker image pre-installs the complete stack — Python 3.11, PyTorch, mmcv-full,
+and mmsegmentation-macvi (non-editable, baked at build time). No post-start setup
+is needed. `python -c "import mmseg, torch, mmcv"` works immediately on container start.
 
-    pip install -e /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi/
-
-This uses the base env already on PATH. Alternatively, use pixi's dev environment
-for a fully managed setup (also adds mmseg editable):
-
-    cd /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation
-    pixi install          # installs default (dev) env with editable mmseg
+mmsegmentation-macvi is never modified (upstream-only per project rules), so the
+non-editable baked install is correct. If the upstream is updated, rebuild the image.
 
 ## mmcv scatter patch (already applied in Docker image)
 PyTorch 2.1.x passes GPU device IDs as plain int but mmcv's _get_stream()
