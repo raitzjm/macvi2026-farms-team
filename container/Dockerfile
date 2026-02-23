@@ -130,7 +130,12 @@ RUN sed -i \
 #
 # If mmsegmentation-macvi is updated from upstream, rebuild the image.
 COPY challenges/embedded-semantic-segmentation/mmsegmentation-macvi /tmp/mmseg-macvi
-RUN /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
+# Remove any stale egg-info that may have been left behind by a local pip install
+# in the workspace (*.egg-info/ is gitignored but not build-context-ignored, so
+# COPY picks it up). A stale egg-info causes pip's PEP 517 get_requires_for_build_wheel
+# step to fail when the paths recorded in the egg-info don't match /tmp/mmseg-macvi.
+RUN rm -rf /tmp/mmseg-macvi/*.egg-info && \
+    /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
     /home/farms/miniforge3/envs/macvi/bin/pip install /tmp/mmseg-macvi && \
     rm -rf /tmp/mmseg-macvi
 
