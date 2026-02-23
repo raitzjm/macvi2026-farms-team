@@ -101,7 +101,9 @@ RUN /home/farms/miniforge3/envs/macvi/bin/pip install \
 # --- Compatibility pins ---
 # setuptools<70: conda-forge 82.x dropped pkg_resources, which mmcv still imports.
 # numpy<2: mmcv-full 1.7.2 was compiled against the NumPy 1.x C ABI.
-RUN /home/farms/miniforge3/envs/macvi/bin/pip install "setuptools<70" "numpy<2"
+# opencv-python<4.11: 4.11+ declares numpy>=2 as a requirement; pin to a version
+#   that works with our numpy<2 constraint (mmcv pulls in opencv as a dep).
+RUN /home/farms/miniforge3/envs/macvi/bin/pip install "setuptools<70" "numpy<2" "opencv-python<4.11"
 
 # --- mmcv scatter patch ---
 # PyTorch 2.1.x changed _get_stream() to require torch.device instead of int.
@@ -114,11 +116,12 @@ RUN sed -i \
 # --- mmsegmentation-macvi ---
 # Installed non-editable into site-packages so it is fully baked into the image.
 #
-# How this works:
-#   --mount=type=bind makes the source tree available inside this RUN step only,
-#   directly from the build context (repo root), without creating a layer for it.
-#   After pip copies the package into site-packages, the mount disappears.
-#   Nothing is left in the image except the installed package — no source copy.
+# COPY is used rather than --mount=type=bind because Podman (used for builds)
+# resolves bind-mount source paths relative to the host CWD at build time, not
+# relative to the build context. Relative source paths are therefore unreliable
+# across different invocation directories. COPY + delete achieves the same
+# outcome (package baked into site-packages, source tree removed) and works
+# identically with both Docker and Podman.
 #
 # At runtime the workspace is mounted at /home/farms/macvi2026-farms-team/, which
 # also contains mmsegmentation-macvi/, but Python does NOT import from there.
@@ -126,9 +129,10 @@ RUN sed -i \
 # from site-packages. The workspace copy is just for reference.
 #
 # If mmsegmentation-macvi is updated from upstream, rebuild the image.
-RUN --mount=type=bind,source=challenges/embedded-semantic-segmentation/mmsegmentation-macvi,target=/tmp/mmseg-macvi \
-    /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
-    /home/farms/miniforge3/envs/macvi/bin/pip install /tmp/mmseg-macvi
+COPY challenges/embedded-semantic-segmentation/mmsegmentation-macvi /tmp/mmseg-macvi
+RUN /home/farms/miniforge3/envs/macvi/bin/pip install cityscapesscripts && \
+    /home/farms/miniforge3/envs/macvi/bin/pip install /tmp/mmseg-macvi && \
+    rm -rf /tmp/mmseg-macvi
 
 # Put the macvi env on PATH so it is active by default in every shell session.
 ENV PATH="/home/farms/miniforge3/envs/macvi/bin:$PATH"
