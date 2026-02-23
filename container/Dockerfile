@@ -129,7 +129,7 @@ RUN sed -i \
 # from site-packages. The workspace copy is just for reference.
 #
 # If mmsegmentation-macvi is updated from upstream, rebuild the image.
-COPY challenges/embedded-semantic-segmentation/mmsegmentation-macvi /tmp/mmseg-macvi
+COPY --chown=farms:farms challenges/embedded-semantic-segmentation/mmsegmentation-macvi /tmp/mmseg-macvi
 # Remove any stale egg-info that may have been left behind by a local pip install
 # in the workspace (*.egg-info/ is gitignored but not build-context-ignored, so
 # COPY picks it up). A stale egg-info causes pip's PEP 517 get_requires_for_build_wheel
