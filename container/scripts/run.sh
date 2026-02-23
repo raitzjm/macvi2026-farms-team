@@ -10,6 +10,7 @@ RUNTIME="docker"
 
 # Defaults — all mounts are optional
 CLAUDE_DIR=""
+CLAUDE_JSON=""
 GITCONFIG=""
 SSH_DIR=""
 DATA_DIR=""
@@ -22,6 +23,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --claude-dir)
             CLAUDE_DIR="$2"
+            shift 2
+            ;;
+        --claude-json)
+            CLAUDE_JSON="$2"
             shift 2
             ;;
         --gitconfig)
@@ -42,6 +47,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --podman            Use Podman instead of Docker"
             echo "  --claude-dir DIR    Path to .claude directory (for Claude Code / agentic work)"
+            echo "  --claude-json FILE  Path to .claude.json file (mounted at /home/farms/.claude.json)"
             echo "  --gitconfig FILE    Path to .gitconfig file (for correct git commit attribution)"
             echo "  --ssh-dir DIR       Path to .ssh directory (for git over SSH)"
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
@@ -60,6 +66,10 @@ VOLUMES=(-v "${SCRIPT_DIR}/../../:/home/farms/macvi2026-farms-team")
 
 if [[ -n "$CLAUDE_DIR" ]]; then
     VOLUMES+=(-v "${CLAUDE_DIR}:/home/farms/.claude")
+fi
+
+if [[ -n "$CLAUDE_JSON" ]]; then
+    VOLUMES+=(-v "${CLAUDE_JSON}:/home/farms/.claude.json")
 fi
 
 if [[ -n "$GITCONFIG" ]]; then
@@ -84,6 +94,8 @@ echo "Running with: $RUNTIME"
 "$RUNTIME" run -it --rm \
     "${GPU_ARGS[@]}" \
     --network=host \
+    --shm-size=8g \
+    --ulimit memlock=-1 \
     -e GH_TOKEN="${MACVI_GH_TOKEN}" \
     "${VOLUMES[@]}" \
     macvi-farms:latest

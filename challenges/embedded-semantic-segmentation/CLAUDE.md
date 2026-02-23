@@ -9,20 +9,23 @@ Winner: highest F1 detection score (FPS tiebreaker). Must achieve >=30 FPS at 76
 Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
-- LaRS: /home/farms/data/lars/ (train: 2607, val: 200, test: 1205 images)
+- LaRS: /home/farms/data/lars_dataset/ (train: 2607, val: 200, test: 1205 images)
 - Test set has NO segmentation masks
 - External data allowed but must be disclosed
+- img_dir: {split}/images/, ann_dir: {split}/semantic_masks/
+- Symlink tree at /home/farms/lars_linked/ must be rebuilt each container session (not persistent)
 
 ## Workspace
 - mmsegmentation-macvi/: copied from github.com/lojzezust/mmsegmentation-macvi
 - Training resolution: 768x384 (CRITICAL - always train at target resolution)
 
 ## Key Dependencies
-- Python: Ubuntu 22.04 ships with 3.10 as the system default (`python3`);
-  the Dockerfile does not install 3.12 explicitly. Both 3.10 and 3.12 have
-  been used — verify which works best during dependency setup.
-- CUDA 12.1, PyTorch 2.4.x, mmcv 2.2.0
-- Install mmcv prebuilt: pip install mmcv==2.2.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.4/index.html
+- Conda env `macvi` at /home/farms/miniforge3/envs/macvi/ (on PATH by default)
+- Python 3.11 (conda-forge), CUDA 12.1
+- PyTorch 2.1.2+cu121, mmcv-full 1.7.2 (prebuilt wheel — no source build)
+- mmsegmentation 0.30.0 installed non-editable at /opt/macvi-env/mmsegmentation-macvi/
+- All baked into the Docker image — no post-start setup needed
+- Required patches baked in: setuptools<70, numpy<2, mmcv scatter patch (_functions.py)
 
 ## Experiment Phases
 Phase 1: Baselines - default mmseg-macvi configs, LaRS-only, no changes
@@ -32,8 +35,8 @@ Phase 4: External data - conditional, only if distribution analysis shows gaps
 
 Phases can be modified, reordered, added, or skipped as the project evolves.
 
-## Current Status: SETUP
-Setting up container, environment, and validating mmsegmentation-macvi installation.
+## Current Status: READY FOR TRAINING
+Container environment validated (issue #2). Dependency stack baked into image.
 Next milestone: Phase 1 baselines (DeepLabv3+ ResNet-101, BiSeNetv2, STDC1/2).
 
 ## Published Baselines (from challenge website, for validation)
