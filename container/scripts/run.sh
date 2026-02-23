@@ -84,6 +84,8 @@ echo "Running with: $RUNTIME"
 "$RUNTIME" run -it --rm \
     "${GPU_ARGS[@]}" \
     --network=host \
+    --shm-size=8g \
+    --ulimit memlock=-1 \
     -e GH_TOKEN="${MACVI_GH_TOKEN}" \
     "${VOLUMES[@]}" \
     macvi-farms:latest
