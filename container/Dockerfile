@@ -15,6 +15,7 @@ RUN apt-get update && apt upgrade -y && \
     wget \
     ca-certificates \
     git \
+    git-lfs \
     python3 \
     python3-pip \
     python3-venv \
