@@ -292,7 +292,7 @@ def build_html(args, df_hm, df_merged, names, splits, seqs, embeds, meta, max_si
 
 <h1>LaRS Spatial OOD Analysis</h1>
 <p class="meta">Generated: {now} &nbsp;|&nbsp; Model: <b>{meta.get('model_name', '?')}</b>
-&nbsp;|&nbsp; Extension: patchwise spatial OOD via FAISS nearest-neighbour</p>
+&nbsp;|&nbsp; Extension: patchwise spatial OOD via PyTorch GPU nearest-neighbour</p>
 
 <!-- ======================================================== -->
 <h2>1. Introduction</h2>
@@ -323,23 +323,42 @@ Each token is a 1280-dimensional vector that has attended to the entire image,
 so it captures its local region in full global context. These tokens are used
 directly — no separate crop extraction is needed.</p>
 
-<h3>2.2 Training patch FAISS index</h3>
+<h3>2.2 Training patch index and subsampling</h3>
 <p>All 2,605 training images are processed through RADIO-H. Each image's spatial
-tokens are L2-normalised and added to a numpy memmap (<code>train_patches.dat</code>).
-The total is approximately {df_hm['heatmap_shape'].apply(lambda s: s[0]*s[1]).mean():.0f}
-patches per image × 2,605 images ≈ several million vectors.</p>
+tokens are L2-normalised and written sequentially to a numpy memmap
+(<code>train_patches.dat</code>). The total is approximately
+{df_hm['heatmap_shape'].apply(lambda s: s[0]*s[1]).mean():.0f}
+patches per image × 2,605 images ≈ <b>14 million vectors</b> (∼68 GB on disk).</p>
 
-<p>A FAISS <code>IndexIVFFlat</code> with inner-product metric (cosine similarity on
-normalised vectors) is built with nlist=4096 and nprobe=64. Because
-<code>faiss-gpu</code> was unavailable in this environment (pip has no GPU wheel for
-Python 3.11/CUDA 12.1), CPU FAISS is used. At this scale (~10 M vectors), CPU IVF
-queries take 10–100 ms per image — acceptable for a one-off analysis.</p>
+<p><b>Subsampling (1-in-10):</b> To keep GPU memory and compute tractable, every
+10th patch is retained, yielding approximately <b>1.4 million vectors</b>. A FAISS
+<code>IndexFlatIP</code> (exact inner-product search, cosine similarity on
+L2-normalised vectors) is built from this subsample and saved to
+<code>faiss_index.bin</code>. The subsample covers roughly 10 % of all training
+patches; absolute threshold values (e.g. "below 0.80") may differ slightly from
+what would be obtained with the full set, but the relative ranking of images is
+expected to be stable.</p>
+
+<p><b>Phase 2 search (PyTorch GPU matmul):</b> CPU FAISS flat search at 1.4 M
+vectors was measured at ∼2.2 min/image (∼51 hours total) — unusable at this
+scale. Instead, the 1.4 M subsampled vectors are loaded to GPU memory as
+float16 (∼3.6 GB VRAM) and per-image similarity is computed as a single batched
+matrix multiply: <code>(query_tokens @ train.T).max(dim=1)</code>. This runs at
+13–17 ms/image on the RTX A6000, completing all 1,400 images in ∼17 minutes.
+FAISS is used only for Phase 1 (index construction); the heatmap search itself
+uses PyTorch GPU.</p>
+
+<div class="warning"><b>Note on coverage:</b> Because only 10 % of training
+patches are indexed, a test patch that closely matches a training patch absent
+from the subsample will appear more OOD than it truly is. This affects absolute
+score levels; relative comparisons between test images are reliable.</div>
 
 <h3>2.3 OOD score definition</h3>
-<p>For each test/val patch, the <b>OOD score = max cosine similarity to any training
-patch</b> (retrieved by the FAISS index). A score near 1.0 means the patch is visually
-very close to at least one training patch; a low score (below ~0.80) means the patch
-is in a region of embedding space poorly covered by training data.</p>
+<p>For each test/val patch, the <b>OOD score = max cosine similarity to any patch in
+the 1-in-10 subsampled training set</b>, computed via PyTorch GPU matrix
+multiplication. A score near 1.0 means the patch is visually very close to at least
+one training patch in the subsample; a low score (below ~0.80) indicates the patch is
+in a region of embedding space with sparse training coverage.</p>
 
 <p>The per-patch scores are reshaped back to the token grid and saved as
 <code>heatmaps/{img_name}.npy</code>. Values are in [0, 1], dtype float32.</p>
@@ -355,14 +374,24 @@ is in a region of embedding space poorly covered by training data.</p>
   <tr><td>Test</td><td>{st[0]}</td><td>{st[1]}</td><td>{st[2]}</td><td>{st[3]}</td></tr>
 </table>
 
+<div class="warning"><b>Coverage note:</b> 1 test image (<code>inhouse_seq_110_00149</code>)
+was skipped during Phase 2 due to a CUDA out-of-memory error (unusually high patch
+count). Its heatmap is absent from all statistics and figures below.</div>
+
 <h3>3.2 Distribution of spatial OOD scores</h3>
 <img class="plot" src="data:image/png;base64,{b64_hist}" alt="Figure 1: Histogram">
 
 <h3>3.3 Heatmap grid: top-20 most at-risk test images</h3>
+<div class="warning"><b>Colorscale note:</b> Each overlay figure uses a
+<em>per-image</em> colorscale (green = highest similarity in that image, red =
+lowest). The absolute OOD level differs between images; red in one panel does not
+correspond to the same cosine similarity value as red in another. Use the mean patch
+similarity values in the table below for cross-image comparisons.</div>
 {"<img class='plot' src='data:image/png;base64," + b64_grid + "' alt='Figure 2: Top-20 OOD grid'>" if b64_grid else '<p><em>Grid figure not generated.</em></p>'}
 
 <h3>3.4 Top-20 most at-risk test images</h3>
-<p>Ranked by lowest mean patch cosine similarity to any training patch.</p>
+<p>Ranked by lowest mean patch cosine similarity to any patch in the subsampled
+training set.</p>
 <table>
   <tr><th>#</th><th>Heatmap overlay</th><th>Image name</th><th>Sequence</th>
       <th>Mean patch sim ↑</th><th>Whole-img sim</th></tr>
@@ -370,10 +399,12 @@ is in a region of embedding space poorly covered by training data.</p>
 </table>
 
 <div class="finding">
-<b>Interpretation:</b> Images with mean patch sim below ~0.85 contain at least some
-patches with no close training analogue. The <em>spatial heatmap</em> (red regions)
-reveals exactly where the model is most likely to fail — often obstacles, unusual
-lighting, or image edges where content differs from the typical training distribution.
+<b>Interpretation:</b> Images with mean patch sim below ~0.85 contain patches with
+sparse training coverage. The <em>spatial heatmap</em> (red regions) highlights which
+scene areas are least represented in the training distribution — often obstacles,
+unusual lighting conditions, or image edges. These are regions where a deployed model
+may be less reliable, though other factors (class balance, augmentation, architecture)
+also affect per-region performance.
 </div>
 
 <!-- ======================================================== -->
@@ -428,14 +459,17 @@ patch similarity (test set): <b>ρ = {rho:.4f}</b> (p = {pval:.2e})</p>
   <li>Spearman ρ = {rho:.4f} between whole-image and spatial OOD rankings indicates
       {"the two measures largely agree — use the spatial heatmaps to localise within the images flagged by the whole-image analysis." if not (rho != rho) and rho > 0.7 else "the two measures capture complementary signals — both should be consulted when prioritising augmentation."}
   </li>
-  <li>CPU FAISS was used in this analysis. If faiss-gpu becomes available (pip wheel
-      for Python 3.11 / CUDA 12.1), Phase 1 and Phase 2 compute times would decrease
-      significantly.</li>
+  <li>Phase 2 heatmap search used <b>PyTorch GPU float16 matmul</b> on a 1-in-10
+      subsampled training patch set (∼1.4 M vectors). CPU FAISS flat search at this
+      scale was measured at ∼2.2 min/image and was not feasible. If GPU FAISS becomes
+      available, it could replace the PyTorch matmul and allow use of the full patch
+      set without subsampling.</li>
 </ul>
 
 <hr>
 <p class="meta">Spatial OOD extension — FARMS Team, MaCVi 2026.
-Model: {meta.get('model_name', '?')}. FAISS: faiss-cpu (CPU-only).</p>
+Model: {meta.get('model_name', '?')}. Phase 1: faiss-cpu IndexFlatIP (1-in-10 subsample).
+Phase 2: PyTorch GPU float16 matmul.</p>
 
 </body>
 </html>"""
