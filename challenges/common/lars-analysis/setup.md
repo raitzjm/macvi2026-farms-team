@@ -24,9 +24,9 @@ Attempted install of cuML 24.12 for GPU-accelerated t-SNE:
 conda run -n lars-analysis conda install -c rapidsai -c conda-forge -c nvidia cuml=24.12 cuda-version=12.1 -y
 ```
 
-**Status**: Attempted. If the install succeeds, cuML t-SNE is used automatically.
-If it fails or causes OOM errors at runtime, the notebook falls back to
-`sklearn.manifold.TSNE`. The notebook cell indicates which backend was used.
+**Status**: ✅ Succeeded. cuML 24.12 installed successfully and GPU t-SNE was used
+(KL divergence 0.239, completed in seconds). The notebook falls back to
+`sklearn.manifold.TSNE` automatically if cuML is unavailable.
 
 ## PyTorch (CUDA 12.1)
 
@@ -41,10 +41,14 @@ conda run -n lars-analysis pip install torch torchvision --index-url https://dow
 
 ```bash
 conda run -n lars-analysis pip install transformers accelerate
+conda run -n lars-analysis pip install timm einops open-clip-torch
 ```
 
 - transformers: for `AutoModel.from_pretrained("nvidia/C-RADIOv3-H")`
 - accelerate: for multi-GPU / mixed-precision support
+- timm: required by RADIO-H at import time (discovered during execution)
+- einops: required by RADIO-H at import time (discovered during execution)
+- open-clip-torch: required by RADIO-H at import time (discovered during execution)
 
 ## Data / Numerical Stack
 
@@ -84,9 +88,21 @@ conda run -n lars-analysis pip install jupyter nbconvert nbformat ipykernel ipyw
 
 ```bash
 conda run -n lars-analysis pip install weasyprint
+sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0
 ```
 
-- weasyprint: HTML→PDF conversion (fallback if LaTeX/webpdf not available)
+- weasyprint: HTML→PDF conversion
+- libpango / libpangoft2: system libraries required by weasyprint for text
+  rendering (missing by default in the container; must be installed via apt)
+
+## Report Generator
+
+```bash
+conda run -n lars-analysis pip install matplotlib
+```
+
+- matplotlib: used by `generate_report.py` for static figures in the PDF report
+  (installed separately from the notebook stack since the notebook uses Plotly)
 
 ## Kernel Registration
 
