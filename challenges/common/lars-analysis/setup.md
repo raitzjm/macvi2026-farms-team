@@ -113,9 +113,38 @@ conda run -n lars-analysis python -m ipykernel install --user --name lars-analys
 Registers the `lars-analysis` kernel so `jupyter nbconvert --execute` can
 find it by `--ExecutePreprocessor.kernel_name=lars-analysis`.
 
+## FAISS (Nearest-Neighbour Search for Spatial OOD)
+
+```bash
+conda run -n lars-analysis pip install faiss-cpu
+```
+
+- **faiss-cpu** was used (version 1.13.2). `faiss-gpu` is not available via pip and the
+  conda-forge `faiss-gpu=1.9.0` package corrupted the environment's numpy install on
+  this machine (Python 3.11 / CUDA 12.1 / RTX A6000). Fallback to CPU FAISS was chosen.
+- FAISS is used only for **index build** (Section 2 of `spatial_ood.ipynb`): building
+  `IndexFlatIP` from 1-in-10 subsampled training patches (~1.4 M vectors) and saving
+  to `faiss_index.bin`.
+- **Phase 2 heatmap search uses PyTorch GPU matmul, not FAISS CPU search**. The 1.4 M
+  subsampled vectors are re-read from the memmap, moved to GPU as float16 (3.6 GB
+  VRAM), and per-image similarity is computed as `(query_tokens @ train.T).max(dim=1)`.
+  Benchmark: ~13-17 ms/image on RTX A6000 (A6000 has 48 GB VRAM); 1,396 images
+  completed in ~17 minutes total including RADIO-H inference.
+- CPU FAISS flat search was measured at ~2.2 min/image (unusable; ~51 hours total).
+- `faiss.get_num_gpus()` returns 0 in this environment; all FAISS operations are CPU-side.
+
+## Spatial OOD Extension
+
+The packages above (torch, faiss-cpu, matplotlib, etc.) are reused by the spatial OOD
+extension notebook at `spatial_ood/spatial_ood.ipynb`. No additional packages beyond
+what is already installed are required.
+
 ## Notes
 
 - The conda environment itself is NOT committed to git.
 - Embeddings are stored in `embeddings.db` (Git-LFS tracked).
 - t-SNE results are stored in `tsne_results.npy` (Git-LFS tracked).
 - All heavy computation is protected by existence checks so cells only run once.
+- Spatial OOD large artifacts (`train_patches.dat`, `faiss_index.bin`,
+  `train_patch_meta.npy`) are NOT committed (listed in `.gitignore`).
+  Per-image heatmap `.npy` files and figure PNGs are committed.

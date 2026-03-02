@@ -59,9 +59,21 @@ Thumbs.db
 
 # Analysis intermediate artifacts
 challenges/common/lars-analysis/report.html
+challenges/common/lars-analysis/spatial_ood/spatial_report.html
+
+# Spatial OOD extension — large intermediate files (not committed)
+challenges/common/lars-analysis/spatial_ood/*.dat
+challenges/common/lars-analysis/spatial_ood/train_patch_meta.npy
+challenges/common/lars-analysis/spatial_ood/train_token_counts.npy
+challenges/common/lars-analysis/spatial_ood/phase1b_written.npy
+challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
+# faiss_index.bin is already covered by *.bin above
 
 # Explicitly track the lars analysis log despite *.log rule
 !challenges/common/lars-analysis/logs/analysis.log
+
+# Explicitly track the spatial OOD log despite *.log rule
+!challenges/common/lars-analysis/logs/spatial_ood.log
 
 # Claude Code local settings (credentials mounted, not committed)
 .claude/settings.local.json

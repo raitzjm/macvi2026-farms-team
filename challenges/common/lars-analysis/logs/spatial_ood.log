@@ -1,0 +1,612 @@
+[NbConvertApp] Converting notebook challenges/common/lars-analysis/spatial_ood/spatial_ood.ipynb to notebook
+[NbConvertApp] ERROR | Kernel died while waiting for execute reply.
+Traceback (most recent call last):
+  File "/home/farms/miniforge3/envs/lars-analysis/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbclient/client.py", line 1009, in async_execute_cell
+    raise DeadKernelError("Kernel died") from None
+nbclient.exceptions.DeadKernelError: Kernel died
+/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/input_conditioner.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:10,985 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/input_conditioner.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,087 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/eradio_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,089 WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-03-02 20:41:11,096 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/eradio_model.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,104 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/eradio_model.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,242 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/dinov2_arch.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,251 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/dinov2_arch.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,260 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/dinov2_arch.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,402 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/adaptor_generic.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,409 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_generic.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,417 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_generic.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,520 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/adaptor_base.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,527 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_base.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,536 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_base.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,645 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/adaptor_mlp.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,652 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_mlp.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,661 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_mlp.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,764 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/enable_spectral_reparam.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:11,771 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/enable_spectral_reparam.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:11,778 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/enable_spectral_reparam.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,058 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/open_clip_adaptor.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,065 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/open_clip_adaptor.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,073 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/open_clip_adaptor.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,385 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/adaptor_registry.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,394 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_registry.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,404 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/adaptor_registry.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,508 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/enable_cpe_support.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,516 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/enable_cpe_support.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,523 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/enable_cpe_support.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,634 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/vit_patch_generator.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,640 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/vit_patch_generator.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,647 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/vit_patch_generator.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,796 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/cls_token.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,802 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/cls_token.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,810 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/cls_token.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,916 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/dual_hybrid_vit.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:12,926 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/dual_hybrid_vit.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:12,937 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/dual_hybrid_vit.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,053 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/common.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:13,059 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/common.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,066 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/common.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,174 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/radio_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:13,180 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/radio_model.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,186 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/radio_model.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,291 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/extra_timm_models.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:13,296 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/extra_timm_models.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,303 INFO HTTP Request: GET https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/extra_timm_models.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,479 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 20:41:13,486 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 20:41:13,606 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/model.safetensors "HTTP/1.1 302 Found"
+2026-03-02 20:41:13,701 INFO HTTP Request: GET https://huggingface.co/api/models/nvidia/C-RADIOv3-H/xet-read-token/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8 "HTTP/1.1 200 OK"
+2026-03-02 20:41:30,959 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 20:41:32,718 INFO Model loaded.
+2026-03-02 20:41:32,743 INFO Training images: 2605
+2026-03-02 20:41:32,745 INFO Probing first image to determine tokens per image...
+2026-03-02 20:41:33,118 INFO Probe image 1280x960 -> 4800 spatial tokens (embed_dim=1280)
+2026-03-02 20:41:43,702 INFO   Progress: 50/2605 images, 240000 patches accumulated
+2026-03-02 20:41:53,746 INFO   Progress: 100/2605 images, 480000 patches accumulated
+2026-03-02 20:42:03,962 INFO   Progress: 150/2605 images, 720000 patches accumulated
+2026-03-02 20:42:13,916 INFO   Progress: 200/2605 images, 960000 patches accumulated
+2026-03-02 20:42:23,991 INFO   Progress: 250/2605 images, 1200000 patches accumulated
+2026-03-02 20:42:34,008 INFO   Progress: 300/2605 images, 1440000 patches accumulated
+2026-03-02 20:42:43,384 INFO   Progress: 350/2605 images, 1680000 patches accumulated
+2026-03-02 20:42:52,642 INFO   Progress: 400/2605 images, 1920000 patches accumulated
+2026-03-02 20:43:02,781 INFO   Progress: 450/2605 images, 2160000 patches accumulated
+2026-03-02 20:43:12,851 INFO   Progress: 500/2605 images, 2400000 patches accumulated
+2026-03-02 20:43:22,914 INFO   Progress: 550/2605 images, 2640000 patches accumulated
+2026-03-02 20:43:33,094 INFO   Progress: 600/2605 images, 2880000 patches accumulated
+2026-03-02 20:43:43,278 INFO   Progress: 650/2605 images, 3120000 patches accumulated
+2026-03-02 20:43:53,442 INFO   Progress: 700/2605 images, 3360000 patches accumulated
+2026-03-02 20:44:03,538 INFO   Progress: 750/2605 images, 3600000 patches accumulated
+2026-03-02 20:44:13,518 INFO   Progress: 800/2605 images, 3840000 patches accumulated
+2026-03-02 20:44:23,663 INFO   Progress: 850/2605 images, 4080000 patches accumulated
+2026-03-02 20:44:33,870 INFO   Progress: 900/2605 images, 4320000 patches accumulated
+2026-03-02 20:44:44,059 INFO   Progress: 950/2605 images, 4560000 patches accumulated
+2026-03-02 20:44:54,210 INFO   Progress: 1000/2605 images, 4800000 patches accumulated
+2026-03-02 20:45:04,648 INFO   Progress: 1050/2605 images, 5040000 patches accumulated
+2026-03-02 20:45:14,951 INFO   Progress: 1100/2605 images, 5280000 patches accumulated
+2026-03-02 20:45:25,199 INFO   Progress: 1150/2605 images, 5520000 patches accumulated
+2026-03-02 20:45:35,277 INFO   Progress: 1200/2605 images, 5760000 patches accumulated
+2026-03-02 20:45:45,360 INFO   Progress: 1250/2605 images, 6000000 patches accumulated
+2026-03-02 20:45:55,525 INFO   Progress: 1300/2605 images, 6240000 patches accumulated
+2026-03-02 20:46:10,248 INFO   Progress: 1350/2605 images, 6570720 patches accumulated
+2026-03-02 20:46:25,172 INFO   Progress: 1400/2605 images, 6916080 patches accumulated
+2026-03-02 20:46:35,106 INFO   Progress: 1450/2605 images, 7125120 patches accumulated
+2026-03-02 20:46:41,848 INFO   Progress: 1500/2605 images, 7305120 patches accumulated
+2026-03-02 20:46:47,948 INFO   Progress: 1550/2605 images, 7484880 patches accumulated
+2026-03-02 20:47:00,957 INFO   Progress: 1600/2605 images, 7771620 patches accumulated
+2026-03-02 20:47:30,481 INFO   Progress: 1650/2605 images, 8309820 patches accumulated
+2026-03-02 20:48:02,831 INFO   Progress: 1700/2605 images, 8848020 patches accumulated
+2026-03-02 20:48:29,783 INFO   Progress: 1750/2605 images, 9321120 patches accumulated
+2026-03-02 20:48:50,730 INFO   Progress: 1800/2605 images, 9729120 patches accumulated
+2026-03-02 20:49:11,695 INFO   Progress: 1850/2605 images, 10137120 patches accumulated
+2026-03-02 20:49:31,876 INFO   Progress: 1900/2605 images, 10545120 patches accumulated
+2026-03-02 20:49:53,237 INFO   Progress: 1950/2605 images, 10953120 patches accumulated
+2026-03-02 20:50:00,918 INFO   Progress: 2000/2605 images, 11110560 patches accumulated
+2026-03-02 20:50:18,708 INFO   Progress: 2050/2605 images, 11460320 patches accumulated
+2026-03-02 20:50:28,103 INFO   Progress: 2100/2605 images, 11716320 patches accumulated
+2026-03-02 20:50:31,457 INFO   Progress: 2150/2605 images, 11817680 patches accumulated
+2026-03-02 20:50:44,876 INFO   Progress: 2200/2605 images, 12103960 patches accumulated
+2026-03-02 20:52:29,206 INFO   Progress: 2250/2605 images, 12356920 patches accumulated
+[NbConvertApp] Converting notebook /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_ood.ipynb to notebook
+2026-03-02 21:10:14,439 INFO PyTorch version: 2.5.1+cu121
+2026-03-02 21:10:16,404 INFO CUDA available: True
+2026-03-02 21:10:16,427 INFO   GPU 0: NVIDIA RTX A6000  total=47.4 GB
+2026-03-02 21:10:16,428 INFO Using device: cuda
+2026-03-02 21:10:16,429 INFO FAISS num GPUs: 0 (0 = CPU-only mode)
+2026-03-02 21:10:16,430 INFO FAISS mode: CPU
+2026-03-02 21:10:16,461 INFO === Phase 1: Building training patch index (incremental memmap) ===
+2026-03-02 21:10:16,483 INFO Training images: 2605
+2026-03-02 21:10:16,484 INFO Sub-phase A: counting tokens for 2605 images...
+2026-03-02 21:10:19,718 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:10:19,726 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/config.json "HTTP/1.1 200 OK"
+2026-03-02 21:10:19,806 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:10:19,815 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 21:10:22,469 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:10:22,475 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 21:10:22,511 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 21:19:26,490 INFO Sub-phase A complete.
+2026-03-02 21:19:26,494 INFO Total training patches to index: 14084920  (72.1 GB float32)
+2026-03-02 21:19:26,496 INFO Allocating memmap: 14084920 x 1280 float32 (72.1 GB)...
+2026-03-02 21:19:26,499 INFO Memmap allocated.
+2026-03-02 21:19:26,502 INFO Sub-phase B: writing patches for 2605 images...
+2026-03-02 21:19:26,605 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:19:26,610 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/config.json "HTTP/1.1 200 OK"
+2026-03-02 21:19:26,686 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:19:26,687 WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-03-02 21:19:26,693 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 21:19:26,789 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 21:19:26,794 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 21:19:26,806 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 21:19:40,403 INFO   Phase 1B checkpoint: 50/2605 images written
+2026-03-02 21:19:52,627 INFO   Phase 1B checkpoint: 100/2605 images written
+2026-03-02 21:20:05,138 INFO   Phase 1B checkpoint: 150/2605 images written
+2026-03-02 21:20:18,564 INFO   Phase 1B checkpoint: 200/2605 images written
+2026-03-02 21:20:30,885 INFO   Phase 1B checkpoint: 250/2605 images written
+2026-03-02 21:20:42,967 INFO   Phase 1B checkpoint: 300/2605 images written
+2026-03-02 21:20:55,211 INFO   Phase 1B checkpoint: 350/2605 images written
+2026-03-02 21:21:07,369 INFO   Phase 1B checkpoint: 400/2605 images written
+2026-03-02 21:21:20,068 INFO   Phase 1B checkpoint: 450/2605 images written
+2026-03-02 21:21:32,748 INFO   Phase 1B checkpoint: 500/2605 images written
+2026-03-02 21:21:45,529 INFO   Phase 1B checkpoint: 550/2605 images written
+2026-03-02 21:21:58,171 INFO   Phase 1B checkpoint: 600/2605 images written
+2026-03-02 21:22:11,061 INFO   Phase 1B checkpoint: 650/2605 images written
+2026-03-02 21:22:23,497 INFO   Phase 1B checkpoint: 700/2605 images written
+2026-03-02 21:22:36,585 INFO   Phase 1B checkpoint: 750/2605 images written
+2026-03-02 21:22:50,786 INFO   Phase 1B checkpoint: 800/2605 images written
+2026-03-02 21:23:04,993 INFO   Phase 1B checkpoint: 850/2605 images written
+2026-03-02 21:23:19,116 INFO   Phase 1B checkpoint: 900/2605 images written
+2026-03-02 21:23:32,618 INFO   Phase 1B checkpoint: 950/2605 images written
+2026-03-02 21:23:45,420 INFO   Phase 1B checkpoint: 1000/2605 images written
+2026-03-02 21:23:57,419 INFO   Phase 1B checkpoint: 1050/2605 images written
+2026-03-02 21:24:10,273 INFO   Phase 1B checkpoint: 1100/2605 images written
+2026-03-02 21:24:23,849 INFO   Phase 1B checkpoint: 1150/2605 images written
+2026-03-02 21:24:36,848 INFO   Phase 1B checkpoint: 1200/2605 images written
+2026-03-02 21:24:50,060 INFO   Phase 1B checkpoint: 1250/2605 images written
+2026-03-02 21:25:03,866 INFO   Phase 1B checkpoint: 1300/2605 images written
+2026-03-02 21:25:24,166 INFO   Phase 1B checkpoint: 1350/2605 images written
+2026-03-02 21:25:45,733 INFO   Phase 1B checkpoint: 1400/2605 images written
+2026-03-02 21:25:58,618 INFO   Phase 1B checkpoint: 1450/2605 images written
+2026-03-02 21:26:07,664 INFO   Phase 1B checkpoint: 1500/2605 images written
+2026-03-02 21:26:15,975 INFO   Phase 1B checkpoint: 1550/2605 images written
+2026-03-02 21:26:34,249 INFO   Phase 1B checkpoint: 1600/2605 images written
+2026-03-02 21:27:13,111 INFO   Phase 1B checkpoint: 1650/2605 images written
+2026-03-02 21:27:51,573 INFO   Phase 1B checkpoint: 1700/2605 images written
+2026-03-02 21:28:23,998 INFO   Phase 1B checkpoint: 1750/2605 images written
+2026-03-02 21:28:51,526 INFO   Phase 1B checkpoint: 1800/2605 images written
+2026-03-02 21:29:19,739 INFO   Phase 1B checkpoint: 1850/2605 images written
+2026-03-02 21:29:48,338 INFO   Phase 1B checkpoint: 1900/2605 images written
+2026-03-02 21:30:13,729 INFO   Phase 1B checkpoint: 1950/2605 images written
+2026-03-02 21:30:23,146 INFO   Phase 1B checkpoint: 2000/2605 images written
+2026-03-02 21:30:46,612 INFO   Phase 1B checkpoint: 2050/2605 images written
+2026-03-02 21:30:59,642 INFO   Phase 1B checkpoint: 2100/2605 images written
+2026-03-02 21:31:04,835 INFO   Phase 1B checkpoint: 2150/2605 images written
+2026-03-02 21:31:24,520 INFO   Phase 1B checkpoint: 2200/2605 images written
+2026-03-02 21:31:38,884 INFO   Phase 1B checkpoint: 2250/2605 images written
+2026-03-02 21:31:47,732 INFO   Phase 1B checkpoint: 2300/2605 images written
+2026-03-02 21:31:56,651 INFO   Phase 1B checkpoint: 2350/2605 images written
+2026-03-02 21:32:09,641 INFO   Phase 1B checkpoint: 2400/2605 images written
+2026-03-02 21:32:19,259 INFO   Phase 1B checkpoint: 2450/2605 images written
+2026-03-02 21:32:33,494 INFO   Phase 1B checkpoint: 2500/2605 images written
+2026-03-02 21:33:00,793 INFO   Phase 1B checkpoint: 2550/2605 images written
+2026-03-02 21:33:24,576 INFO   Phase 1B checkpoint: 2600/2605 images written
+2026-03-02 21:33:27,261 INFO Sub-phase B complete: 2605 images written.
+2026-03-02 21:33:30,216 INFO Patch metadata saved to /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/train_patch_meta.npy
+2026-03-02 21:33:30,219 INFO === Sub-phase C: Building FAISS index ===
+2026-03-02 21:33:30,486 INFO Training FAISS index on 2000000 sample vectors (nlist=4096)...
+2026-03-02 21:56:21,577 INFO FAISS training done in 1371.1s.
+2026-03-02 21:56:21,590 INFO Adding 14084920 vectors to FAISS index in chunks of 500000...
+[NbConvertApp] ERROR | Kernel died while waiting for execute reply.
+Traceback (most recent call last):
+  File "/home/farms/miniforge3/envs/lars-analysis/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbclient/client.py", line 1009, in async_execute_cell
+    raise DeadKernelError("Kernel died") from None
+nbclient.exceptions.DeadKernelError: Kernel died
+[NbConvertApp] Converting notebook /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_ood.ipynb to notebook
+2026-03-02 22:23:59,204 INFO PyTorch 2.5.1+cu121  CUDA=True
+2026-03-02 22:23:59,227 INFO   GPU 0: NVIDIA RTX A6000  47.4 GB
+2026-03-02 22:23:59,227 INFO Device: cuda
+2026-03-02 22:23:59,228 INFO FAISS GPU: False  (num_gpus=0)
+2026-03-02 22:23:59,244 INFO Total patches in memmap: 14084920 (72.1 GB)
+2026-03-02 22:23:59,246 INFO === Building FAISS flat index from 1-in-10 subsample ===
+2026-03-02 22:23:59,253 INFO Subsampled vectors: 1408492  (7.21 GB in RAM)
+2026-03-02 22:27:19,639 INFO Subsample read in 200.4s
+2026-03-02 22:27:19,645 INFO Building IndexFlatIP (1408492 vectors × 1280 dims)...
+2026-03-02 22:27:37,354 INFO Index built in 17.7s, ntotal=1408492
+2026-03-02 22:27:44,931 INFO FAISS index saved: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/faiss_index.bin  (7.21 GB)
+2026-03-02 22:27:44,933 INFO === Phase 1 (FAISS build) complete: 3.8 min ===
+2026-03-02 22:27:44,936 INFO Training patch index ready.  Subsampled vectors in index: 1-in-10 of 14084920
+2026-03-02 22:27:45,018 INFO Existing heatmaps: 0 / 1401
+2026-03-02 22:27:45,021 INFO === Phase 2: Computing spatial OOD heatmaps ===
+2026-03-02 22:27:45,022 INFO Loading FAISS index...
+Traceback (most recent call last):
+  File "/home/farms/miniforge3/envs/lars-analysis/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+test_records = get_image_list('test')
+val_records  = get_image_list('val')
+eval_records = test_records + val_records
+n_eval       = len(eval_records)
+
+existing = list(HEATMAPS_DIR.glob('*.npy'))
+log.info('Existing heatmaps: %d / %d', len(existing), n_eval)
+
+if len(existing) >= n_eval:
+    log.info('Heatmaps complete — skipping Phase 2.')
+else:
+    log.info('=== Phase 2: Computing spatial OOD heatmaps ===')
+    t2 = time.time()
+
+    log.info('Loading FAISS index...')
+    cpu_idx = faiss.read_index(str(FAISS_INDEX))
+    cpu_idx.nprobe = 1   # FlatIP — nprobe irrelevant but must be set
+    log.info('Index loaded: %d vectors', cpu_idx.ntotal)
+
+    log.info('Loading RADIO-H...')
+    from transformers import AutoModel
+    radio_model = AutoModel.from_pretrained(MODEL_NAME, trust_remote_code=True)
+    radio_model = radio_model.to(DEVICE).eval()
+    log.info('Model loaded.')
+
+    done      = {p.stem for p in existing}
+    pending   = [r for r in eval_records if r['name'] not in done]
+    log.info('Pending: %d images', len(pending))
+
+    with tqdm(total=len(pending), desc='Phase 2: Heatmaps') as pbar:
+        for i, rec in enumerate(pending):
+            try:
+                img_pil = Image.open(rec['path']).convert('RGB')
+                sp, pw, ph = run_radio(radio_model, img_pil, DEVICE)
+                norms = np.linalg.norm(sp, axis=1, keepdims=True) + 1e-8
+                sp_n  = (sp / norms).astype(np.float32)
+                sims, _ = cpu_idx.search(sp_n, k=1)
+                heatmap = sims[:,0].reshape(ph//16, pw//16).astype(np.float32)
+                np.save(HEATMAPS_DIR / f'{rec["name"]}.npy', heatmap)
+            except Exception as e:
+                log.warning('ERROR %s: %s', rec['name'], e)
+            pbar.update(1)
+            pbar.set_postfix({'img': f'{i+1}/{len(pending)}', 'split': rec['split']})
+            if (i+1) % COMMIT_EVERY == 0:
+                log.info('  Heatmap progress: %d/%d', i+1, len(pending))
+
+    del radio_model
+    torch.cuda.empty_cache()
+    log.info('=== Phase 2 complete: %.1f min ===', (time.time()-t2)/60)
+
+n_done = len(list(HEATMAPS_DIR.glob('*.npy')))
+log.info('Total heatmap files: %d', n_done)
+------------------
+
+----- stdout -----
+2026-03-02 22:27:45,018 INFO Existing heatmaps: 0 / 1401
+----- stdout -----
+2026-03-02 22:27:45,021 INFO === Phase 2: Computing spatial OOD heatmaps ===
+----- stdout -----
+2026-03-02 22:27:45,022 INFO Loading FAISS index...
+------------------
+
+[31m---------------------------------------------------------------------------[39m
+[31mAttributeError[39m                            Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[3][39m[32m, line 17[39m
+[32m     15[39m log.info([33m'[39m[33mLoading FAISS index...[39m[33m'[39m)
+[32m     16[39m cpu_idx = faiss.read_index([38;5;28mstr[39m(FAISS_INDEX))
+[32m---> [39m[32m17[39m [43mcpu_idx[49m[43m.[49m[43mnprobe[49m = [32m1[39m   [38;5;66;03m# FlatIP — nprobe irrelevant but must be set[39;00m
+[32m     18[39m log.info([33m'[39m[33mIndex loaded: [39m[38;5;132;01m%d[39;00m[33m vectors[39m[33m'[39m, cpu_idx.ntotal)
+[32m     20[39m log.info([33m'[39m[33mLoading RADIO-H...[39m[33m'[39m)
+
+[36mFile [39m[32m~/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/faiss/class_wrappers.py:253[39m, in [36mhandle_Index.<locals>.replacement_setattr[39m[34m(self, name, value)[39m
+[32m    244[39m     [38;5;28;01mreturn[39;00m original_setattr([38;5;28mself[39m, name, value)
+[32m    246[39m [38;5;66;03m# If we reach here, the attribute doesn't exist on the object[39;00m
+[32m    247[39m [38;5;66;03m# This is the core issue: SWIG classes silently accept unknown[39;00m
+[32m    248[39m [38;5;66;03m# attributes[39;00m
+[32m   (...)[39m[32m    251[39m [38;5;66;03m# Block unknown attributes to prevent silent failures[39;00m
+[32m    252[39m [38;5;66;03m# This is the general solution that doesn't rely on hardcoded names[39;00m
+[32m--> [39m[32m253[39m [38;5;28;01mraise[39;00m [38;5;167;01mAttributeError[39;00m(
+[32m    254[39m     [33mf[39m[33m"[39m[33m'[39m[38;5;132;01m{[39;00m[38;5;28mself[39m.[34m__class__[39m.[34m__name__[39m[38;5;132;01m}[39;00m[33m'[39m[33m object has no attribute [39m[33m'[39m[38;5;132;01m{[39;00mname[38;5;132;01m}[39;00m[33m'[39m[33m.[39m[33m"[39m
+[32m    255[39m )
+
+[31mAttributeError[39m: 'IndexFlatIP' object has no attribute 'nprobe'.
+
+[NbConvertApp] Converting notebook /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_ood.ipynb to notebook
+2026-03-02 22:30:14,529 INFO PyTorch 2.5.1+cu121  CUDA=True
+2026-03-02 22:30:14,562 INFO   GPU 0: NVIDIA RTX A6000  47.4 GB
+2026-03-02 22:30:14,563 INFO Device: cuda
+2026-03-02 22:30:14,565 INFO FAISS GPU: False  (num_gpus=0)
+2026-03-02 22:30:14,594 INFO Total patches in memmap: 14084920 (72.1 GB)
+2026-03-02 22:30:14,596 INFO faiss_index.bin exists — loading to verify.
+2026-03-02 22:30:19,130 INFO Index has 1408492 vectors — skipping rebuild.
+2026-03-02 22:30:19,808 INFO Training patch index ready.  Subsampled vectors in index: 1-in-10 of 14084920
+2026-03-02 22:30:19,838 INFO Existing heatmaps: 0 / 1401
+2026-03-02 22:30:19,840 INFO === Phase 2: Computing spatial OOD heatmaps ===
+2026-03-02 22:30:19,841 INFO Loading FAISS index...
+2026-03-02 22:30:24,209 INFO Index loaded: 1408492 vectors
+2026-03-02 22:30:24,211 INFO Loading RADIO-H...
+2026-03-02 22:30:28,106 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:30:28,113 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/config.json "HTTP/1.1 200 OK"
+2026-03-02 22:30:28,221 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:30:28,229 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 22:30:30,838 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:30:30,845 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 22:30:30,888 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 22:30:35,851 INFO Model loaded.
+2026-03-02 22:30:35,852 INFO Pending: 1401 images
+[NbConvertApp] ERROR | Kernel died while waiting for execute reply.
+Traceback (most recent call last):
+  File "/home/farms/miniforge3/envs/lars-analysis/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 563, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 487, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 220, in from_file
+    return self.from_notebook_node(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/notebook.py", line 36, in from_notebook_node
+    nb_copy, resources = super().from_notebook_node(nb, resources, **kw)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 154, in from_notebook_node
+    nb_copy, resources = self._preprocess(nb_copy, resources)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/exporters/exporter.py", line 353, in _preprocess
+    nbc, resc = preprocessor(nbc, resc)
+                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/base.py", line 48, in __call__
+    return self.preprocess(nb, resources)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 103, in preprocess
+    self.preprocess_cell(cell, resources, index)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/preprocessors/execute.py", line 124, in preprocess_cell
+    cell = self.execute_cell(cell, index, store_history=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbclient/client.py", line 1009, in async_execute_cell
+    raise DeadKernelError("Kernel died") from None
+nbclient.exceptions.DeadKernelError: Kernel died
+2026-03-02 22:45:15,848 INFO PyTorch 2.5.1+cu121  CUDA=True
+2026-03-02 22:45:15,872 INFO   GPU 0: NVIDIA RTX A6000  47.4 GB
+2026-03-02 22:45:15,873 INFO Device: cuda
+2026-03-02 22:45:15,874 INFO FAISS GPU: False  (num_gpus=0)
+2026-03-02 22:45:15,895 INFO Total patches in memmap: 14084920 (72.1 GB)
+2026-03-02 22:45:15,896 INFO faiss_index.bin exists — loading to verify.
+2026-03-02 22:45:21,262 INFO Index has 1408492 vectors — skipping rebuild.
+2026-03-02 22:45:21,975 INFO Training patch index ready.  Subsampled vectors in index: 1-in-10 of 14084920
+2026-03-02 22:45:22,011 INFO Existing heatmaps: 5 / 1401
+2026-03-02 22:45:22,013 INFO === Phase 2: Computing spatial OOD heatmaps (GPU matmul) ===
+2026-03-02 22:45:22,028 INFO Reading 1408492 subsampled training vectors from memmap...
+2026-03-02 22:48:47,937 INFO Subsample loaded in 205.9s
+2026-03-02 22:48:47,951 INFO Moving training vectors to GPU (float16)...
+2026-03-02 22:48:52,974 INFO Training vectors on GPU: shape=[1408492, 1280]  VRAM=3.6 GB
+2026-03-02 22:48:52,977 INFO Loading RADIO-H...
+2026-03-02 22:48:57,077 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:48:57,087 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/config.json "HTTP/1.1 200 OK"
+2026-03-02 22:48:57,172 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:48:57,174 WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-03-02 22:48:57,183 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 22:48:59,781 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 22:48:59,790 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 22:48:59,807 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 22:49:03,264 INFO Model loaded.
+2026-03-02 22:49:03,267 INFO Pending: 1396 images
+2026-03-02 22:49:18,080 INFO   Heatmap progress: 50/1396  elapsed=3.9min
+2026-03-02 22:49:32,353 INFO   Heatmap progress: 100/1396  elapsed=4.2min
+2026-03-02 22:50:11,617 INFO   Heatmap progress: 150/1396  elapsed=4.8min
+2026-03-02 22:51:12,550 INFO   Heatmap progress: 200/1396  elapsed=5.8min
+2026-03-02 22:52:12,710 INFO   Heatmap progress: 250/1396  elapsed=6.8min
+2026-03-02 22:52:54,896 WARNING ERROR inhouse_seq_110_00149: CUDA out of memory. Tried to allocate 41.87 GiB. GPU 0 has a total capacity of 47.43 GiB of which 37.02 GiB is free. Process 15434 has 10.40 GiB memory in use. Of the allocated memory 5.83 GiB is allocated by PyTorch, and 4.25 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+2026-03-02 22:52:56,957 INFO   Heatmap progress: 300/1396  elapsed=7.6min
+2026-03-02 22:53:36,865 INFO   Heatmap progress: 350/1396  elapsed=8.2min
+2026-03-02 22:54:17,310 INFO   Heatmap progress: 400/1396  elapsed=8.9min
+2026-03-02 22:54:56,615 INFO   Heatmap progress: 450/1396  elapsed=9.6min
+2026-03-02 22:55:29,850 INFO   Heatmap progress: 500/1396  elapsed=10.1min
+2026-03-02 22:56:05,880 INFO   Heatmap progress: 550/1396  elapsed=10.7min
+2026-03-02 22:56:33,748 INFO   Heatmap progress: 600/1396  elapsed=11.2min
+2026-03-02 22:56:53,497 INFO   Heatmap progress: 650/1396  elapsed=11.5min
+2026-03-02 22:57:04,914 INFO   Heatmap progress: 700/1396  elapsed=11.7min
+2026-03-02 22:57:09,103 INFO   Heatmap progress: 750/1396  elapsed=11.8min
+2026-03-02 22:57:33,959 INFO   Heatmap progress: 800/1396  elapsed=12.2min
+2026-03-02 22:57:51,141 INFO   Heatmap progress: 850/1396  elapsed=12.5min
+2026-03-02 22:58:05,266 INFO   Heatmap progress: 900/1396  elapsed=12.7min
+2026-03-02 22:58:19,904 INFO   Heatmap progress: 950/1396  elapsed=13.0min
+2026-03-02 22:58:33,797 INFO   Heatmap progress: 1000/1396  elapsed=13.2min
+2026-03-02 22:58:48,335 INFO   Heatmap progress: 1050/1396  elapsed=13.4min
+2026-03-02 22:59:14,998 INFO   Heatmap progress: 1100/1396  elapsed=13.9min
+2026-03-02 22:59:53,377 INFO   Heatmap progress: 1150/1396  elapsed=14.5min
+2026-03-02 23:00:30,498 INFO   Heatmap progress: 1200/1396  elapsed=15.1min
+2026-03-02 23:01:04,621 INFO   Heatmap progress: 1250/1396  elapsed=15.7min
+2026-03-02 23:01:32,950 INFO   Heatmap progress: 1300/1396  elapsed=16.2min
+2026-03-02 23:01:53,449 INFO   Heatmap progress: 1350/1396  elapsed=16.5min
+2026-03-02 23:02:19,878 INFO === Phase 2 complete: 17.0 min ===
+2026-03-02 23:02:19,888 INFO Total heatmap files: 1400
+2026-03-02 23:02:20,749 INFO Heatmap stats: 1400 images
+2026-03-02 23:02:20,762 INFO TEST: N=1202  patch_sim_median=0.8080  whole_sim_median=0.9109  pct<0.8_median=40.2%
+2026-03-02 23:02:20,765 INFO VAL: N=198  patch_sim_median=0.8083  whole_sim_median=0.9206  pct<0.8_median=40.7%
+2026-03-02 23:02:22,930 INFO Spearman rho (whole vs patch, test): 0.8556  p=0.00e+00
+2026-03-02 23:02:22,982 INFO Top-20 most OOD test images:
+2026-03-02 23:02:22,985 INFO   orca_usv_inland_N03_2_01837  patch_sim=0.6039  whole_sim=0.7821
+2026-03-02 23:02:22,987 INFO   yt017_00_00269  patch_sim=0.6342  whole_sim=0.7325
+2026-03-02 23:02:22,989 INFO   inhouse_seq_111_00642  patch_sim=0.6477  whole_sim=0.7099
+2026-03-02 23:02:22,991 INFO   yt017_00_00154  patch_sim=0.6522  whole_sim=0.7202
+2026-03-02 23:02:22,993 INFO   orca_usv_inland_H05_9_00156  patch_sim=0.6533  whole_sim=0.8221
+2026-03-02 23:02:22,995 INFO   orca_usv_inland_H05_9_00170  patch_sim=0.6548  whole_sim=0.8329
+2026-03-02 23:02:22,997 INFO   mit_seq_28_00369  patch_sim=0.6572  whole_sim=0.7382
+2026-03-02 23:02:22,999 INFO   yt026_07_00049  patch_sim=0.6589  whole_sim=0.8165
+2026-03-02 23:02:23,000 INFO   yt050_01_00020  patch_sim=0.6593  whole_sim=0.7777
+2026-03-02 23:02:23,001 INFO   yt007_03_00079  patch_sim=0.6607  whole_sim=0.7414
+2026-03-02 23:02:23,003 INFO   yt049_02_00180  patch_sim=0.6634  whole_sim=0.7168
+2026-03-02 23:02:23,006 INFO   yt049_02_00080  patch_sim=0.6642  whole_sim=0.7233
+2026-03-02 23:02:23,007 INFO   orca_usv_inland_H05_9_00200  patch_sim=0.6669  whole_sim=0.8469
+2026-03-02 23:02:23,008 INFO   yt017_00_00049  patch_sim=0.6670  whole_sim=0.7040
+2026-03-02 23:02:23,009 INFO   yt050_01_00080  patch_sim=0.6699  whole_sim=0.7862
+2026-03-02 23:02:23,010 INFO   yt049_01_00080  patch_sim=0.6717  whole_sim=0.7166
+2026-03-02 23:02:23,011 INFO   yt017_01_00339  patch_sim=0.6744  whole_sim=0.7277
+2026-03-02 23:02:23,012 INFO   yt017_01_00479  patch_sim=0.6759  whole_sim=0.7293
+2026-03-02 23:02:23,013 INFO   inhouse_seq_111_01550  patch_sim=0.6770  whole_sim=0.7060
+2026-03-02 23:02:23,014 INFO   yt007_03_00800  patch_sim=0.6779  whole_sim=0.7568
+2026-03-02 23:02:39,469 INFO Individual overlay figures saved.
+2026-03-02 23:02:44,402 INFO Summary grid: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top20_ood_grid.png
+2026-03-02 23:02:44,458 INFO Common grid: 68x120
+2026-03-02 23:02:44,783 INFO Aggregated 1202 images
+2026-03-02 23:02:45,008 INFO Aggregate figure: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/aggregate_heatmap.png
+2026-03-02 23:02:45,013 INFO Most OOD row 16/68 (0.7870)  col 119/120 (0.7627)
+2026-03-02 23:02:45,057 INFO Top-5 OOD sequences: ['yt026_07', 'yt017_00', 'yt049_02', 'yt007_03', 'yt050_01']
+2026-03-02 23:02:45,557 INFO Seq heatmaps: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top5_seq_heatmaps.png
+2026-03-02 23:02:45,572 INFO Generating spatial OOD PDF report...
+2026-03-02 23:02:52,651 INFO Report: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_report.pdf
+2026-03-02 23:02:52,652 INFO === spatial_ood.ipynb execution complete ===
