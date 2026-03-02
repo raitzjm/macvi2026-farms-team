@@ -20,6 +20,11 @@ complete (commit `b9568b5`). Not everything was tracked in real-time:
   `logs/spatial_ood.log`, which was set up with a `FileHandler` from the start
   of `spatial_ood.ipynb`.
 
+**Recommendation for future work:** If new cells are added to `analysis.ipynb`,
+add a `logging.FileHandler` pointing to `logs/analysis.log` in the setup cell —
+the same pattern used in `spatial_ood.ipynb`. Without it, cell-level progress is
+only captured in notebook outputs (`.ipynb`), not in a standalone log file.
+
 ---
 
 ---
