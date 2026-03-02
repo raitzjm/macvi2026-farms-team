@@ -128,8 +128,11 @@ conda run -n lars-analysis pip install faiss-cpu
 - **Phase 2 heatmap search uses PyTorch GPU matmul, not FAISS CPU search**. The 1.4 M
   subsampled vectors are re-read from the memmap, moved to GPU as float16 (3.6 GB
   VRAM), and per-image similarity is computed as `(query_tokens @ train.T).max(dim=1)`.
-  Benchmark: ~13-17 ms/image on RTX A6000 (A6000 has 48 GB VRAM); 1,396 images
-  completed in ~17 minutes total including RADIO-H inference.
+  Benchmark: ~13-17 ms/image on RTX A6000 (A6000 has 48 GB VRAM); 1,400 images
+  completed in ~17 minutes total including RADIO-H inference. 1 image
+  (`inhouse_seq_110_00149`, 15,960 patches) hit CUDA OOM on the first pass and
+  was recovered via a 512-row chunked fallback (~0.8 s). All 1,401 heatmaps are
+  now present. See GOTCHAS.md §7 for details.
 - CPU FAISS flat search was measured at ~2.2 min/image (unusable; ~51 hours total).
 - `faiss.get_num_gpus()` returns 0 in this environment; all FAISS operations are CPU-side.
 
