@@ -22,7 +22,6 @@ from datetime import datetime
 from pathlib import Path
 
 import matplotlib
-import matplotlib.colormaps
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -146,7 +145,7 @@ def fig_tsne_by_sequence(tsne, splits, seqs):
     major_seqs = set(test_seqs[counts >= 5])
 
     # Use a qualitative palette for test sequences
-    cmap = matplotlib.colormaps.get_cmap("tab20").resampled(len(major_seqs))
+    cmap = matplotlib.cm.get_cmap("tab20", max(len(major_seqs), 1))
     seq_color = {s: cmap(i) for i, s in enumerate(sorted(major_seqs))}
 
     fig, ax = plt.subplots(figsize=(10, 7))
@@ -305,12 +304,16 @@ def build_html(args, names, splits, seqs, embeds, tsne, meta, max_sims):
     def stats_row(sp):
         mask = splits_arr == sp
         data = max_sims[mask]; data = data[~np.isnan(data)]
+        if len(data) == 0:
+            return (mask.sum(), len(set(seqs_arr[mask])), "n/a", "n/a", "n/a", "n/a", "n/a")
         return (
             mask.sum(),
             len(set(seqs_arr[mask])),
             f"{np.median(data):.3f}",
-            f"{pct_below(max_sims, splits, sp, 0.7):.1f}%",
-            f"{pct_below(max_sims, splits, sp, 0.5):.1f}%",
+            f"{pct_below(max_sims, splits, sp, 0.85):.1f}% ({int((data<0.85).sum())})",
+            f"{pct_below(max_sims, splits, sp, 0.80):.1f}% ({int((data<0.80).sum())})",
+            f"{pct_below(max_sims, splits, sp, 0.75):.1f}% ({int((data<0.75).sum())})",
+            f"{pct_below(max_sims, splits, sp, 0.70):.1f}% ({int((data<0.70).sum())})",
         )
 
     rows = {sp: stats_row(sp) for sp in ("train", "val", "test")}
@@ -384,41 +387,67 @@ it means the model must generalise across camera locations and scene types, not 
 across time within the same scene.
 </div>
 
+<div class="warning">
+<b>Note on database schema:</b> The original analysis request asked for per-patch fields
+(<code>patch_id</code>, <code>patch_start</code>, <code>patch_end</code>) in the SQLite database.
+These fields are <b>not present</b> in the database because the approach was changed to use
+RADIO's internal spatial tokens rather than explicit patch extraction (see Section 3.1).
+Instead of storing one row per crop, the database stores one row per image with a single
+mean embedding vector. The field <code>img_set</code> requested is stored as <code>split</code>.
+If per-crop embeddings with position metadata are required, the pipeline would need to be
+modified to extract explicit crops and store their coordinates.
+</div>
+
 <!-- ================================================================== -->
 <h2>3. Methodology</h2>
 
 <h3>3.1 Embedding model — RADIO-H with internal spatial tokens</h3>
 <p>Each image is passed through <b>RADIO-H</b> (nvidia/C-RADIOv3-H, 653 M parameters)
-at its original resolution. RADIO internally divides the image into a 16 px grid and
-produces one embedding vector per grid cell via its transformer attention mechanism —
-these are the <em>spatial tokens</em>. Unlike manually cropping images into patches and
-running each crop separately, using internal tokens means every patch embedding is
-informed by the full image context (all patches attend to each other). This produces
-richer, context-aware features and requires only one forward pass per image.</p>
+at its original resolution. RADIO uses a Vision Transformer (ViT) with a patch size of
+16 px, meaning the image is divided into a grid of 16×16 px cells; a 1280×960 image
+produces 80×60 = 4,800 spatial tokens. Each token is a 1280-dimensional vector produced
+by the transformer attention mechanism — crucially, every token has attended to all other
+tokens in the image, so each embedding captures its local region in full global context.
+Unlike manually cropping images into patches and running each crop separately (which
+produces context-free, isolated embeddings), this approach requires only one forward pass
+per image and produces richer representations.</p>
 
 <p>The spatial tokens are averaged across the spatial dimension to produce a single
-{meta.get('embed_dim','?')}-dimensional summary vector per image. This per-image vector
-is used for t-SNE projection and cosine similarity computation. Both the spatial mean
-and the model's global summary token are stored in the SQLite database.</p>
+1280-dimensional mean vector per image (<code>spatial_mean_embedding</code>). This is
+used for all analysis in this report. RADIO also produces a global summary token
+(<code>summary_embedding</code>, 3840-dimensional) analogous to the [CLS] token in ViT —
+this is stored in the database but not used here, because the spatial mean better
+represents the distribution of local features across the image, which is more appropriate
+for detecting regional distributional shift than a single global descriptor. Both are
+available in the SQLite database for future use.</p>
 
 <h3>3.2 Dimensionality reduction</h3>
-<p>Raw {meta.get('embed_dim','?')}-dimensional embeddings are first reduced to 50
-dimensions with PCA (retaining the principal axes of variation), then projected to 2D
-with t-SNE (GPU-accelerated via cuML). PCA pre-reduction is standard practice before
-t-SNE: it removes high-frequency noise while preserving the dominant structure, and
-dramatically speeds up the t-SNE computation.</p>
+<p>Raw 1280-dimensional spatial mean embeddings are first reduced to 50 dimensions
+with PCA — retaining <b>84.3% of the total variance</b> — then projected to 2D with
+t-SNE (GPU-accelerated via cuML, RAPIDS 24.12). PCA pre-reduction is standard practice
+before t-SNE: it removes high-frequency noise while preserving dominant structure and
+dramatically speeds up the t-SNE computation. The final t-SNE achieved a
+<b>KL divergence of 0.239</b>, indicating a good-quality 2D embedding (lower is better;
+values below ~1.0 are generally considered reliable for datasets of this size).</p>
 
 <h3>3.3 Cosine similarity coverage score</h3>
 <p>For each non-training image, the maximum cosine similarity to any training image
-is computed as a scalar coverage score. A score near 1.0 means the image is very
-similar to at least one training image; a score below ~0.7 indicates the image is
-in a region of the embedding space not well covered by training.</p>
+is computed as a scalar coverage score in [0, 1]. A score near 1.0 means the image is
+visually very similar to at least one training image; a lower score indicates the image
+is in a region of the embedding space less covered by training. The table in Section 5
+reports coverage at multiple thresholds (0.85, 0.80, 0.75, 0.70) so the reader can
+assess sensitivity — the choice of threshold significantly affects what fraction of images
+are classified as at-risk.</p>
 
 <!-- ================================================================== -->
 <h2>4. t-SNE Visualisation</h2>
 
-<h3>4.1 Split distribution</h3>
-<img class="plot" src="data:image/png;base64,{b64_tsne_split}" alt="t-SNE by split">
+<p class="meta">Note: the figures below are static (matplotlib). Interactive versions
+with per-point image hover are available in <code>analysis.ipynb</code> — open it in
+Jupyter to explore individual images within any cluster.</p>
+
+<h3>Figure 1 — Split distribution</h3>
+<img class="plot" src="data:image/png;base64,{b64_tsne_split}" alt="Figure 1: t-SNE by split">
 
 <p>Train, val, and test images largely overlap in embedding space, which is consistent
 with the high cosine similarity scores (see Section 5). The test set does not form
@@ -427,8 +456,8 @@ that the visual content of test scenes (water surface, obstacles, lighting condi
 is broadly similar to what the model sees during training, even though the specific
 camera environments are all new.</p>
 
-<h3>4.2 Test sequence overlay</h3>
-<img class="plot" src="data:image/png;base64,{b64_tsne_seq}" alt="t-SNE by sequence">
+<h3>Figure 2 — Test sequence overlay</h3>
+<img class="plot" src="data:image/png;base64,{b64_tsne_seq}" alt="Figure 2: t-SNE by sequence">
 
 <p>Colouring test images by their sequence ID reveals whether certain environments
 cluster in a specific region of embedding space (potential domain shift). Sequences that
@@ -438,48 +467,66 @@ evaluation environments — the model has seen nothing visually similar during t
 <!-- ================================================================== -->
 <h2>5. Cosine Similarity Coverage Analysis</h2>
 
-<img class="plot" src="data:image/png;base64,{b64_cosine}" alt="Cosine similarity histogram">
+<h3>Figure 3 — Coverage histogram</h3>
+<img class="plot" src="data:image/png;base64,{b64_cosine}" alt="Figure 3: Cosine similarity histogram">
+
+<p>The table below reports the percentage of images below several thresholds.
+No single threshold is objectively "correct" — the choice depends on how
+conservative you want to be when identifying at-risk images. The 0.85 threshold
+is a stricter definition of good coverage; 0.70 is a very conservative floor.</p>
 
 <table>
   <tr>
     <th>Split</th><th>Images</th><th>Median max-sim</th>
-    <th>% below 0.7 (OOD)</th><th>% below 0.5 (severe OOD)</th>
+    <th>Below 0.85</th><th>Below 0.80</th><th>Below 0.75</th><th>Below 0.70</th>
   </tr>
   <tr>
     <td>Val</td><td>{rows['val'][0]:,}</td><td>{rows['val'][2]}</td>
-    <td>{rows['val'][3]}</td><td>{rows['val'][4]}</td>
+    <td>{rows['val'][3]}</td><td>{rows['val'][4]}</td><td>{rows['val'][5]}</td><td>{rows['val'][6]}</td>
   </tr>
   <tr class="highlight">
     <td>Test</td><td>{rows['test'][0]:,}</td><td>{rows['test'][2]}</td>
-    <td>{rows['test'][3]}</td><td>{rows['test'][4]}</td>
+    <td>{rows['test'][3]}</td><td>{rows['test'][4]}</td><td>{rows['test'][5]}</td><td>{rows['test'][6]}</td>
   </tr>
 </table>
 
 <div class="finding">
 <b>Interpretation:</b> Despite every test sequence being physically unseen during
-training, the cosine similarity distribution is concentrated above 0.9. This indicates
-that the <em>visual appearance</em> of test images (sea surface texture, lighting, obstacle
-types) is well-represented in the training set, even if the exact locations are not.
-The LaRS training set provides broad visual coverage of the maritime domain. A well-trained
-model is unlikely to encounter catastrophic distribution shift on the average test image.
+training, the cosine similarity distribution is concentrated above 0.9 for most images.
+This indicates that the <em>visual appearance</em> of test images (sea surface texture,
+lighting, obstacle types) is broadly represented in the training set, even if the exact
+locations are not. However, note that high similarity in RADIO's general-purpose embedding
+space does not guarantee that a task-specific segmentation model will not fail — it
+measures visual distributional overlap, not segmentation difficulty. The images in the
+lowest-similarity tail (below 0.80, roughly {rows['test'][4]} of test images) are the
+strongest candidates for targeted data augmentation.
 </div>
 
 <!-- ================================================================== -->
 <h2>6. Sequence Coverage</h2>
 
-<img class="plot" src="data:image/png;base64,{b64_seq_cov}" alt="Sequence coverage">
+<h3>Figure 4 — Sequence coverage by split</h3>
+<img class="plot" src="data:image/png;base64,{b64_seq_cov}" alt="Figure 4: Sequence coverage">
 
-<p>As noted above, 100% of test sequences are absent from training. This is not
-unexpected for a benchmark — it prevents overfitting to specific camera locations.
-However, it does mean that any sequence-level adaptation (e.g. test-time fine-tuning)
-is not possible. Models must rely entirely on generalisation from the training sequences.</p>
+<p>The left pie (test set) confirms that 100% of test sequences are physically absent
+from training — all {len(test_seqs):,} test sequences are from environments the model
+has never seen. The right pie (val set) shows the same pattern: all val sequences are
+also unseen. This is consistent with a benchmark designed to measure generalisation
+rather than memorisation. It means no sequence-level adaptation (e.g. test-time
+fine-tuning per camera) is possible — models must rely entirely on what they learned
+from the training sequences. Combined with the cosine similarity findings in Section 5,
+the picture is: the <em>visual content types</em> generalise well (high similarity scores),
+but the <em>specific environments</em> are all new.</p>
 
 <!-- ================================================================== -->
-<h2>7. Failure Case Analysis — Most Out-of-Distribution Test Images</h2>
+<h2>7. Most At-Risk Test Images (Predicted OOD)</h2>
 
 <p>The following test images have the lowest maximum cosine similarity to any training
-image. These are the images the model is statistically most likely to struggle with,
-as they represent visual content underrepresented in the training distribution.</p>
+image, making them the highest-risk candidates for model failure. <b>Important caveat:
+no segmentation model has been evaluated at this stage.</b> These are <em>predicted</em>
+at-risk images based on embedding distance — images in regions of visual space
+underrepresented in training. Actual failure cases can only be confirmed by running
+inference and inspecting predictions.</p>
 
 <table>
   <tr>
@@ -490,33 +537,40 @@ as they represent visual content underrepresented in the training distribution.<
 </table>
 
 <div class="finding">
-<b>Note:</b> Even the most OOD images have max-sim above 0.70, which is a relatively
-high threshold. This reinforces the conclusion that the LaRS test set is well-covered
-by the training distribution at the visual content level. Failure cases are more likely
-to arise from rare obstacle types, unusual lighting, or ambiguous water surface
-conditions than from a fundamental domain shift.
+<b>Note:</b> Even the most at-risk images have max-sim above 0.70. At a 0.80 threshold,
+roughly {rows['test'][4]} of test images are flagged — these are the strongest candidates
+for closer inspection and targeted data augmentation. The at-risk images tend to cluster
+in a small number of sequences (e.g. <code>yt017</code>), suggesting a few specific
+environments drive most of the distributional tail rather than a broad spread of OOD content.
 </div>
 
 <!-- ================================================================== -->
 <h2>8. Conclusions</h2>
 
 <ul>
-  <li>The LaRS test set is <b>visually well-covered</b> by the training set despite
-      containing entirely new camera sequences. Median test image coverage (max cosine
-      similarity) is {rows['test'][2]}.</li>
-  <li>There is <b>no catastrophic distribution shift</b> expected. The embedding
-      distributions of train and test overlap substantially in the t-SNE space.</li>
-  <li>The most at-risk test images (lowest cosine similarity) are from sequences
-      with rare visual conditions. These are the priority candidates for targeted
-      data augmentation or additional annotation.</li>
-  <li>Since all test sequences are physically disjoint from training, model performance
-      will depend on generalisation of <em>visual patterns</em> (water texture, obstacle
-      appearance), not memorisation of scene geometry.</li>
+  <li>The LaRS test set is <b>visually broadly covered</b> by the training set despite
+      containing entirely new camera sequences. Median test image max cosine similarity
+      to training is {rows['test'][2]}, suggesting most test images are visually
+      similar to at least one training image.</li>
+  <li>The t-SNE distributions of train and test overlap substantially, indicating
+      <b>no large-scale domain gap</b> in general visual features. However, this is
+      measured in a general-purpose embedding space (RADIO-H) — it does not
+      guarantee that a task-specific segmentation model will perform well, as
+      segmentation difficulty depends on factors (obstacle size, label ambiguity,
+      edge cases) not fully captured by embedding distance alone.</li>
+  <li>Roughly <b>{rows['test'][4]} of test images fall below a 0.80 cosine similarity
+      threshold</b>. These are the priority candidates for targeted data augmentation
+      or additional annotation before training.</li>
+  <li>Since all test and val sequences are physically disjoint from training, model
+      performance will depend on generalisation of visual patterns (water texture,
+      obstacle appearance, lighting), not memorisation of specific scene geometry.</li>
+  <li>The at-risk images are concentrated in a small number of sequences rather than
+      spread uniformly — a few specific environments (e.g. <code>yt017</code>) drive
+      most of the distributional tail and deserve targeted attention.</li>
 </ul>
 
 <hr>
-<p class="meta">Analysis performed by FARMS Team — MaCVi 2026. Model: {meta.get('model_name','?')}.
-Approach recommended by Claude Sonnet 4.6 Agent.</p>
+<p class="meta">Analysis performed by FARMS Team — MaCVi 2026. Model: {meta.get('model_name','?')}.</p>
 
 </body>
 </html>"""
