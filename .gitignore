@@ -57,5 +57,11 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
+# Analysis intermediate artifacts
+challenges/common/lars-analysis/report.html
+
+# Explicitly track the lars analysis log despite *.log rule
+!challenges/common/lars-analysis/logs/analysis.log
+
 # Claude Code local settings (credentials mounted, not committed)
 .claude/settings.local.json
