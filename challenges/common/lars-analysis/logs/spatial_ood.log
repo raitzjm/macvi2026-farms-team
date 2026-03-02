@@ -610,3 +610,142 @@ nbclient.exceptions.DeadKernelError: Kernel died
 2026-03-02 23:02:45,572 INFO Generating spatial OOD PDF report...
 2026-03-02 23:02:52,651 INFO Report: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_report.pdf
 2026-03-02 23:02:52,652 INFO === spatial_ood.ipynb execution complete ===
+2026-03-02 23:35:10,905 INFO PyTorch 2.5.1+cu121  CUDA=True
+2026-03-02 23:35:10,936 INFO   GPU 0: NVIDIA RTX A6000  47.4 GB
+2026-03-02 23:35:10,938 INFO Device: cuda
+2026-03-02 23:35:10,940 INFO FAISS GPU: False  (num_gpus=0)
+2026-03-02 23:35:10,965 INFO Total patches in memmap: 14084920 (72.1 GB)
+2026-03-02 23:35:10,967 INFO faiss_index.bin exists — loading to verify.
+2026-03-02 23:35:21,899 INFO Index has 1408492 vectors — skipping rebuild.
+2026-03-02 23:35:22,796 INFO Training patch index ready.  Subsampled vectors in index: 1-in-10 of 14084920
+2026-03-02 23:35:22,834 INFO Existing heatmaps: 1400 / 1401
+2026-03-02 23:35:22,836 INFO === Phase 2: Computing spatial OOD heatmaps (GPU matmul) ===
+2026-03-02 23:35:22,844 INFO Reading 1408492 subsampled training vectors from memmap...
+2026-03-02 23:38:16,384 INFO Subsample loaded in 173.5s
+2026-03-02 23:38:16,389 INFO Moving training vectors to GPU (float16)...
+2026-03-02 23:38:18,170 INFO Training vectors on GPU: shape=[1408492, 1280]  VRAM=3.6 GB
+2026-03-02 23:38:18,172 INFO Loading RADIO-H...
+2026-03-02 23:38:20,964 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 23:38:20,972 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/config.json "HTTP/1.1 200 OK"
+2026-03-02 23:38:21,083 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 23:38:21,084 WARNING Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-03-02 23:38:21,090 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 23:38:22,968 INFO HTTP Request: HEAD https://huggingface.co/nvidia/C-RADIOv3-H/resolve/main/hf_model.py "HTTP/1.1 307 Temporary Redirect"
+2026-03-02 23:38:22,974 INFO HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/nvidia/C-RADIOv3-H/d7fd0e2b0a1761f1af150582e06c41e9a99b0bf8/hf_model.py "HTTP/1.1 200 OK"
+2026-03-02 23:38:22,989 WARNING No pretrained configuration specified for vit_huge_patch16_224 model. Using a default. Please add a config to the model pretrained_cfg registry or pass explicitly.
+2026-03-02 23:38:26,205 INFO Model loaded.
+2026-03-02 23:38:26,208 INFO Pending: 1 images
+2026-03-02 23:38:27,528 WARNING OOM inhouse_seq_110_00149 (15960 patches) -- retrying with 512-row chunks
+2026-03-02 23:38:28,337 INFO Chunked fallback complete for inhouse_seq_110_00149
+2026-03-02 23:38:28,344 INFO === Phase 2 complete: 3.1 min ===
+2026-03-02 23:38:28,350 INFO Total heatmap files: 1401
+2026-03-02 23:38:29,058 INFO Heatmap stats: 1401 images
+2026-03-02 23:38:29,069 INFO TEST: N=1203  patch_sim_median=0.8079  whole_sim_median=0.9108  pct<0.8_median=40.2%
+2026-03-02 23:38:29,072 INFO VAL: N=198  patch_sim_median=0.8083  whole_sim_median=0.9206  pct<0.8_median=40.7%
+2026-03-02 23:38:30,749 INFO Spearman rho (whole vs patch, test): 0.8555  p=0.00e+00
+2026-03-02 23:38:30,773 INFO Top-20 most OOD test images:
+2026-03-02 23:38:30,775 INFO   orca_usv_inland_N03_2_01837  patch_sim=0.6039  whole_sim=0.7821
+2026-03-02 23:38:30,776 INFO   yt017_00_00269  patch_sim=0.6342  whole_sim=0.7325
+2026-03-02 23:38:30,777 INFO   inhouse_seq_111_00642  patch_sim=0.6477  whole_sim=0.7099
+2026-03-02 23:38:30,778 INFO   yt017_00_00154  patch_sim=0.6522  whole_sim=0.7202
+2026-03-02 23:38:30,779 INFO   orca_usv_inland_H05_9_00156  patch_sim=0.6533  whole_sim=0.8221
+2026-03-02 23:38:30,780 INFO   orca_usv_inland_H05_9_00170  patch_sim=0.6548  whole_sim=0.8329
+2026-03-02 23:38:30,781 INFO   mit_seq_28_00369  patch_sim=0.6572  whole_sim=0.7382
+2026-03-02 23:38:30,782 INFO   yt026_07_00049  patch_sim=0.6589  whole_sim=0.8165
+2026-03-02 23:38:30,783 INFO   yt050_01_00020  patch_sim=0.6593  whole_sim=0.7777
+2026-03-02 23:38:30,784 INFO   yt007_03_00079  patch_sim=0.6607  whole_sim=0.7414
+2026-03-02 23:38:30,785 INFO   yt049_02_00180  patch_sim=0.6634  whole_sim=0.7168
+2026-03-02 23:38:30,786 INFO   yt049_02_00080  patch_sim=0.6642  whole_sim=0.7233
+2026-03-02 23:38:30,787 INFO   orca_usv_inland_H05_9_00200  patch_sim=0.6669  whole_sim=0.8469
+2026-03-02 23:38:30,788 INFO   yt017_00_00049  patch_sim=0.6670  whole_sim=0.7040
+2026-03-02 23:38:30,789 INFO   yt050_01_00080  patch_sim=0.6699  whole_sim=0.7862
+2026-03-02 23:38:30,790 INFO   yt049_01_00080  patch_sim=0.6717  whole_sim=0.7166
+2026-03-02 23:38:30,791 INFO   yt017_01_00339  patch_sim=0.6744  whole_sim=0.7277
+2026-03-02 23:38:30,792 INFO   yt017_01_00479  patch_sim=0.6759  whole_sim=0.7293
+2026-03-02 23:38:30,793 INFO   inhouse_seq_111_01550  patch_sim=0.6770  whole_sim=0.7060
+2026-03-02 23:38:30,799 INFO   yt007_03_00800  patch_sim=0.6779  whole_sim=0.7568
+2026-03-02 23:38:46,900 INFO Individual overlay figures saved.
+2026-03-02 23:38:51,969 INFO Summary grid: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top20_ood_grid.png
+2026-03-02 23:38:52,024 INFO Common grid: 68x120
+2026-03-02 23:38:52,339 INFO Aggregated 1203 images
+2026-03-02 23:38:52,560 INFO Aggregate figure: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/aggregate_heatmap.png
+2026-03-02 23:38:52,561 INFO Most OOD row 16/68 (0.7871)  col 119/120 (0.7627)
+2026-03-02 23:38:52,583 INFO Top-5 OOD sequences: ['yt026_07', 'yt017_00', 'yt049_02', 'yt007_03', 'yt050_01']
+2026-03-02 23:38:53,053 INFO Seq heatmaps: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top5_seq_heatmaps.png
+2026-03-02 23:38:53,064 INFO Generating spatial OOD PDF report...
+2026-03-02 23:38:59,854 INFO Report: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_report.pdf
+2026-03-02 23:38:59,855 INFO === spatial_ood.ipynb execution complete ===
+[NbConvertApp] Converting notebook spatial_ood/spatial_ood.ipynb to notebook
+[NbConvertApp] Writing 246493 bytes to spatial_ood/spatial_ood/spatial_ood.ipynb
+Traceback (most recent call last):
+  File "/home/farms/miniforge3/envs/lars-analysis/bin/jupyter-nbconvert", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/jupyter_core/application.py", line 284, in launch_instance
+    super().launch_instance(argv=argv, **kwargs)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/traitlets/config/application.py", line 1075, in launch_instance
+    app.start()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 420, in start
+    self.convert_notebooks()
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 597, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 566, in convert_single_notebook
+    write_results = self.write_single_notebook(output, resources)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/nbconvertapp.py", line 526, in write_single_notebook
+    return self.writer.write(output, resources, notebook_name=notebook_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/farms/miniforge3/envs/lars-analysis/lib/python3.11/site-packages/nbconvert/writers/files.py", line 152, in write
+    with open(dest_path, "w", encoding="utf-8") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'spatial_ood/spatial_ood/spatial_ood.ipynb'
+ERROR conda.cli.main_run:execute(142): `conda run jupyter nbconvert --to notebook --execute --ExecutePreprocessor.kernel_name=lars-analysis --ExecutePreprocessor.timeout=1800 --output spatial_ood/spatial_ood.ipynb spatial_ood/spatial_ood.ipynb` failed. (See above for error)
+2026-03-02 23:39:18,196 INFO PyTorch 2.5.1+cu121  CUDA=True
+2026-03-02 23:39:18,219 INFO   GPU 0: NVIDIA RTX A6000  47.4 GB
+2026-03-02 23:39:18,220 INFO Device: cuda
+2026-03-02 23:39:18,221 INFO FAISS GPU: False  (num_gpus=0)
+2026-03-02 23:39:18,238 INFO Total patches in memmap: 14084920 (72.1 GB)
+2026-03-02 23:39:18,241 INFO faiss_index.bin exists — loading to verify.
+2026-03-02 23:39:26,849 INFO Index has 1408492 vectors — skipping rebuild.
+2026-03-02 23:39:27,536 INFO Training patch index ready.  Subsampled vectors in index: 1-in-10 of 14084920
+2026-03-02 23:39:27,583 INFO Existing heatmaps: 1401 / 1401
+2026-03-02 23:39:27,585 INFO Heatmaps complete — skipping Phase 2.
+2026-03-02 23:39:27,591 INFO Total heatmap files: 1401
+2026-03-02 23:39:28,040 INFO Heatmap stats: 1401 images
+2026-03-02 23:39:28,046 INFO TEST: N=1203  patch_sim_median=0.8079  whole_sim_median=0.9108  pct<0.8_median=40.2%
+2026-03-02 23:39:28,049 INFO VAL: N=198  patch_sim_median=0.8083  whole_sim_median=0.9206  pct<0.8_median=40.7%
+2026-03-02 23:39:30,612 INFO Spearman rho (whole vs patch, test): 0.8555  p=0.00e+00
+2026-03-02 23:39:30,634 INFO Top-20 most OOD test images:
+2026-03-02 23:39:30,635 INFO   orca_usv_inland_N03_2_01837  patch_sim=0.6039  whole_sim=0.7821
+2026-03-02 23:39:30,636 INFO   yt017_00_00269  patch_sim=0.6342  whole_sim=0.7325
+2026-03-02 23:39:30,636 INFO   inhouse_seq_111_00642  patch_sim=0.6477  whole_sim=0.7099
+2026-03-02 23:39:30,637 INFO   yt017_00_00154  patch_sim=0.6522  whole_sim=0.7202
+2026-03-02 23:39:30,638 INFO   orca_usv_inland_H05_9_00156  patch_sim=0.6533  whole_sim=0.8221
+2026-03-02 23:39:30,639 INFO   orca_usv_inland_H05_9_00170  patch_sim=0.6548  whole_sim=0.8329
+2026-03-02 23:39:30,640 INFO   mit_seq_28_00369  patch_sim=0.6572  whole_sim=0.7382
+2026-03-02 23:39:30,641 INFO   yt026_07_00049  patch_sim=0.6589  whole_sim=0.8165
+2026-03-02 23:39:30,641 INFO   yt050_01_00020  patch_sim=0.6593  whole_sim=0.7777
+2026-03-02 23:39:30,642 INFO   yt007_03_00079  patch_sim=0.6607  whole_sim=0.7414
+2026-03-02 23:39:30,642 INFO   yt049_02_00180  patch_sim=0.6634  whole_sim=0.7168
+2026-03-02 23:39:30,643 INFO   yt049_02_00080  patch_sim=0.6642  whole_sim=0.7233
+2026-03-02 23:39:30,644 INFO   orca_usv_inland_H05_9_00200  patch_sim=0.6669  whole_sim=0.8469
+2026-03-02 23:39:30,645 INFO   yt017_00_00049  patch_sim=0.6670  whole_sim=0.7040
+2026-03-02 23:39:30,645 INFO   yt050_01_00080  patch_sim=0.6699  whole_sim=0.7862
+2026-03-02 23:39:30,646 INFO   yt049_01_00080  patch_sim=0.6717  whole_sim=0.7166
+2026-03-02 23:39:30,646 INFO   yt017_01_00339  patch_sim=0.6744  whole_sim=0.7277
+2026-03-02 23:39:30,647 INFO   yt017_01_00479  patch_sim=0.6759  whole_sim=0.7293
+2026-03-02 23:39:30,648 INFO   inhouse_seq_111_01550  patch_sim=0.6770  whole_sim=0.7060
+2026-03-02 23:39:30,648 INFO   yt007_03_00800  patch_sim=0.6779  whole_sim=0.7568
+2026-03-02 23:39:46,702 INFO Individual overlay figures saved.
+2026-03-02 23:39:51,917 INFO Summary grid: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top20_ood_grid.png
+2026-03-02 23:39:51,973 INFO Common grid: 68x120
+2026-03-02 23:39:52,287 INFO Aggregated 1203 images
+2026-03-02 23:39:52,511 INFO Aggregate figure: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/aggregate_heatmap.png
+2026-03-02 23:39:52,514 INFO Most OOD row 16/68 (0.7871)  col 119/120 (0.7627)
+2026-03-02 23:39:52,534 INFO Top-5 OOD sequences: ['yt026_07', 'yt017_00', 'yt049_02', 'yt007_03', 'yt050_01']
+2026-03-02 23:39:53,008 INFO Seq heatmaps: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/figures/top5_seq_heatmaps.png
+2026-03-02 23:39:53,023 INFO Generating spatial OOD PDF report...
+2026-03-02 23:39:59,744 INFO Report: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/spatial_ood/spatial_report.pdf
+2026-03-02 23:39:59,746 INFO === spatial_ood.ipynb execution complete ===
+[NbConvertApp] Converting notebook spatial_ood/spatial_ood.ipynb to notebook
+[NbConvertApp] Writing 206756 bytes to spatial_ood/spatial_ood.ipynb

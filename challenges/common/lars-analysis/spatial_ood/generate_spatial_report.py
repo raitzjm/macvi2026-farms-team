@@ -374,9 +374,11 @@ in a region of embedding space with sparse training coverage.</p>
   <tr><td>Test</td><td>{st[0]}</td><td>{st[1]}</td><td>{st[2]}</td><td>{st[3]}</td></tr>
 </table>
 
-<div class="warning"><b>Coverage note:</b> 1 test image (<code>inhouse_seq_110_00149</code>)
-was skipped during Phase 2 due to a CUDA out-of-memory error (unusually high patch
-count). Its heatmap is absent from all statistics and figures below.</div>
+<div class="finding"><b>Coverage note:</b> 1 test image (<code>inhouse_seq_110_00149</code>)
+initially raised a CUDA out-of-memory error during Phase 2 (15,960 patches;
+single-shot matmul would require ~45 GB). It was retried automatically using a
+512-row chunked matmul fallback and completed successfully. All 1,401 test/val
+heatmaps are included in the statistics below.</div>
 
 <h3>3.2 Distribution of spatial OOD scores</h3>
 <img class="plot" src="data:image/png;base64,{b64_hist}" alt="Figure 1: Histogram">
