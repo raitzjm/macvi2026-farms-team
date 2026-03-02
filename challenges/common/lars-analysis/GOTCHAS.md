@@ -4,6 +4,24 @@ A running record of failures, unexpected blockers, and methodology changes made
 in response to something encountered during the analysis. For package installs
 and environment steps, see `setup.md`.
 
+## Tracking provenance
+
+This file was created retroactively on 2026-03-02 after the analysis was mostly
+complete (commit `b9568b5`). Not everything was tracked in real-time:
+
+- **Items 1–2** (SyntaxError, missing RADIO-H packages) occurred during the
+  initial analysis run on 2026-03-02 ~00:29–00:30 UTC (commits `434352a`,
+  `d4ec140`). They were reconstructed from git history and session notes — no
+  live log existed at that point. `analysis.log` only captures two lines of
+  `nbconvert` output and does not record cell-level progress.
+
+- **Items 3–5** occurred during and after the spatial OOD phase
+  (2026-03-02 ~21:30 UTC onwards) and are covered in real-time in
+  `logs/spatial_ood.log`, which was set up with a `FileHandler` from the start
+  of `spatial_ood.ipynb`.
+
+---
+
 ---
 
 ## 1. Notebook SyntaxError from f-string line splitting (nbformat)
