@@ -40,6 +40,10 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
   - Load via `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
     or inline: `export WANDB_API_KEY=$(tr -d '[:space:]' < ~/data/wandb_key.txt)`
 - **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
+- **Run naming**: `{phase}_{model_name}` — e.g. `phase1_stdc2`, `phase2_segformer_mit-b2`
+- **Failed runs**: if a training run fails and must be restarted, **delete the failed run
+  from WandB first** (`gh` or the WandB UI) before relaunching, so the project stays clean.
+  Use `wandb run delete <run-id>` or delete via the WandB web UI under the project page.
 - **WANDB_DIR env var**: MUST be set to a directory that is NOT on `PYTHONPATH`
   (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
   cache directory instead of the wandb package — silently breaking all imports. The run
