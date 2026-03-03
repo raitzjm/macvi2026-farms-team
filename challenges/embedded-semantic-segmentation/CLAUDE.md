@@ -103,6 +103,23 @@ Phases can be modified, reordered, added, or skipped as the project evolves.
 - Opset version: 13 (server uses SNPE which requires opset 13)
 - See fun_experiments/{model}/export_onnx.py for reference implementations
 
+## Phase 1 Artifact Archival
+
+After each Phase 1 training run, follow this workflow before archiving:
+
+1. **Export ONNX** from the best checkpoint (.pth) using the same export script pattern
+   as `fun_experiments/{model}/export_onnx.py` (argmax output, opset 13).
+2. **Validate ONNX precision**: run `fun_experiments/scripts/eval_pytorch_val.py` and
+   `fun_experiments/scripts/eval_onnx_val.py` on the val set, compare mIoU.
+   Fun experiments showed a delta of <0.2% mIoU — that is acceptable.
+   A delta >0.5% mIoU is considered significant and warrants investigation.
+3. **Commit artifacts** to `phase1/{model_name}/`:
+   - Always commit: ONNX (via Git LFS), train.log, config.py, a brief report.md
+     (training summary + pth vs onnx mIoU delta)
+   - Only commit .pth (via Git LFS) if the pth→ONNX precision loss is significant (>0.5% mIoU)
+4. **INT8 quantization evaluation is deferred to Phase 2** — Phase 1 models will be
+   retrained anyway, so quantization testing here is not worth the effort.
+
 ## Current Status
 Fun experiments complete (branch fun/experiments). Results archived in fun_experiments/.
 Next milestone: Phase 1 short validation runs with corrected preprocessing.
