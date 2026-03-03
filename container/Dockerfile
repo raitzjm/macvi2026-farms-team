@@ -158,6 +158,68 @@ RUN rm -rf /tmp/mmseg-macvi/*.egg-info && \
 ENV PATH="/home/farms/miniforge3/envs/macvi/bin:$PATH"
 
 # =============================================================================
+# macvi2 env: mmsegmentation 1.2.2 (stock) + mmcv 2.1.0 (Phase 2+)
+#
+# Stock mmseg 1.2.2 includes all needed models as built-ins (no fork needed).
+# mmcv 2.1.0 has a prebuilt cu121+torch2.1 wheel — no source build.
+# DDP path uses mmengine runner; no distributed.py patch needed.
+# No setuptools<70 needed (mmcv 2.x wheel built differently).
+# numpy<2 still needed: mmcv 2.1.0 compiled against NumPy 1.x ABI.
+# opencv-python<4.11 still needed: 4.11+ requires numpy>=2.
+# ftfy + regex: required by mmseg.utils.tokenizer (BEiT/CLIP code path).
+# wandb 0.25.0: same version as macvi; same validation.py patch for wandb_ key format.
+# onnx + onnxruntime: same versions as macvi; required for export_and_eval.py.
+# =============================================================================
+
+# --- macvi2 conda env ---
+RUN /home/farms/miniforge3/bin/conda create -n macvi2 python=3.11 -y
+
+# --- PyTorch 2.1.2 + CUDA 12.1 ---
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
+        torch==2.1.2 torchvision==0.16.2 \
+        --index-url https://download.pytorch.org/whl/cu121
+
+# --- mmcv 2.1.0 (prebuilt wheel, no source build) ---
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
+        mmcv==2.1.0 \
+        -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
+
+# --- mmsegmentation 1.2.2 ---
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install mmsegmentation==1.2.2
+
+# --- Compatibility pins + missing mmseg 1.2.2 deps ---
+# numpy<2: mmcv 2.1.0 compiled against NumPy 1.x ABI.
+# opencv-python<4.11: 4.11+ requires numpy>=2 (conflicts with above pin).
+# ftfy, regex: required by mmseg.utils.tokenizer (imported at package init).
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
+        "numpy<2" "opencv-python<4.11" ftfy regex
+
+# --- WandB + ONNX tools ---
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
+        wandb==0.25.0 onnx==1.20.1 onnxruntime==1.24.2
+
+# --- wandb validation.py patch ---
+# wandb 0.25.0 rejects keys starting with "wandb_" (new key format) because
+# the 40-char minimum check fires after stripping the "wandb_" prefix.
+# Insert an early-return for the wandb_ prefix before the length check.
+RUN python3 - << 'PYEOF'
+import pathlib
+p = pathlib.Path(
+    '/home/farms/miniforge3/envs/macvi2/lib/python3.11'
+    '/site-packages/wandb/sdk/lib/wbauth/validation.py')
+src = p.read_text()
+needle = '    # On-prem API keys have a variable-length prefix'
+insert = (
+    '    # New wandb_ key format (36+ chars) -- accept as-is.\n'
+    '    if key.startswith("wandb_"):\n'
+    '        return None\n\n'
+)
+assert needle in src, f'patch anchor not found in {p}'
+p.write_text(src.replace(needle, insert + needle))
+print('validation.py patched OK')
+PYEOF
+
+# =============================================================================
 # END ML DEPENDENCY STACK
 # =============================================================================
 
