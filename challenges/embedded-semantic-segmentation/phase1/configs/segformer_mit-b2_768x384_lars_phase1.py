@@ -13,11 +13,12 @@ Preprocessing fixes vs original segformer lars config (mandatory — matches cha
 Batch size / LR (AdamW — keep LR fixed regardless of batch size):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   AdamW, lr=0.00006, bs=4  (segformer_mit-b0_8x1_1024x1024_160k_lars.py per-GPU)
-  Per-GPU:     samples_per_gpu=45  (OOM boundary at 768×384; OOM at bs=46)
-  Effective:   total_bs=90 (45 × 2 GPUs)
+  Per-GPU:     samples_per_gpu=36  (pre-emptively reduced ~20% from fwd+bwd boundary of bs=45;
+               all 3 prior models needed 10-25% reduction at full training step — see issue #9)
+  Effective:   total_bs=72 (36 × 2 GPUs)
   LR:          0.00006 (fixed — AdamW does not use linear scaling)
   Norm: LayerNorm — SyncBN not applicable
-  Pinned for Phase 2 consistency: samples_per_gpu=45, num_gpus=2, lr=0.00006
+  Pinned for Phase 2 consistency: samples_per_gpu=36, num_gpus=2, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -115,9 +116,10 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=45 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=46)
+    # bs=36 (pre-emptively reduced ~20% from fwd+bwd OOM boundary of bs=45;
+    # full training step consistently needs 10-25% more than fwd+bwd — see issue #9)
     # Pinned for Phase 2 — do not re-calibrate.
-    samples_per_gpu=45,
+    samples_per_gpu=36,
     workers_per_gpu=4,
     pin_memory=False,
     train=dict(

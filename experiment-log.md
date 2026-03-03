@@ -46,8 +46,22 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **LR scaling:** linear (ref bs=4, ref lr=0.05 → scaled lr=0.05×256/4=3.2)
 - **Norm:** SyncBN (DDP, already set)
 - **Started:** 2026-03-03 10:12 UTC (restarted after OOM fix)
-- **Status:** RUNNING
-- **Results:** TBD after completion
+- **Finished:** 2026-03-03 11:14 UTC (~1h02m)
+- **Status:** COMPLETED ✓
+- **Best checkpoint:** `best_mIoU_iter_1500.pth` (still climbing at end)
+- **Val mIoU progression:**
+
+| Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
+|------|-------|-------|-------------|-----------|---------|
+| 250  | 48.28 | 71.92 | 14.86       | 76.51     | 53.48   |
+| 500  | 67.93 | 83.15 | 49.55       | 83.84     | 70.42   |
+| 750  | 37.25 | 63.52 | 0.12        | 61.33     | 50.29   |
+| 1000 | 57.24 | 76.56 | 52.12       | 70.60     | 49.00   |
+| 1250 | 86.03 | 93.20 | 75.89       | 91.45     | 90.77   |
+| 1500 | **92.55** | 96.46 | **86.41** | **94.88** | **96.38** |
+
+Note: Near-catastrophic obstacle collapse at iter 750 (IoU=0.12%) due to large SGD LR=3.2 causing
+instability; full recovery by iter 1000. Model still climbing at iter 1500 — would benefit from more iters.
 
 ### EXP-003 — SegNeXt-T
 
@@ -56,8 +70,8 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Optimizer:** AdamW, lr=6e-5 (fixed — no linear scaling for AdamW)
 - **Batch size:** samples_per_gpu=75 × 2 GPUs = 150 total
 - **Norm:** LayerNorm (unaffected by DDP)
-- **Started:** after EXP-002 completes
-- **Status:** PENDING
+- **Started:** 2026-03-03 11:15 UTC
+- **Status:** RUNNING
 - **Results:** TBD after completion
 
 ### EXP-004 — SegFormer MiT-B2
