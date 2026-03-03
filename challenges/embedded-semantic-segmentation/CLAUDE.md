@@ -44,6 +44,31 @@ All three points must be matched in training pipelines. The fun experiments got 
   (`padding_mode='reflect'` is mirror padding; default `pad_val=0` is wrong)
 - Centering is handled automatically by mmseg when keep_ratio=True + Pad are combined
 
+## Config Philosophy (applies to all phases)
+
+Architecture-specific settings — optimizer type, base LR, loss functions, head config,
+auxiliary heads — are left **untouched** per model (inherited from the upstream LaRS or
+ADE20K reference config). These are tuned for each architecture and must not be
+homogenised across models.
+
+Shared settings — resolution, preprocessing pipeline, schedule length, eval frequency,
+dataset paths — are **standardised** across all models in each phase.
+
+**Runner type**: all mmseg-macvi LaRS configs use `IterBasedRunner` (iter-based, not
+epoch-based). This applies to all 4 Phase 1 models.
+
+**LR scaling when changing batch size**:
+- SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
+  `new_lr = base_lr × (new_bs / reference_bs)`.
+  Reference is the upstream LaRS `samples_per_gpu` value for that model.
+- AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
+  AdamW adapts per-parameter; the standard practice is not to scale.
+
+**Batch size pinning**: batch size must be chosen explicitly and held constant between
+Phase 1 and Phase 2 for the consistency check to be meaningful. Do NOT hardware-maximise
+(`max bs that fits in VRAM`) — pick a fixed value, document it in the config comment,
+and reuse it exactly in Phase 2.
+
 ## Experiment Phases
 Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
           architecture rankings. Models TBD.
