@@ -1,0 +1,33 @@
+2026-03-03 22:17:57,953 INFO === Phase 1 failure analysis — inference start ===
+2026-03-03 22:17:57,953 INFO Models: ['stdc2', 'segnext_t', 'segformer']
+2026-03-03 22:17:57,953 INFO Val images: /home/farms/lars_linked/val/images
+2026-03-03 22:17:57,953 INFO Val masks:  /home/farms/lars_linked/val/semantic_masks
+2026-03-03 22:17:57,953 INFO Output CSV: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/failure_analysis/per_image_metrics.csv
+2026-03-03 22:17:57,953 INFO Loading stdc2 from /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/phase1/stdc2/stdc2_logits.onnx
+2026-03-03 22:17:58,083 INFO   198 images found
+2026-03-03 22:17:58,315 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.971  t=232ms
+2026-03-03 22:18:05,025 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.962  t=89ms
+2026-03-03 22:18:11,006 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.976  t=83ms
+2026-03-03 22:18:15,753 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.976  t=91ms
+2026-03-03 22:18:20,546 INFO   stdc2 done — 198 images in 22.5s (113ms/img)
+2026-03-03 22:18:20,552 INFO Loading segnext_t from /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/phase1/segnext_t/segnext_t_logits.onnx
+2026-03-03 22:18:20,646 INFO   198 images found
+2026-03-03 22:18:20,854 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.972  t=208ms
+2026-03-03 22:18:30,136 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.966  t=161ms
+2026-03-03 22:18:39,009 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.973  t=126ms
+2026-03-03 22:18:46,495 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.967  t=151ms
+2026-03-03 22:18:54,180 INFO   segnext_t done — 198 images in 33.5s (169ms/img)
+2026-03-03 22:18:54,207 INFO Loading segformer from /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/phase1/segformer_mit-b2/segformer_mit-b2_logits.onnx
+2026-03-03 22:18:54,521 INFO   198 images found
+2026-03-03 22:18:54,946 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.977  t=425ms
+2026-03-03 22:19:10,708 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.974  t=289ms
+2026-03-03 22:19:31,059 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.982  t=425ms
+2026-03-03 22:19:54,582 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.979  t=474ms
+2026-03-03 22:20:16,472 INFO   segformer done — 198 images in 82.0s (414ms/img)
+2026-03-03 22:20:16,530 INFO Saved 198 rows to /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/failure_analysis/per_image_metrics.csv
+2026-03-03 22:20:16,530 INFO 
+=== Aggregate mIoU check (should match Phase 1 report) ===
+2026-03-03 22:20:16,530 INFO             stdc2  mean mIoU = 91.82%
+2026-03-03 22:20:16,530 INFO         segnext_t  mean mIoU = 91.77%
+2026-03-03 22:20:16,530 INFO         segformer  mean mIoU = 94.00%
+2026-03-03 22:20:16,530 INFO === Done ===
