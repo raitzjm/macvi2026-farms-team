@@ -11,7 +11,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 **Git commit:** `8ffd3aa`
 **Hardware:** 2× RTX A6000 48 GB, DDP (torchrun --standalone --nproc_per_node=2)
 **Dataset:** LaRS (train: 2607, val: 200) @ 768×384
-**Schedule:** 3000 iters, eval every 500, checkpoint every 1500
+**Schedule:** 1500 iters, eval every 250 (6 points), checkpoint every 750
 **WandB:** little_farms/embedded_segmentation_macvi2026
 
 ### EXP-001 — STDC2
@@ -22,7 +22,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Batch size:** samples_per_gpu=160 × 2 GPUs = 320 total
 - **LR scaling:** linear (ref bs=12, ref lr=0.01 → scaled lr=0.01×320/12=0.267)
 - **Norm:** SyncBN (DDP)
-- **Started:** 2026-03-03 08:22 UTC
+- **Started:** 2026-03-03 08:38 UTC (restarted at 1.5k iters)
 - **Status:** RUNNING
 - **Results:** TBD after completion
 
