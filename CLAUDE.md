@@ -12,6 +12,17 @@ Repo: macvi2026-farms-team
 - NEVER access repositories other than macvi2026-farms-team
 - Before any destructive action (deleting files, force push), ask for confirmation
 
+## Secret Scanning
+A gitleaks pre-commit hook is installed in `.githooks/pre-commit`. Enable it once per clone:
+```
+git config core.hooksPath .githooks
+```
+If the hook blocks a commit:
+1. Remove the secret from the file
+2. Replace it with a placeholder (e.g. `# removed — use $ENV_VAR_NAME instead`)
+3. Notify the user
+4. NEVER use `--no-verify` to bypass this check
+
 ## Logging (CRITICAL)
 - The experiment log (experiment-log.md) is for training experiments ONLY
 - Before starting a training run, append a timestamped entry describing the

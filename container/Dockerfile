@@ -49,6 +49,16 @@ RUN apt-get update && apt-get install -y sudo \
 # Switch to non-root user
 USER  ${USERNAME}
 
+# Install gitleaks for pre-commit secret scanning
+ARG GITLEAKS_VERSION=8.21.2
+RUN curl -fsSL \
+        "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+        -o /tmp/gitleaks.tar.gz && \
+    tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks && \
+    mv /tmp/gitleaks /usr/local/bin/gitleaks && \
+    chmod +x /usr/local/bin/gitleaks && \
+    rm /tmp/gitleaks.tar.gz
+
 #Install Github CLI
 RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
