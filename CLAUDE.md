@@ -4,28 +4,10 @@
 Maritime computer vision challenge. Multiple challenge tracks under challenges/.
 Repo: macvi2026-farms-team
 
-## Architecture
-```
-macvi2026-farms-team/
-├── CLAUDE.md              (this file - global rules)
-├── README.md
-├── container/
-│   ├── Dockerfile
-│   └── scripts/
-│       ├── build.sh       (Docker default; --podman flag for Podman)
-│       └── run.sh         (Docker default; --podman flag for Podman)
-├── challenges/
-│   └── embedded-semantic-segmentation/
-│       ├── CLAUDE.md      (challenge-specific context)
-│       ├── experiment-log.md
-│       ├── mmsegmentation-macvi/  (copied from upstream, tracked directly)
-│       ├── configs/
-│       └── scripts/
-└── docs/
-```
-
 ## Safety Rules
-- NEVER commit dataset files, model weights (.pth, .onnx), or credentials
+- NEVER commit dataset files or credentials
+- NEVER commit model weights (.pth, .onnx) **except** where explicitly documented
+  in a challenge-specific CLAUDE.md (e.g. curated experiment artifacts committed via Git LFS)
 - NEVER modify files under /home/farms/data/ (mounted read-only datasets)
 - NEVER access repositories other than macvi2026-farms-team
 - Before any destructive action (deleting files, force push), ask for confirmation
@@ -73,7 +55,8 @@ When installing new system or Python dependencies:
 
 ## Environment
 - Base image: nvidia/cuda:12.1.1-devel-ubuntu22.04
-- Python: 3.12
+- System Python: Ubuntu 22.04 default (not used for ML work)
+- ML training env: conda env `macvi`, Python 3.11 (see challenge CLAUDE.md for details)
 - Datasets mounted read-only at /home/farms/data/ (pass --data-dir to run.sh)
 - Training outputs go to challenges/{challenge}/outputs/
 - See challenge-specific CLAUDE.md files for task details

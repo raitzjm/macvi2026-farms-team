@@ -21,7 +21,7 @@ macvi2026-farms-team/
 ├── README.md                          # This file
 ├── .gitignore
 ├── container/
-│   ├── Dockerfile                     # CUDA 12.1 + Python 3.12 dev image
+│   ├── Dockerfile                     # CUDA 12.1 base; ML env is conda macvi (Python 3.11)
 │   └── scripts/
 │       ├── build.sh                   # Build the container image
 │       └── run.sh                     # Run the container

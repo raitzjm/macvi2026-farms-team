@@ -59,12 +59,10 @@ epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models
 
 **LR scaling when changing batch size** from the upstream reference:
 - SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
-  `new_lr = base_lr × (new_bs / reference_bs)`.
-  Reference values: STDC2 → bs=12, lr=0.01; BiSeNetV2 → bs=4, lr=0.05.
-  This is necessary when the batch size change is large (e.g. 12→48); skipping it
-  leaves SGD steps too small and makes Phase 1 results artificially weak.
+  `new_lr = base_lr × (new_bs / reference_bs)`. Skipping this for large batch
+  size increases leaves SGD steps too small and weakens results artificially.
 - AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
-  AdamW adapts per-parameter; scaling is not standard practice.
+- Reference values and rationale are documented in issue #9.
 - Document both batch_size and lr in a comment in the config so Phase 2 can replicate
   the exact (bs, lr) pair.
 
@@ -75,23 +73,16 @@ check to remain valid. Do not change it between phases.
 
 ## Experiment Phases
 Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
-          architecture rankings. Models TBD.
+          architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
           so Phase 2 translated configs can be cross-checked for consistency.
+          See issue #9 for full details, batch size reference values, and smoke test workflow.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
           (target: 1.2.2) for consistency. All serious experiments from here onward
-          use this unified stack.
-
-          Consistency check workflow vs Phase 1:
-          1. Smoke test (200–500 iters) at the start of each Phase 2 run — starting
-             loss and early trajectory must match Phase 1 for the same model. A large
-             divergence (e.g. 2× loss difference) means the config translation has a
-             bug; fix before committing to the full run.
-          2. After all Phase 2 models finish, compare val mIoU curves at matching
-             iteration milestones (2k, 4k, 6k, 8k, 10k) against Phase 1 logs.
-             Significant divergence at iter 10k indicates a translation bug.
-          3. Batch size must be the same as Phase 1 — reuse the calibrated value,
-             do not re-calibrate or change it between phases.
+          use this unified stack. New models may be introduced here.
+          Consistency check: smoke test (200–500 iters) at start of each Phase 2 run;
+          compare val mIoU curves at 2k/4k/6k/8k/10k iter milestones against Phase 1 logs.
+          Batch size must match Phase 1 exactly — do not re-calibrate.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
@@ -115,26 +106,15 @@ Pass this as `--work-dir` to the train script. Examples:
 This keeps phases isolated and prevents checkpoint collisions. The `outputs/` tree
 is gitignored — only curated artifacts are committed (see Phase 1 Artifact Archival).
 
-## Phase 1 Artifact Archival
+## Artifact Archival
 
-After each Phase 1 training run, follow this workflow before archiving:
-
-1. **Export ONNX** from the best checkpoint (.pth) using the same export script pattern
-   as `fun_experiments/{model}/export_onnx.py` (argmax output, opset 13).
-2. **Validate ONNX precision**: run `fun_experiments/scripts/eval_pytorch_val.py` and
-   `fun_experiments/scripts/eval_onnx_val.py` on the val set, compare mIoU.
-   Fun experiments showed a delta of <0.2% mIoU — that is acceptable.
-   A delta >0.5% mIoU is considered significant and warrants investigation.
-3. **Commit artifacts** to `phase1/{model_name}/`:
-   - Always commit: ONNX (via Git LFS), train.log, config.py, a brief report.md
-     (training summary + pth vs onnx mIoU delta)
-   - Only commit .pth (via Git LFS) if the pth→ONNX precision loss is significant (>0.5% mIoU)
-4. **INT8 quantization evaluation is deferred to Phase 2** — Phase 1 models will be
-   retrained anyway, so quantization testing here is not worth the effort.
+After each training run completes, use the `/archive-experiment` skill.
+It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
+experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
 
 ## Current Status
-Fun experiments complete (branch fun/experiments). Results archived in fun_experiments/.
-Next milestone: Phase 1 short validation runs with corrected preprocessing.
+Phase 1 planning complete. Next: write Phase 1 configs and run training.
+See issue #9 for Phase 1 task tracking.
 
 ## Published Baselines (from challenge website)
 Three variants per model:
