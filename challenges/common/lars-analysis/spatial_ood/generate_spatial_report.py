@@ -523,6 +523,7 @@ def main():
         from weasyprint import HTML as WP_HTML
         WP_HTML(filename=str(html_path)).write_pdf(str(out_path))
         print(f'  PDF written to {out_path}')
+        html_path.unlink()
     except Exception as e:
         print(f'  weasyprint failed: {e}')
         print(f'  HTML report available at {html_path}')
