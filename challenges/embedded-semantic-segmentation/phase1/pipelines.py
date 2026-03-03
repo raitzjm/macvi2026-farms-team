@@ -18,7 +18,6 @@ Usage in config:
 """
 
 import mmcv
-import numpy as np
 from mmseg.datasets.builder import PIPELINES
 
 
@@ -70,14 +69,19 @@ class ReflectPad:
             seg = results[key]
             h, w = seg.shape[:2]
             target_h, target_w = self.size
+            if h >= target_h and w >= target_w:
+                return
             need_reflect = (target_h - h) < h and (target_w - w) < w
             mode = 'reflect' if need_reflect else 'constant'
+            # mmcv.impad handles 2-D (H, W) and 3-D (H, W, C) masks natively.
+            # Do NOT add a channel dim: impad squeezes C=1 back out, breaking
+            # the shape (observed: (H,W,1) → impad → (H,W) → [..0] → (H,)).
             padded = mmcv.impad(
-                seg[..., np.newaxis] if seg.ndim == 2 else seg,
+                seg,
                 shape=self.size,
                 pad_val=self.seg_pad_val,
                 padding_mode=mode)
-            results[key] = padded[..., 0] if seg.ndim == 2 else padded
+            results[key] = padded
 
     def __call__(self, results):
         self._pad_img(results)
