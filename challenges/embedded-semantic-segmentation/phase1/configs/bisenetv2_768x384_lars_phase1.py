@@ -188,12 +188,12 @@ lr_config = dict(
     min_lr=1e-4,
     by_epoch=False,
     warmup='linear',
-    warmup_iters=1000)
+    warmup_iters=300)
 
-# ── Phase 1 Schedule (10k iters) ──────────────────────────────────────────────
-runner = dict(type='IterBasedRunner', max_iters=10000)
-checkpoint_config = dict(by_epoch=False, interval=5000)
-evaluation = dict(interval=2000, metric='mIoU', pre_eval=True, save_best='mIoU')
+# ── Phase 1 Schedule (3k iters — short validation run; Phase 2 is the real baseline) ──
+runner = dict(type='IterBasedRunner', max_iters=3000)
+checkpoint_config = dict(by_epoch=False, interval=1500)
+evaluation = dict(interval=500, metric='mIoU', pre_eval=True, save_best='mIoU')
 
 # ── Logging (WandB + text) ────────────────────────────────────────────────────
 # WANDB_API_KEY must be set before training:  source phase1/scripts/setup_wandb.sh
