@@ -23,6 +23,9 @@ echo "========================================================"
 
 cd "$REPO_ROOT"
 
+# Expose repo root to Python so custom_imports (challenges.*.pipelines) resolves
+export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
+
 # Verify WANDB_API_KEY is set
 if [ -z "${WANDB_API_KEY:-}" ]; then
     echo "ERROR: WANDB_API_KEY not set. Run: source $CHALLENGE/phase1/scripts/setup_wandb.sh"
