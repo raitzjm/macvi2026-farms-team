@@ -70,17 +70,30 @@ instability; full recovery by iter 1000. Model still climbing at iter 1500 — w
 - **Optimizer:** AdamW, lr=6e-5 (fixed — no linear scaling for AdamW)
 - **Batch size:** samples_per_gpu=75 × 2 GPUs = 150 total
 - **Norm:** LayerNorm (unaffected by DDP)
-- **Started:** 2026-03-03 11:15 UTC
-- **Status:** RUNNING
-- **Results:** TBD after completion
+- **Started:** 2026-03-03 11:20 UTC (restarted at bs=56 after OOM)
+- **Finished:** 2026-03-03 11:54 UTC (~34 min)
+- **Status:** COMPLETED ✓
+- **Best checkpoint:** `best_mIoU_iter_1500.pth` (still climbing at end)
+- **Val mIoU progression:**
+
+| Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
+|------|-------|-------|-------------|-----------|---------|
+| 250  | 90.51 | 95.56 | 84.19       | 94.44     | 92.91   |
+| 500  | 94.26 | 97.35 | 90.12       | 96.50     | 96.16   |
+| 750  | 94.99 | 97.68 | 91.19       | 96.86     | 96.91   |
+| 1000 | 95.39 | 97.87 | 91.83       | 97.13     | 97.20   |
+| 1250 | 95.42 | 97.90 | 91.86       | 97.19     | 97.21   |
+| 1500 | **95.61** | 97.99 | **92.19** | **97.34** | **97.31** |
+
+Note: Monotonic convergence throughout. Still climbing at iter 1500. Very fast run (~34 min).
 
 ### EXP-004 — SegFormer MiT-B2
 
 - **Config:** `phase1/configs/segformer_mit-b2_768x384_lars_phase1.py`
 - **Work dir:** `outputs/phase1/segformer_mit-b2/`
 - **Optimizer:** AdamW, lr=6e-5 (fixed — no linear scaling for AdamW)
-- **Batch size:** samples_per_gpu=45 × 2 GPUs = 90 total
+- **Batch size:** samples_per_gpu=36 × 2 GPUs = 72 total (pre-emptively reduced from 45)
 - **Norm:** LayerNorm (unaffected by DDP)
-- **Started:** after EXP-003 completes
-- **Status:** PENDING
+- **Started:** 2026-03-03 11:55 UTC
+- **Status:** RUNNING
 - **Results:** TBD after completion
