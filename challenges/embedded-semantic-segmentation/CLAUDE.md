@@ -55,19 +55,19 @@ Shared settings — resolution, preprocessing pipeline, schedule length, eval fr
 dataset paths — are **standardised** across all models in each phase.
 
 **Runner type**: all mmseg-macvi LaRS configs use `IterBasedRunner` (iter-based, not
-epoch-based). This applies to all 4 Phase 1 models.
+epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models.
 
-**LR scaling when changing batch size**:
+**LR scaling when changing batch size** from the upstream reference:
 - SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
   `new_lr = base_lr × (new_bs / reference_bs)`.
   Reference is the upstream LaRS `samples_per_gpu` value for that model.
 - AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
   AdamW adapts per-parameter; the standard practice is not to scale.
 
-**Batch size pinning**: batch size must be chosen explicitly and held constant between
-Phase 1 and Phase 2 for the consistency check to be meaningful. Do NOT hardware-maximise
-(`max bs that fits in VRAM`) — pick a fixed value, document it in the config comment,
-and reuse it exactly in Phase 2.
+**Batch size strategy**: at the start of Phase 1, calibrate the maximum batch size that
+fits on the training GPU without OOM. Document this value in the config comment. This
+becomes the pinned batch size — reuse the exact same value in Phase 2 for the consistency
+check to remain valid. Do not change it between phases.
 
 ## Experiment Phases
 Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
@@ -86,8 +86,8 @@ Phase 2: Full training runs — migrate all models to a single unified mmseg ver
           2. After all Phase 2 models finish, compare val mIoU curves at matching
              iteration milestones (2k, 4k, 6k, 8k, 10k) against Phase 1 logs.
              Significant divergence at iter 10k indicates a translation bug.
-          3. Batch size must be pinned to the same value as Phase 1 for the
-             comparison to be meaningful (do not use whatever fits in VRAM).
+          3. Batch size must be the same as Phase 1 — reuse the calibrated value,
+             do not re-calibrate or change it between phases.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
