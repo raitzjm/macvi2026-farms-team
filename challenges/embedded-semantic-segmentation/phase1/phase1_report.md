@@ -403,9 +403,16 @@ The following steps from the standard `/archive-experiment` skill were **not per
 - No validation against the challenge server (submission deferred to Phase 2).
 - No INT8 quantization evaluation.
 
-**ONNX export was performed** for all 4 models as part of Phase 1 (see Section 11). Both logits ONNX (for local eval) and argmax ONNX (for SNPE/submission) were exported, but artifacts are not committed (outputs/ is gitignored). This is a Phase 1 exception per team decision — artifact archival via the `/archive-experiment` skill is deferred to Phase 2.
+**ONNX export was performed** for all 4 models (see Section 11). Both logits and argmax ONNXes were generated; the following **logits ONNXes are committed via Git LFS**:
 
-Phase 1 checkpoint files (`best_mIoU_iter_*.pth`, `iter_750.pth`, `iter_1500.pth`) and ONNX exports are in `outputs/phase1/{model}/` but are **not committed** (outputs/ is gitignored). The experiment-log.md and this report are the authoritative records.
+| Model | File | LFS | Reason |
+|---|---|---|---|
+| STDC2 | `phase1/stdc2/stdc2_logits.onnx` (47 MB) | ✓ | Stable training, good results |
+| SegNeXt-T | `phase1/segnext_t/segnext_t_logits.onnx` (17 MB) | ✓ | Stable training, good results |
+| SegFormer MiT-B2 | `phase1/segformer_mit-b2/segformer_mit-b2_logits.onnx` (95 MB) | ✓ | Best model overall |
+| BiSeNetV2 | — | ✗ | Training unstable (LR collapse at iter 750); model not yet converged |
+
+Argmax ONNXes and all `.pth` checkpoints are **not committed** — argmax can be regenerated from the logits ONNX; `.pth` files are too large (50–284 MB each × 3 checkpoints per model). The argmax ONNX export script is `phase1/scripts/export_and_eval.py`.
 
 ---
 
