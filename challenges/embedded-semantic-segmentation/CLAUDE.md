@@ -48,8 +48,12 @@ All three points must be matched in training pipelines. The fun experiments got 
 Phase 1: Short validation runs (~10k iters) — validate correct preprocessing, confirm
           architecture rankings. Models: PIDNet-S, SegNeXt-T (STDC2 dropped).
           Use current split envs (macvi/0.30.0 for SegNeXt-T, pidnet/1.2.2 for PIDNet-S).
+          Purpose: establish a reference baseline before the mmseg migration in Phase 2,
+          so Phase 2 translated configs can be cross-checked for consistency.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
-          (target: 1.2.2) for consistency. All serious experiments from here onward.
+          (target: 1.2.2) for consistency. Verify Phase 2 results are consistent with
+          Phase 1 to confirm config translation introduced no bugs. All serious
+          experiments from here onward use this unified stack.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
