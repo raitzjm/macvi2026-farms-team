@@ -1,0 +1,89 @@
+"""
+Custom mmseg pipeline transforms for Phase 1+ configs.
+
+ReflectPad: drop-in replacement for Pad that uses mirror (reflect) padding
+instead of zero-padding.  mmcv.impad supports padding_mode natively; this
+class simply exposes that option through the mmseg pipeline registry.
+
+Usage in config:
+    custom_imports = dict(
+        imports=['challenges.embedded-semantic-segmentation.phase1.pipelines'],
+        allow_failed_imports=False)
+
+    # In train pipeline (replace the regular Pad):
+    dict(type='ReflectPad', size=crop_size, seg_pad_val=255)
+
+    # In test pipeline (inside MultiScaleFlipAug transforms):
+    dict(type='ReflectPad', size=crop_size)
+"""
+
+import mmcv
+import numpy as np
+from mmseg.datasets.builder import PIPELINES
+
+
+@PIPELINES.register_module()
+class ReflectPad:
+    """Pad image and mask with mirror (reflect) padding.
+
+    Wraps mmcv.impad with padding_mode='reflect'.  The padding area is filled
+    by mirroring the image content, matching the challenge server behaviour.
+
+    Args:
+        size (tuple): Target (H, W) after padding.
+        seg_pad_val (int): Value used to pad segmentation masks.
+            For training, use 255 (ignore index).
+            For inference, masks are not present so this has no effect.
+    """
+
+    def __init__(self, size, seg_pad_val=255):
+        assert isinstance(size, (tuple, list)) and len(size) == 2
+        self.size = tuple(size)          # (H, W)
+        self.seg_pad_val = seg_pad_val
+
+    def _pad_img(self, results):
+        img = results['img']
+        h, w = img.shape[:2]
+        target_h, target_w = self.size
+
+        # If image already fits (or is larger), fall back to constant padding
+        # to avoid reflect-pad errors on tiny images (reflect requires padding
+        # < image dimension).
+        if h >= target_h and w >= target_w:
+            results['img'] = img
+            results['pad_shape'] = img.shape
+            results['pad_fixed_size'] = self.size
+            results['pad_size_divisor'] = None
+            return
+
+        need_reflect = (target_h - h) < h and (target_w - w) < w
+        mode = 'reflect' if need_reflect else 'constant'
+
+        padded = mmcv.impad(img, shape=self.size, padding_mode=mode)
+        results['img'] = padded
+        results['pad_shape'] = padded.shape
+        results['pad_fixed_size'] = self.size
+        results['pad_size_divisor'] = None
+
+    def _pad_seg(self, results):
+        for key in results.get('seg_fields', []):
+            seg = results[key]
+            h, w = seg.shape[:2]
+            target_h, target_w = self.size
+            need_reflect = (target_h - h) < h and (target_w - w) < w
+            mode = 'reflect' if need_reflect else 'constant'
+            padded = mmcv.impad(
+                seg[..., np.newaxis] if seg.ndim == 2 else seg,
+                shape=self.size,
+                pad_val=self.seg_pad_val,
+                padding_mode=mode)
+            results[key] = padded[..., 0] if seg.ndim == 2 else padded
+
+    def __call__(self, results):
+        self._pad_img(results)
+        self._pad_seg(results)
+        return results
+
+    def __repr__(self):
+        return (f'{self.__class__.__name__}('
+                f'size={self.size}, seg_pad_val={self.seg_pad_val})')

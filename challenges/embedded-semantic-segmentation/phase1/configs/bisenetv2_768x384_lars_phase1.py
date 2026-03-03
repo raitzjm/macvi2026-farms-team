@@ -26,6 +26,10 @@ Run:
 MMSEG_ROOT = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi'
 DATA_ROOT  = '/home/farms/lars_linked/'
 
+custom_imports = dict(
+    imports=['challenges.embedded-semantic-segmentation.phase1.pipelines'],
+    allow_failed_imports=False)
+
 # ── Resolution ────────────────────────────────────────────────────────────────
 crop_size = (384, 768)   # (H, W)
 img_scale = (768, 384)   # (W, H)
@@ -130,7 +134,7 @@ train_pipeline = [
     dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
     # FIX vs original: reflect padding matches challenge server mirror-padding
-    dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255, padding_mode='reflect'),
+    dict(type='ReflectPad', size=crop_size, seg_pad_val=255),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
 ]
@@ -147,7 +151,7 @@ test_pipeline = [
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
             # FIX vs original: reflect-pad to exact crop_size (was absent)
-            dict(type='Pad', size=crop_size, padding_mode='reflect'),
+            dict(type='ReflectPad', size=crop_size),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
         ]),
