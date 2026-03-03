@@ -39,6 +39,14 @@ the artifacts for a given phase and model.
 6. **If this is the last model in the phase**, write a phase-level summary report at
    `challenges/embedded-semantic-segmentation/{phase}/{phase}_report.md` covering:
    - All models trained, with final val mIoU and F1
+   - Per-model training metadata — verify each value against the training log before
+     writing (do not rely solely on config comments):
+     - `samples_per_gpu` (batch size)
+     - Effective LR used (check log for actual LR at iter 1 post-warmup)
+     - Total iters run
+     - Eval interval and checkpoint interval
+     - Inherited schedule (e.g. schedule_80k, schedule_160k)
+     - mmseg version and conda env
    - Methodology decisions and rationale (batch size strategy, LR scaling rules,
      preprocessing fixes applied, config philosophy)
    - Architecture rankings and key observations
