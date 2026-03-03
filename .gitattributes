@@ -1,0 +1,2 @@
+# Git LFS — large binary assets
+challenges/embedded-semantic-segmentation/fun_experiments/**/*.onnx filter=lfs diff=lfs merge=lfs -text

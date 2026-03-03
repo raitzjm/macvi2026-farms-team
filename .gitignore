@@ -12,6 +12,10 @@
 outputs/
 work_dirs/
 
+# Fun experiment artifacts tracked deliberately (override rules above)
+!challenges/embedded-semantic-segmentation/fun_experiments/**/*.onnx
+!challenges/embedded-semantic-segmentation/fun_experiments/**/*.log
+
 # Python
 __pycache__/
 *.py[cod]
