@@ -13,10 +13,8 @@ Repo: macvi2026-farms-team
 - Before any destructive action (deleting files, force push), ask for confirmation
 
 ## Secret Scanning
-A gitleaks pre-commit hook is installed in `.githooks/pre-commit`. Enable it once per clone:
-```
-git config core.hooksPath .githooks
-```
+A gitleaks pre-commit hook runs automatically on every commit inside the container
+(baked into the image via system-level git config — no manual setup needed).
 If the hook blocks a commit:
 1. Remove the secret from the file
 2. Replace it with a placeholder (e.g. `# removed — use $ENV_VAR_NAME instead`)

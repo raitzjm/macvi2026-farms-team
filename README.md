@@ -96,13 +96,6 @@ export MACVI_GH_TOKEN=<your_github_pat>
 ./container/scripts/run.sh --data-dir /path/to/datasets --ssh-dir ~/.ssh
 ```
 
-## One-time setup after cloning
-
-Enable the pre-commit secret scanning hook:
-```bash
-git config core.hooksPath .githooks
-```
-
 ## Workflow
 
 - All agents follow the rules in `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
