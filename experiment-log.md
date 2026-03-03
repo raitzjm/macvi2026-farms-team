@@ -22,20 +22,31 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Batch size:** samples_per_gpu=160 × 2 GPUs = 320 total
 - **LR scaling:** linear (ref bs=12, ref lr=0.01 → scaled lr=0.01×320/12=0.267)
 - **Norm:** SyncBN (DDP)
-- **Started:** 2026-03-03 08:38 UTC (restarted at 1.5k iters)
-- **Status:** RUNNING
-- **Results:** TBD after completion
+- **Started:** 2026-03-03 08:58 UTC (restarted after DDP eval patch)
+- **Finished:** 2026-03-03 10:06 UTC (~1h08m)
+- **Status:** COMPLETED ✓
+- **Best checkpoint:** `best_mIoU_iter_1250.pth`
+- **Val mIoU progression:**
+
+| Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
+|------|-------|-------|-------------|-----------|---------|
+| 250  | 95.00 | 97.66 | 90.91       | 96.67     | 97.43   |
+| 500  | 95.44 | 97.90 | 91.71       | 97.11     | 97.50   |
+| 750  | 95.54 | 97.93 | 91.96       | 97.14     | 97.53   |
+| 1000 | 94.56 | 97.51 | 90.32       | 96.80     | 96.57   |
+| 1250 | **95.76** | 97.08 | **92.41** | **97.60** | 97.26 |
+| 1500 | 95.51 | 97.98 | 92.06       | 97.62     | 96.83   |
 
 ### EXP-002 — BiSeNetV2
 
 - **Config:** `phase1/configs/bisenetv2_768x384_lars_phase1.py`
 - **Work dir:** `outputs/phase1/bisenetv2/`
-- **Optimizer:** SGD, lr=3.8, momentum=0.9, wd=0.0005
-- **Batch size:** samples_per_gpu=152 × 2 GPUs = 304 total
-- **LR scaling:** linear (ref bs=4, ref lr=0.05 → scaled lr=0.05×304/4=3.8)
+- **Optimizer:** SGD, lr=3.2, momentum=0.9, wd=0.0005
+- **Batch size:** samples_per_gpu=128 × 2 GPUs = 256 total (reduced from 152 after OOM — 5 aux heads)
+- **LR scaling:** linear (ref bs=4, ref lr=0.05 → scaled lr=0.05×256/4=3.2)
 - **Norm:** SyncBN (DDP, already set)
-- **Started:** after EXP-001 completes
-- **Status:** PENDING
+- **Started:** 2026-03-03 10:12 UTC (restarted after OOM fix)
+- **Status:** RUNNING
 - **Results:** TBD after completion
 
 ### EXP-003 — SegNeXt-T
