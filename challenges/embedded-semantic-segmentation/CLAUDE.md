@@ -66,6 +66,12 @@ epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models
 - Document both batch_size and lr in a comment in the config so Phase 2 can replicate
   the exact (bs, lr) pair.
 
+**SyncBN for DDP**: models using BatchNorm must switch to `SyncBN` when training with DDP
+(multiple GPUs), so BN statistics are synchronized across GPUs rather than computed
+independently per device. This applies to STDC2 and BiSeNetV2. Models using LayerNorm
+(SegNeXt-T, SegFormer) are unaffected. Set `norm_cfg = dict(type='SyncBN', requires_grad=True)`
+in the model config. This setting is pinned — carry it into Phase 2.
+
 **Batch size strategy**: at the start of Phase 1, calibrate the maximum batch size that
 fits on the training GPU without OOM. Document this value in the config comment. This
 becomes the pinned batch size — reuse the exact same value in Phase 2 for the consistency
