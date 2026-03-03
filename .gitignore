@@ -18,6 +18,7 @@ work_dirs/
 !challenges/embedded-semantic-segmentation/phase1/**/*.onnx
 !challenges/embedded-semantic-segmentation/phase1/**/*.pth
 !challenges/embedded-semantic-segmentation/phase1/**/*.log
+!challenges/embedded-semantic-segmentation/phase1/notes.md
 
 # Python
 __pycache__/

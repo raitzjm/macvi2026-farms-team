@@ -3,6 +3,20 @@
 Use this skill after a training run completes to export, validate, and commit
 the artifacts for a given phase and model.
 
+## Logging issues and gotchas during training
+
+Whenever you encounter an issue, unexpected behaviour, or a workaround during
+training or config setup, append it to `challenges/embedded-semantic-segmentation/{phase}/notes.md`.
+Create the file if it does not exist. Format each entry as:
+
+```
+### [{model_name}] Short description
+What happened, how it was diagnosed, and how it was resolved or worked around.
+```
+
+This file is temporary — it is consumed when the phase report is written and
+then deleted (see step 6 below).
+
 ## Steps
 
 1. **Identify inputs** — confirm with the user:
@@ -51,9 +65,13 @@ the artifacts for a given phase and model.
    - Methodology decisions and rationale (batch size strategy, LR scaling rules,
      preprocessing fixes applied, config philosophy)
    - Architecture rankings and key observations
+   - Issues, gotchas, and workarounds — pull from `{phase}/notes.md` and include
+     in full so the knowledge is not lost
    - What carries forward to the next phase
    This report is the permanent record of the phase — it replaces issue references
    as the authoritative source of methodology and rationale for the team.
+   After writing the report, delete `{phase}/notes.md` and commit the deletion
+   alongside the report.
 
 7. **Commit** the archive directory with message:
    `[agent] archive {phase} {model_name}: mIoU=X.X, F1=X.X, ONNX delta=X.X%`
