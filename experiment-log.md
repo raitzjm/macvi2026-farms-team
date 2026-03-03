@@ -95,5 +95,32 @@ Note: Monotonic convergence throughout. Still climbing at iter 1500. Very fast r
 - **Batch size:** samples_per_gpu=36 × 2 GPUs = 72 total (pre-emptively reduced from 45)
 - **Norm:** LayerNorm (unaffected by DDP)
 - **Started:** 2026-03-03 11:55 UTC
-- **Status:** RUNNING
-- **Results:** TBD after completion
+- **Finished:** 2026-03-03 12:31 UTC (~36 min)
+- **Status:** COMPLETED ✓
+- **Best checkpoint:** `best_mIoU_iter_1000.pth` (plateaued after iter 1000)
+- **Val mIoU progression:**
+
+| Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
+|------|-------|-------|-------------|-----------|---------|
+| 250  | 95.95 | 98.14 | 92.81       | 97.47     | 97.58   |
+| 500  | 96.65 | 98.47 | 93.92       | 97.92     | 98.10   |
+| 750  | 96.79 | 98.53 | 94.19       | 97.96     | 98.21   |
+| 1000 | **97.00** | 98.63 | **94.56** | **98.09** | **98.36** |
+| 1250 | 96.98 | 98.62 | 94.51       | 98.07     | 98.37   |
+| 1500 | 96.98 | 98.62 | 94.54       | 98.10     | 98.31   |
+
+Note: Peaked at iter 1000, plateaued thereafter. Well converged within 1500 iters.
+
+---
+
+## Phase 1 Final Summary
+
+| Model | Best mIoU | Best iter | Obstacle IoU | Duration | Notes |
+|-------|-----------|-----------|-------------|----------|-------|
+| SegFormer MiT-B2 | **97.00%** | 1000 | **94.56%** | ~36 min | Converged; best overall |
+| STDC2            | 95.76%    | 1250 | 92.41%     | ~1h08m   | Stable; slight plateau |
+| SegNeXt-T        | 95.61%    | 1500↑ | 92.19%   | ~34 min  | Still climbing at end |
+| BiSeNetV2        | 92.55%    | 1500↑ | 86.41%   | ~1h02m   | LR instability at iter 750; still climbing |
+
+All Phase 1 preprocessing validated. Ranking matches published expectations (SegFormer > STDC2 ≈ SegNeXt > BiSeNetV2).
+Key insight: native 768×384 training dramatically improves over published baselines (e.g. STDC2 published 50.8% F1 → our 95.76% mIoU at same resolution).

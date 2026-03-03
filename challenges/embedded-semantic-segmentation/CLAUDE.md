@@ -125,7 +125,8 @@ It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
 experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
 
 ## Current Status
-Phase 1 training in progress (branch: exp/phase1-baselines). 1.5k iters, eval every 250.
+Phase 1 COMPLETE (branch: exp/phase1-baselines). All 4 models done. See experiment-log.md.
+Final mIoU: SegFormer 97.00%, STDC2 95.76%, SegNeXt-T 95.61%, BiSeNetV2 92.55%.
 Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
 See issue #9 for task tracking and run decisions.
 
