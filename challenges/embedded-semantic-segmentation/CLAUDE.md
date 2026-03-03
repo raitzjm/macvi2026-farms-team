@@ -103,6 +103,18 @@ Phases can be modified, reordered, added, or skipped as the project evolves.
 - Opset version: 13 (server uses SNPE which requires opset 13)
 - See fun_experiments/{model}/export_onnx.py for reference implementations
 
+## Output Directory Convention
+
+Training live outputs (checkpoints, logs) go to:
+  `challenges/embedded-semantic-segmentation/outputs/{phase}/{model_name}/`
+
+Pass this as `--work-dir` to the train script. Examples:
+  `outputs/phase1/stdc2/`
+  `outputs/phase2/stdc2/`
+
+This keeps phases isolated and prevents checkpoint collisions. The `outputs/` tree
+is gitignored — only curated artifacts are committed (see Phase 1 Artifact Archival).
+
 ## Phase 1 Artifact Archival
 
 After each Phase 1 training run, follow this workflow before archiving:
