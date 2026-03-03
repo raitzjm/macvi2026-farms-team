@@ -40,7 +40,8 @@ the artifacts for a given phase and model.
    `challenges/embedded-semantic-segmentation/{phase}/{phase}_report.md` covering:
    - All models trained, with final val mIoU and F1
    - Per-model training metadata — verify each value against the training log before
-     writing (do not rely solely on config comments):
+     writing (do not rely solely on config comments). If any value in the log
+     disagrees with the config comment, flag it explicitly in the report:
      - `samples_per_gpu` (batch size)
      - Effective LR used (check log for actual LR at iter 1 post-warmup)
      - Total iters run
