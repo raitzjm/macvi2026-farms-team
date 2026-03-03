@@ -57,7 +57,12 @@ run_model() {
     echo "--------------------------------------------------------"
     mkdir -p "$work_dir"
 
-    bash "$MMSEG/tools/dist_train.sh" "$CONFIGS/$config" "$NUM_GPUS" --work-dir "$work_dir"
+    # torch.distributed.launch (used by dist_train.sh) passes --local-rank (hyphen) in PyTorch 2.x
+    # but mmseg train.py argparse expects --local_rank (underscore). Use torchrun instead,
+    # which sets LOCAL_RANK as an env var that mmseg already reads correctly.
+    torchrun --standalone --nproc_per_node="$NUM_GPUS" \
+        "$MMSEG/tools/train.py" --launcher pytorch \
+        "$CONFIGS/$config" --work-dir "$work_dir"
     local exit_code=$?
 
     echo ""
