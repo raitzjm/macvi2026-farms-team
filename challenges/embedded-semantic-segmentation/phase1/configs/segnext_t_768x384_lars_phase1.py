@@ -11,11 +11,12 @@ Preprocessing fixes vs fun_experiments segnext_t config (mandatory — matches c
 Batch size / LR (AdamW — keep LR fixed regardless of batch size):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   AdamW, lr=0.00006  (upstream SegNeXt config)
-  Per-GPU:     samples_per_gpu=75  (OOM boundary at 768×384; OOM at bs=76)
-  Effective:   total_bs=150 (75 × 2 GPUs)
+  Per-GPU:     samples_per_gpu=56  (OOM at bs=75 during full training step — HAM decoder is
+               memory-intensive; reduced ~25% from fwd+bwd-only boundary of bs=75)
+  Effective:   total_bs=112 (56 × 2 GPUs)
   LR:          0.00006 (fixed — AdamW does not use linear scaling)
   Norm: LayerNorm — SyncBN not applicable
-  Pinned for Phase 2 consistency: samples_per_gpu=75, num_gpus=2, lr=0.00006
+  Pinned for Phase 2 consistency: samples_per_gpu=56, num_gpus=2, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -116,9 +117,9 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=75 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=76)
+    # bs=56 (reduced from 75 after OOM at full training step — HAM decoder memory-intensive)
     # Pinned for Phase 2 — do not re-calibrate.
-    samples_per_gpu=75,
+    samples_per_gpu=56,
     workers_per_gpu=4,
     pin_memory=False,
     train=dict(
