@@ -46,13 +46,14 @@ RUN apt-get update && apt-get install -y sudo \
   && chmod 0440 /etc/sudoers.d/$USERNAME \
   && rm -rf /var/lib/apt/lists/*
 
-# Switch to non-root user
-USER  ${USERNAME}
-
 # Configure git to use committed hooks (.githooks/) in all repos.
 # System-level config has lowest priority — won't override user or local config.
 # The host ~/.gitconfig mounted at runtime only sets user.name/email, so this sticks.
+# Must run as root (before USER switch) to write to /etc/gitconfig.
 RUN git config --system core.hooksPath .githooks
+
+# Switch to non-root user
+USER  ${USERNAME}
 
 # Install gitleaks for pre-commit secret scanning
 ARG GITLEAKS_VERSION=8.30.0
