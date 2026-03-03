@@ -45,9 +45,8 @@ All three points must be matched in training pipelines. The fun experiments got 
 - Centering is handled automatically by mmseg when keep_ratio=True + Pad are combined
 
 ## Experiment Phases
-Phase 1: Short validation runs (~10k iters) — validate correct preprocessing, confirm
-          architecture rankings. Models: PIDNet-S, SegNeXt-T (STDC2 dropped).
-          Use current split envs (macvi/0.30.0 for SegNeXt-T, pidnet/1.2.2 for PIDNet-S).
+Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
+          architecture rankings. Models TBD.
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
           so Phase 2 translated configs can be cross-checked for consistency.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
