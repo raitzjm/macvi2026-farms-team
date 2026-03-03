@@ -63,6 +63,9 @@ When installing new system or Python dependencies:
 5. Notify the user to rebuild the container after Dockerfile changes
 
 ## Environment
+- **All agent and user sessions run inside the container — no exceptions.**
+  Never assume you are on the host. If something seems wrong with the environment,
+  diagnose within the container rather than assuming a host context.
 - Base image: nvidia/cuda:12.1.1-devel-ubuntu22.04
 - System Python: Ubuntu 22.04 default (not used for ML work)
 - ML training env: conda env `macvi`, Python 3.11 (see challenge CLAUDE.md for details)
