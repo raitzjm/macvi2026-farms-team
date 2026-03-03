@@ -60,9 +60,13 @@ epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models
 **LR scaling when changing batch size** from the upstream reference:
 - SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
   `new_lr = base_lr × (new_bs / reference_bs)`.
-  Reference is the upstream LaRS `samples_per_gpu` value for that model.
+  Reference values: STDC2 → bs=12, lr=0.01; BiSeNetV2 → bs=4, lr=0.05.
+  This is necessary when the batch size change is large (e.g. 12→48); skipping it
+  leaves SGD steps too small and makes Phase 1 results artificially weak.
 - AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
-  AdamW adapts per-parameter; the standard practice is not to scale.
+  AdamW adapts per-parameter; scaling is not standard practice.
+- Document both batch_size and lr in a comment in the config so Phase 2 can replicate
+  the exact (bs, lr) pair.
 
 **Batch size strategy**: at the start of Phase 1, calibrate the maximum batch size that
 fits on the training GPU without OOM. Document this value in the config comment. This
