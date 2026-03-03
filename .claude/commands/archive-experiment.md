@@ -36,7 +36,17 @@ the artifacts for a given phase and model.
 5. **Update experiment-log.md** — add or complete the entry for this run:
    required fields: config path, dataset, resolution, iters, val mIoU, val F1, git commit hash.
 
-6. **Commit** the archive directory with message:
+6. **If this is the last model in the phase**, write a phase-level summary report at
+   `challenges/embedded-semantic-segmentation/{phase}/{phase}_report.md` covering:
+   - All models trained, with final val mIoU and F1
+   - Methodology decisions and rationale (batch size strategy, LR scaling rules,
+     preprocessing fixes applied, config philosophy)
+   - Architecture rankings and key observations
+   - What carries forward to the next phase
+   This report is the permanent record of the phase — it replaces issue references
+   as the authoritative source of methodology and rationale for the team.
+
+7. **Commit** the archive directory with message:
    `[agent] archive {phase} {model_name}: mIoU=X.X, F1=X.X, ONNX delta=X.X%`
 
 ---

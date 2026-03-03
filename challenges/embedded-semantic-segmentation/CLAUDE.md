@@ -77,6 +77,8 @@ Phase 1: Short validation runs (~10k iters) — validate correct preprocessing a
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
           so Phase 2 translated configs can be cross-checked for consistency.
           See issue #9 for full details, batch size reference values, and smoke test workflow.
+          Once Phase 1 is complete, methodology and rationale will be captured in
+          `phase1/phase1_report.md` — that becomes the permanent team reference.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
           (target: 1.2.2) for consistency. All serious experiments from here onward
           use this unified stack. New models may be introduced here.
