@@ -26,6 +26,9 @@ cd "$REPO_ROOT"
 # Expose repo root to Python so custom_imports (challenges.*.pipelines) resolves
 export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
+# Keep wandb local cache out of the repo root so it never shadows the wandb package
+export WANDB_DIR="$REPO_ROOT/$OUTPUTS/phase1"
+
 # Verify WANDB_API_KEY is set
 if [ -z "${WANDB_API_KEY:-}" ]; then
     echo "ERROR: WANDB_API_KEY not set. Run: source $CHALLENGE/phase1/scripts/setup_wandb.sh"

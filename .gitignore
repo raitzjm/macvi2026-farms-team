@@ -53,6 +53,9 @@ Thumbs.db
 *.out
 *.err
 
+# WandB local run cache (written to WANDB_DIR; never commit)
+wandb/
+
 # Credentials and tokens
 .env
 *.token
