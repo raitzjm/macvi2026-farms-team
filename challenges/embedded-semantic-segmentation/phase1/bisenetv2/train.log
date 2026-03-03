@@ -1,0 +1,930 @@
+2026-03-03 10:13:39,055 - mmseg - INFO - Multi-processing start method is `None`
+2026-03-03 10:13:39,056 - mmseg - INFO - OpenCV num_threads is `16
+2026-03-03 10:13:39,056 - mmseg - INFO - OMP num threads is 1
+2026-03-03 10:13:39,067 - mmseg - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.11.14 | packaged by conda-forge | (main, Jan 26 2026, 23:48:32) [GCC 14.3.0]
+CUDA available: True
+GPU 0,1: NVIDIA RTX A6000
+CUDA_HOME: /usr/local/cuda
+NVCC: Cuda compilation tools, release 12.1, V12.1.105
+GCC: gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+PyTorch: 2.1.2+cu121
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.1.1 (Git Hash 64f6bcbcbab628e96f33a62c3e975f8535a7bde4)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 12.1
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90
+  - CuDNN 8.9.2
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.1, CUDNN_VERSION=8.9.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-unused-private-field -Wno-aligned-allocation-unavailable -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_DISABLE_GPU_ASSERTS=ON, TORCH_VERSION=2.1.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.16.2+cu121
+OpenCV: 4.10.0
+MMCV: 1.7.2
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 12.1
+MMSegmentation: 0.30.0+95c461a
+------------------------------------------------------------
+
+2026-03-03 10:13:39,068 - mmseg - INFO - Distributed training: True
+2026-03-03 10:13:39,397 - mmseg - INFO - Config:
+MMSEG_ROOT = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi'
+DATA_ROOT = '/home/farms/lars_linked/'
+custom_imports = dict(
+    imports=['challenges.embedded-semantic-segmentation.phase1.pipelines'],
+    allow_failed_imports=False)
+crop_size = (384, 768)
+img_scale = (768, 384)
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+norm_cfg = dict(type='SyncBN', requires_grad=True)
+model = dict(
+    type='EncoderDecoder',
+    pretrained=None,
+    backbone=dict(
+        type='BiSeNetV2',
+        detail_channels=(64, 64, 128),
+        semantic_channels=(16, 32, 64, 128),
+        semantic_expansion_ratio=6,
+        bga_channels=128,
+        out_indices=(0, 1, 2, 3, 4),
+        init_cfg=None,
+        align_corners=False),
+    decode_head=dict(
+        type='FCNHead',
+        in_channels=128,
+        in_index=0,
+        channels=1024,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=0.1,
+        num_classes=3,
+        ignore_index=255,
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
+        align_corners=False,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+    auxiliary_head=[
+        dict(
+            type='FCNHead',
+            in_channels=16,
+            channels=16,
+            num_convs=2,
+            num_classes=3,
+            ignore_index=255,
+            in_index=1,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        dict(
+            type='FCNHead',
+            in_channels=32,
+            channels=64,
+            num_convs=2,
+            num_classes=3,
+            ignore_index=255,
+            in_index=2,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        dict(
+            type='FCNHead',
+            in_channels=64,
+            channels=256,
+            num_convs=2,
+            num_classes=3,
+            ignore_index=255,
+            in_index=3,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
+        dict(
+            type='FCNHead',
+            in_channels=128,
+            channels=1024,
+            num_convs=2,
+            num_classes=3,
+            ignore_index=255,
+            in_index=4,
+            norm_cfg=dict(type='SyncBN', requires_grad=True),
+            concat_input=False,
+            align_corners=False,
+            loss_decode=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0))
+    ],
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(type='Resize', img_scale=(768, 384), ratio_range=(0.5, 2.0)),
+    dict(type='RandomCrop', crop_size=(384, 768), cat_max_ratio=0.75),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PhotoMetricDistortion'),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='ReflectPad', size=(384, 768), seg_pad_val=255),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(768, 384),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='ReflectPad', size=(384, 768)),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=128,
+    workers_per_gpu=4,
+    pin_memory=False,
+    train=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/train',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations'),
+            dict(type='Resize', img_scale=(768, 384), ratio_range=(0.5, 2.0)),
+            dict(type='RandomCrop', crop_size=(384, 768), cat_max_ratio=0.75),
+            dict(type='RandomFlip', prob=0.5),
+            dict(type='PhotoMetricDistortion'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='ReflectPad', size=(384, 768), seg_pad_val=255),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+        ]),
+    val=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(768, 384),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ReflectPad', size=(384, 768)),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/test',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(768, 384),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ReflectPad', size=(384, 768)),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+optimizer = dict(type='SGD', lr=3.2, momentum=0.9, weight_decay=0.0005)
+optimizer_config = dict()
+lr_config = dict(
+    policy='poly',
+    power=0.9,
+    min_lr=0.0001,
+    by_epoch=False,
+    warmup='linear',
+    warmup_iters=150)
+runner = dict(type='IterBasedRunner', max_iters=1500)
+checkpoint_config = dict(by_epoch=False, interval=750)
+evaluation = dict(interval=250, metric='mIoU', pre_eval=True, save_best='mIoU')
+log_config = dict(
+    interval=50,
+    hooks=[
+        dict(type='TextLoggerHook', by_epoch=False),
+        dict(
+            type='WandbLoggerHook',
+            init_kwargs=dict(
+                entity='little_farms',
+                project='embedded_segmentation_macvi2026',
+                name='phase1_bisenetv2'),
+            interval=50,
+            by_epoch=False,
+            with_step=True,
+            log_artifact=False)
+    ])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = None
+resume_from = None
+workflow = [('train', 1)]
+cudnn_benchmark = True
+seed = 42
+work_dir = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2'
+gpu_ids = range(0, 2)
+auto_resume = False
+
+2026-03-03 10:13:40,015 - mmseg - INFO - Set random seed to 1773414718, deterministic: False
+2026-03-03 10:13:40,344 - mmseg - INFO - EncoderDecoder(
+  (backbone): BiSeNetV2(
+    (detail): DetailBranch(
+      (detail_branch): ModuleList(
+        (0): Sequential(
+          (0): ConvModule(
+            (conv): Conv2d(3, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (1): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+        )
+        (1): Sequential(
+          (0): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (1): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (2): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+        )
+        (2): Sequential(
+          (0): ConvModule(
+            (conv): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (1): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (2): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+        )
+      )
+    )
+    (semantic): SemanticBranch(
+      (stage1): StemBlock(
+        (conv_first): ConvModule(
+          (conv): Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+          (bn): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (convs): Sequential(
+          (0): ConvModule(
+            (conv): Conv2d(16, 8, kernel_size=(1, 1), stride=(1, 1), bias=False)
+            (bn): BatchNorm2d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (1): ConvModule(
+            (conv): Conv2d(8, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+        )
+        (pool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+        (fuse_last): ConvModule(
+          (conv): Conv2d(32, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+      (stage2): Sequential(
+        (0): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(16, 96, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=16, bias=False)
+              (bn): BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=96, bias=False)
+              (bn): BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (shortcut): Sequential(
+            (0): DepthwiseSeparableConvModule(
+              (depthwise_conv): ConvModule(
+                (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=16, bias=False)
+                (bn): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+              (pointwise_conv): ConvModule(
+                (conv): Conv2d(16, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+                (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(96, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+        (1): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(32, 192, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+              (bn): BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(192, 32, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+      )
+      (stage3): Sequential(
+        (0): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(32, 192, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=32, bias=False)
+              (bn): BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(192, 192, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=192, bias=False)
+              (bn): BatchNorm2d(192, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (shortcut): Sequential(
+            (0): DepthwiseSeparableConvModule(
+              (depthwise_conv): ConvModule(
+                (conv): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=32, bias=False)
+                (bn): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+              (pointwise_conv): ConvModule(
+                (conv): Conv2d(32, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+                (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(192, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+        (1): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(64, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=64, bias=False)
+              (bn): BatchNorm2d(384, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(384, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+      )
+      (stage4): Sequential(
+        (0): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(64, 384, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=64, bias=False)
+              (bn): BatchNorm2d(384, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (1): ConvModule(
+              (conv): Conv2d(384, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=384, bias=False)
+              (bn): BatchNorm2d(384, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (shortcut): Sequential(
+            (0): DepthwiseSeparableConvModule(
+              (depthwise_conv): ConvModule(
+                (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), groups=64, bias=False)
+                (bn): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+              (pointwise_conv): ConvModule(
+                (conv): Conv2d(64, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+                (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(384, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+        (1): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(128, 768, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+              (bn): BatchNorm2d(768, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(768, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+        (2): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(128, 768, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+              (bn): BatchNorm2d(768, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(768, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+        (3): GELayer(
+          (conv1): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            (activate): ReLU(inplace=True)
+          )
+          (dwconv): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(128, 768, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+              (bn): BatchNorm2d(768, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (activate): ReLU(inplace=True)
+            )
+          )
+          (conv2): Sequential(
+            (0): ConvModule(
+              (conv): Conv2d(768, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+              (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (act): ReLU()
+        )
+      )
+      (stage4_CEBlock): CEBlock(
+        (gap): Sequential(
+          (0): AdaptiveAvgPool2d(output_size=(1, 1))
+          (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (conv_gap): ConvModule(
+          (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+          (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (conv_last): ConvModule(
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+    )
+    (bga): BGALayer(
+      (detail_dwconv): Sequential(
+        (0): DepthwiseSeparableConvModule(
+          (depthwise_conv): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (pointwise_conv): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+        )
+      )
+      (detail_down): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+          (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+        (1): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      )
+      (semantic_conv): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        )
+      )
+      (semantic_dwconv): Sequential(
+        (0): DepthwiseSeparableConvModule(
+          (depthwise_conv): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=128, bias=False)
+            (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          )
+          (pointwise_conv): ConvModule(
+            (conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+          )
+        )
+      )
+      (conv): ConvModule(
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (activate): ReLU(inplace=True)
+      )
+    )
+  )
+  init_cfg=[{'type': 'Kaiming', 'layer': 'Conv2d'}, {'type': 'Constant', 'val': 1, 'layer': ['_BatchNorm', 'GroupNorm']}]
+  (decode_head): FCNHead(
+    input_transform=None, ignore_index=255, align_corners=False
+    (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+    (conv_seg): Conv2d(1024, 3, kernel_size=(1, 1), stride=(1, 1))
+    (dropout): Dropout2d(p=0.1, inplace=False)
+    (convs): Sequential(
+      (0): ConvModule(
+        (conv): Conv2d(128, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+        (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (activate): ReLU(inplace=True)
+      )
+    )
+  )
+  init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+  (auxiliary_head): ModuleList(
+    (0): FCNHead(
+      input_transform=None, ignore_index=255, align_corners=False
+      (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+      (conv_seg): Conv2d(16, 3, kernel_size=(1, 1), stride=(1, 1))
+      (dropout): Dropout2d(p=0.1, inplace=False)
+      (convs): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (1): ConvModule(
+          (conv): Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+    )
+    init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+    (1): FCNHead(
+      input_transform=None, ignore_index=255, align_corners=False
+      (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+      (conv_seg): Conv2d(64, 3, kernel_size=(1, 1), stride=(1, 1))
+      (dropout): Dropout2d(p=0.1, inplace=False)
+      (convs): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (1): ConvModule(
+          (conv): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+    )
+    init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+    (2): FCNHead(
+      input_transform=None, ignore_index=255, align_corners=False
+      (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+      (conv_seg): Conv2d(256, 3, kernel_size=(1, 1), stride=(1, 1))
+      (dropout): Dropout2d(p=0.1, inplace=False)
+      (convs): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(64, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (1): ConvModule(
+          (conv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+    )
+    init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+    (3): FCNHead(
+      input_transform=None, ignore_index=255, align_corners=False
+      (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+      (conv_seg): Conv2d(1024, 3, kernel_size=(1, 1), stride=(1, 1))
+      (dropout): Dropout2d(p=0.1, inplace=False)
+      (convs): Sequential(
+        (0): ConvModule(
+          (conv): Conv2d(128, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+        (1): ConvModule(
+          (conv): Conv2d(1024, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+          (bn): SyncBatchNorm(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (activate): ReLU(inplace=True)
+        )
+      )
+    )
+    init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+  )
+)
+2026-03-03 10:13:40,365 - mmseg - INFO - Loaded 2605 images
+2026-03-03 10:13:41,503 - mmseg - INFO - Loaded 198 images
+2026-03-03 10:13:41,505 - mmseg - INFO - Start running, host: farms@79db954e-18c7-460c-9560-290338c0b3b3, work_dir: /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2
+2026-03-03 10:13:41,505 - mmseg - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_val_epoch:
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+2026-03-03 10:13:41,506 - mmseg - INFO - workflow: [('train', 1)], max: 1500 iters
+2026-03-03 10:13:41,506 - mmseg - INFO - Checkpoints will be saved to /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2 by HardDiskBackend.
+2026-03-03 10:16:09,456 - mmseg - INFO - Iter [50/1500]	lr: 1.224e+00, eta: 1:02:40, time: 2.593, data_time: 0.812, memory: 47165, decode.loss_ce: 2.1223, decode.acc_seg: 51.9984, aux_0.loss_ce: 0.7331, aux_0.acc_seg: 63.6033, aux_1.loss_ce: 0.7097, aux_1.acc_seg: 65.7473, aux_2.loss_ce: 0.8007, aux_2.acc_seg: 65.3729, aux_3.loss_ce: 0.9776, aux_3.acc_seg: 72.0722, loss: 5.3435
+2026-03-03 10:18:07,686 - mmseg - INFO - Iter [100/1500]	lr: 2.088e+00, eta: 0:57:50, time: 2.364, data_time: 0.862, memory: 47165, decode.loss_ce: 0.3883, decode.acc_seg: 82.9373, aux_0.loss_ce: 0.6388, aux_0.acc_seg: 66.8746, aux_1.loss_ce: 0.5107, aux_1.acc_seg: 75.0305, aux_2.loss_ce: 0.4470, aux_2.acc_seg: 79.4755, aux_3.loss_ce: 0.3069, aux_3.acc_seg: 86.8548, loss: 2.2917
+2026-03-03 10:20:04,585 - mmseg - INFO - Iter [150/1500]	lr: 2.895e+00, eta: 0:54:43, time: 2.338, data_time: 0.854, memory: 47165, decode.loss_ce: 0.2808, decode.acc_seg: 88.2696, aux_0.loss_ce: 0.6776, aux_0.acc_seg: 66.3725, aux_1.loss_ce: 0.4710, aux_1.acc_seg: 77.9227, aux_2.loss_ce: 0.3592, aux_2.acc_seg: 84.3045, aux_3.loss_ce: 0.2750, aux_3.acc_seg: 88.1902, loss: 2.0635
+2026-03-03 10:22:01,469 - mmseg - INFO - Iter [200/1500]	lr: 2.815e+00, eta: 0:52:10, time: 2.337, data_time: 0.855, memory: 47165, decode.loss_ce: 0.2557, decode.acc_seg: 89.1679, aux_0.loss_ce: 0.7292, aux_0.acc_seg: 63.7263, aux_1.loss_ce: 0.4646, aux_1.acc_seg: 78.7371, aux_2.loss_ce: 0.3236, aux_2.acc_seg: 86.0694, aux_3.loss_ce: 0.2507, aux_3.acc_seg: 89.3548, loss: 2.0238
+2026-03-03 10:23:58,331 - mmseg - INFO - Iter [250/1500]	lr: 2.718e+00, eta: 0:49:52, time: 2.337, data_time: 0.852, memory: 47165, decode.loss_ce: 0.2485, decode.acc_seg: 89.4320, aux_0.loss_ce: 0.6783, aux_0.acc_seg: 66.0938, aux_1.loss_ce: 0.4443, aux_1.acc_seg: 79.5548, aux_2.loss_ce: 0.3077, aux_2.acc_seg: 86.6892, aux_3.loss_ce: 0.2440, aux_3.acc_seg: 89.5818, loss: 1.9228
+2026-03-03 10:24:17,907 - mmseg - INFO - per class results:
+2026-03-03 10:24:17,919 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 14.86 | 14.96 |
+|  water   | 76.51 | 85.16 |
+|   sky    | 53.48 | 99.59 |
++----------+-------+-------+
+2026-03-03 10:24:17,919 - mmseg - INFO - Summary:
+2026-03-03 10:24:17,920 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 71.92 | 48.28 | 66.57 |
++-------+-------+-------+
+2026-03-03 10:24:18,349 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_250.pth.
+2026-03-03 10:24:18,350 - mmseg - INFO - Best mIoU is 0.4828 at 250 iter.
+2026-03-03 10:24:18,351 - mmseg - INFO - Iter(val) [99]	aAcc: 0.7192, mIoU: 0.4828, mAcc: 0.6657, IoU.obstacle: 0.1486, IoU.water: 0.7651, IoU.sky: 0.5348, Acc.obstacle: 0.1496, Acc.water: 0.8516, Acc.sky: 0.9959
+2026-03-03 10:26:15,645 - mmseg - INFO - Iter [300/1500]	lr: 2.620e+00, eta: 0:49:03, time: 2.746, data_time: 1.255, memory: 47165, decode.loss_ce: 0.3343, decode.acc_seg: 86.0766, aux_0.loss_ce: 0.7273, aux_0.acc_seg: 63.6242, aux_1.loss_ce: 0.5047, aux_1.acc_seg: 76.3547, aux_2.loss_ce: 0.3953, aux_2.acc_seg: 82.2327, aux_3.loss_ce: 0.3454, aux_3.acc_seg: 85.2952, loss: 2.3071
+2026-03-03 10:28:12,096 - mmseg - INFO - Iter [350/1500]	lr: 2.521e+00, eta: 0:46:40, time: 2.329, data_time: 0.831, memory: 47165, decode.loss_ce: 0.3625, decode.acc_seg: 84.7213, aux_0.loss_ce: 0.9702, aux_0.acc_seg: 46.6649, aux_1.loss_ce: 0.5659, aux_1.acc_seg: 73.4539, aux_2.loss_ce: 0.4520, aux_2.acc_seg: 79.5739, aux_3.loss_ce: 0.3633, aux_3.acc_seg: 84.5496, loss: 2.7138
+2026-03-03 10:30:08,382 - mmseg - INFO - Iter [400/1500]	lr: 2.423e+00, eta: 0:44:23, time: 2.326, data_time: 0.851, memory: 47165, decode.loss_ce: 0.2696, decode.acc_seg: 88.7237, aux_0.loss_ce: 0.9301, aux_0.acc_seg: 50.2052, aux_1.loss_ce: 0.4911, aux_1.acc_seg: 77.1440, aux_2.loss_ce: 0.3149, aux_2.acc_seg: 86.4627, aux_3.loss_ce: 0.2668, aux_3.acc_seg: 88.7063, loss: 2.2724
+2026-03-03 10:32:05,127 - mmseg - INFO - Iter [450/1500]	lr: 2.323e+00, eta: 0:42:12, time: 2.334, data_time: 0.852, memory: 47165, decode.loss_ce: 0.2602, decode.acc_seg: 89.1553, aux_0.loss_ce: 0.9700, aux_0.acc_seg: 44.3997, aux_1.loss_ce: 0.4732, aux_1.acc_seg: 78.3239, aux_2.loss_ce: 0.2968, aux_2.acc_seg: 87.2461, aux_3.loss_ce: 0.2612, aux_3.acc_seg: 88.9873, loss: 2.2614
+2026-03-03 10:34:01,510 - mmseg - INFO - Iter [500/1500]	lr: 2.224e+00, eta: 0:40:03, time: 2.328, data_time: 0.843, memory: 47165, decode.loss_ce: 0.2398, decode.acc_seg: 89.9447, aux_0.loss_ce: 0.9696, aux_0.acc_seg: 44.4460, aux_1.loss_ce: 0.4515, aux_1.acc_seg: 79.5283, aux_2.loss_ce: 0.2833, aux_2.acc_seg: 87.8650, aux_3.loss_ce: 0.2425, aux_3.acc_seg: 89.7399, loss: 2.1868
+2026-03-03 10:34:16,432 - mmseg - INFO - per class results:
+2026-03-03 10:34:16,432 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 49.55 | 67.57 |
+|  water   | 83.84 | 96.74 |
+|   sky    | 70.42 |  71.4 |
++----------+-------+-------+
+2026-03-03 10:34:16,433 - mmseg - INFO - Summary:
+2026-03-03 10:34:16,433 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 83.15 | 67.93 | 78.57 |
++-------+-------+-------+
+2026-03-03 10:34:16,474 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2/best_mIoU_iter_250.pth was removed
+2026-03-03 10:34:16,888 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_500.pth.
+2026-03-03 10:34:16,889 - mmseg - INFO - Best mIoU is 0.6793 at 500 iter.
+2026-03-03 10:34:16,889 - mmseg - INFO - Iter(val) [99]	aAcc: 0.8315, mIoU: 0.6793, mAcc: 0.7857, IoU.obstacle: 0.4955, IoU.water: 0.8384, IoU.sky: 0.7042, Acc.obstacle: 0.6757, Acc.water: 0.9674, Acc.sky: 0.7140
+2026-03-03 10:36:13,166 - mmseg - INFO - Iter [550/1500]	lr: 2.123e+00, eta: 0:38:23, time: 2.633, data_time: 1.160, memory: 47165, decode.loss_ce: 0.2201, decode.acc_seg: 90.7372, aux_0.loss_ce: 0.9727, aux_0.acc_seg: 43.3121, aux_1.loss_ce: 0.4038, aux_1.acc_seg: 81.6703, aux_2.loss_ce: 0.2561, aux_2.acc_seg: 89.0495, aux_3.loss_ce: 0.2261, aux_3.acc_seg: 90.4252, loss: 2.0788
+2026-03-03 10:38:09,657 - mmseg - INFO - Iter [600/1500]	lr: 2.023e+00, eta: 0:36:14, time: 2.331, data_time: 0.860, memory: 47165, decode.loss_ce: 0.2177, decode.acc_seg: 90.9041, aux_0.loss_ce: 0.9741, aux_0.acc_seg: 44.2930, aux_1.loss_ce: 0.4072, aux_1.acc_seg: 81.5663, aux_2.loss_ce: 0.2618, aux_2.acc_seg: 88.8826, aux_3.loss_ce: 0.2311, aux_3.acc_seg: 90.2814, loss: 2.0919
+2026-03-03 10:40:06,318 - mmseg - INFO - Iter [650/1500]	lr: 1.921e+00, eta: 0:34:08, time: 2.333, data_time: 0.850, memory: 47165, decode.loss_ce: 0.1999, decode.acc_seg: 91.6806, aux_0.loss_ce: 0.9721, aux_0.acc_seg: 44.4892, aux_1.loss_ce: 0.3951, aux_1.acc_seg: 81.9630, aux_2.loss_ce: 0.2500, aux_2.acc_seg: 89.4327, aux_3.loss_ce: 0.2141, aux_3.acc_seg: 91.0446, loss: 2.0313
+2026-03-03 10:42:03,489 - mmseg - INFO - Iter [700/1500]	lr: 1.819e+00, eta: 0:32:04, time: 2.343, data_time: 0.868, memory: 47165, decode.loss_ce: 0.3709, decode.acc_seg: 83.5888, aux_0.loss_ce: 0.9727, aux_0.acc_seg: 44.4352, aux_1.loss_ce: 0.5200, aux_1.acc_seg: 75.0863, aux_2.loss_ce: 0.4049, aux_2.acc_seg: 81.9137, aux_3.loss_ce: 0.3291, aux_3.acc_seg: 85.7385, loss: 2.5976
+2026-03-03 10:44:00,067 - mmseg - INFO - Saving checkpoint at 750 iterations
+2026-03-03 10:44:01,308 - mmseg - INFO - Iter [750/1500]	lr: 1.717e+00, eta: 0:30:02, time: 2.374, data_time: 0.856, memory: 47165, decode.loss_ce: 0.3805, decode.acc_seg: 84.3755, aux_0.loss_ce: 0.9691, aux_0.acc_seg: 44.3285, aux_1.loss_ce: 0.6903, aux_1.acc_seg: 65.7169, aux_2.loss_ce: 0.5073, aux_2.acc_seg: 77.1992, aux_3.loss_ce: 0.3628, aux_3.acc_seg: 84.7747, loss: 2.9101
+2026-03-03 10:44:15,850 - mmseg - INFO - per class results:
+2026-03-03 10:44:15,850 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle |  0.12 |  0.12 |
+|  water   | 61.33 | 77.68 |
+|   sky    | 50.29 | 95.41 |
++----------+-------+-------+
+2026-03-03 10:44:15,850 - mmseg - INFO - Summary:
+2026-03-03 10:44:15,851 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 63.52 | 37.25 | 57.74 |
++-------+-------+-------+
+2026-03-03 10:44:15,851 - mmseg - INFO - Iter(val) [99]	aAcc: 0.6352, mIoU: 0.3725, mAcc: 0.5774, IoU.obstacle: 0.0012, IoU.water: 0.6133, IoU.sky: 0.5029, Acc.obstacle: 0.0012, Acc.water: 0.7768, Acc.sky: 0.9541
+2026-03-03 10:46:13,184 - mmseg - INFO - Iter [800/1500]	lr: 1.614e+00, eta: 0:28:11, time: 2.620, data_time: 1.143, memory: 47165, decode.loss_ce: 0.2631, decode.acc_seg: 88.9035, aux_0.loss_ce: 0.9706, aux_0.acc_seg: 44.3752, aux_1.loss_ce: 0.5355, aux_1.acc_seg: 74.6141, aux_2.loss_ce: 0.3457, aux_2.acc_seg: 84.7108, aux_3.loss_ce: 0.2698, aux_3.acc_seg: 88.5177, loss: 2.3847
+2026-03-03 10:48:09,979 - mmseg - INFO - Iter [850/1500]	lr: 1.510e+00, eta: 0:26:07, time: 2.336, data_time: 0.848, memory: 47165, decode.loss_ce: 0.2322, decode.acc_seg: 90.3814, aux_0.loss_ce: 0.9711, aux_0.acc_seg: 44.2098, aux_1.loss_ce: 0.4565, aux_1.acc_seg: 78.6735, aux_2.loss_ce: 0.2950, aux_2.acc_seg: 87.2113, aux_3.loss_ce: 0.2389, aux_3.acc_seg: 89.9838, loss: 2.1937
+2026-03-03 10:50:06,344 - mmseg - INFO - Iter [900/1500]	lr: 1.405e+00, eta: 0:24:04, time: 2.327, data_time: 0.844, memory: 47165, decode.loss_ce: 0.2418, decode.acc_seg: 90.0354, aux_0.loss_ce: 0.9711, aux_0.acc_seg: 44.4951, aux_1.loss_ce: 0.4544, aux_1.acc_seg: 78.9105, aux_2.loss_ce: 0.3053, aux_2.acc_seg: 86.7569, aux_3.loss_ce: 0.2462, aux_3.acc_seg: 89.7852, loss: 2.2188
+2026-03-03 10:52:02,847 - mmseg - INFO - Iter [950/1500]	lr: 1.299e+00, eta: 0:22:01, time: 2.330, data_time: 0.856, memory: 47165, decode.loss_ce: 0.2361, decode.acc_seg: 90.2248, aux_0.loss_ce: 0.9714, aux_0.acc_seg: 44.5163, aux_1.loss_ce: 0.4685, aux_1.acc_seg: 78.5130, aux_2.loss_ce: 0.2953, aux_2.acc_seg: 87.3885, aux_3.loss_ce: 0.2440, aux_3.acc_seg: 89.8550, loss: 2.2153
+2026-03-03 10:53:58,559 - mmseg - INFO - Exp name: bisenetv2_768x384_lars_phase1.py
+2026-03-03 10:53:58,560 - mmseg - INFO - Iter [1000/1500]	lr: 1.193e+00, eta: 0:19:59, time: 2.314, data_time: 0.847, memory: 47165, decode.loss_ce: 0.1855, decode.acc_seg: 92.1199, aux_0.loss_ce: 0.9701, aux_0.acc_seg: 44.2598, aux_1.loss_ce: 0.3945, aux_1.acc_seg: 82.0713, aux_2.loss_ce: 0.2448, aux_2.acc_seg: 89.5181, aux_3.loss_ce: 0.1975, aux_3.acc_seg: 91.6081, loss: 1.9925
+2026-03-03 10:54:13,329 - mmseg - INFO - per class results:
+2026-03-03 10:54:13,330 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 52.12 | 58.36 |
+|  water   |  70.6 | 99.51 |
+|   sky    |  49.0 | 49.11 |
++----------+-------+-------+
+2026-03-03 10:54:13,330 - mmseg - INFO - Summary:
+2026-03-03 10:54:13,331 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 76.56 | 57.24 | 68.99 |
++-------+-------+-------+
+2026-03-03 10:54:13,331 - mmseg - INFO - Exp name: bisenetv2_768x384_lars_phase1.py
+2026-03-03 10:54:13,331 - mmseg - INFO - Iter(val) [99]	aAcc: 0.7656, mIoU: 0.5724, mAcc: 0.6899, IoU.obstacle: 0.5212, IoU.water: 0.7060, IoU.sky: 0.4900, Acc.obstacle: 0.5836, Acc.water: 0.9951, Acc.sky: 0.4911
+2026-03-03 10:56:09,149 - mmseg - INFO - Iter [1050/1500]	lr: 1.085e+00, eta: 0:18:04, time: 2.612, data_time: 1.145, memory: 47165, decode.loss_ce: 0.1865, decode.acc_seg: 92.1316, aux_0.loss_ce: 0.9694, aux_0.acc_seg: 44.4564, aux_1.loss_ce: 0.3905, aux_1.acc_seg: 82.3372, aux_2.loss_ce: 0.2481, aux_2.acc_seg: 89.3574, aux_3.loss_ce: 0.1998, aux_3.acc_seg: 91.5725, loss: 1.9943
+2026-03-03 10:58:05,208 - mmseg - INFO - Iter [1100/1500]	lr: 9.762e-01, eta: 0:16:01, time: 2.322, data_time: 0.867, memory: 47165, decode.loss_ce: 0.1642, decode.acc_seg: 93.1317, aux_0.loss_ce: 0.9694, aux_0.acc_seg: 44.5420, aux_1.loss_ce: 0.3684, aux_1.acc_seg: 83.4963, aux_2.loss_ce: 0.2263, aux_2.acc_seg: 90.4233, aux_3.loss_ce: 0.1754, aux_3.acc_seg: 92.6442, loss: 1.9037
+2026-03-03 11:00:01,398 - mmseg - INFO - Iter [1150/1500]	lr: 8.659e-01, eta: 0:14:00, time: 2.324, data_time: 0.855, memory: 47165, decode.loss_ce: 0.1524, decode.acc_seg: 93.5229, aux_0.loss_ce: 0.9695, aux_0.acc_seg: 44.5504, aux_1.loss_ce: 0.3283, aux_1.acc_seg: 85.3552, aux_2.loss_ce: 0.2013, aux_2.acc_seg: 91.3853, aux_3.loss_ce: 0.1632, aux_3.acc_seg: 93.0553, loss: 1.8148
+2026-03-03 11:01:57,130 - mmseg - INFO - Iter [1200/1500]	lr: 7.541e-01, eta: 0:11:59, time: 2.315, data_time: 0.850, memory: 47165, decode.loss_ce: 0.1514, decode.acc_seg: 93.5638, aux_0.loss_ce: 0.9720, aux_0.acc_seg: 44.3320, aux_1.loss_ce: 0.3355, aux_1.acc_seg: 85.2678, aux_2.loss_ce: 0.2013, aux_2.acc_seg: 91.4785, aux_3.loss_ce: 0.1655, aux_3.acc_seg: 93.0179, loss: 1.8258
+2026-03-03 11:03:52,682 - mmseg - INFO - Iter [1250/1500]	lr: 6.404e-01, eta: 0:09:58, time: 2.311, data_time: 0.847, memory: 47165, decode.loss_ce: 0.1364, decode.acc_seg: 94.1518, aux_0.loss_ce: 0.9709, aux_0.acc_seg: 44.2852, aux_1.loss_ce: 0.3202, aux_1.acc_seg: 85.7657, aux_2.loss_ce: 0.1898, aux_2.acc_seg: 91.9069, aux_3.loss_ce: 0.1505, aux_3.acc_seg: 93.5866, loss: 1.7678
+2026-03-03 11:04:08,411 - mmseg - INFO - per class results:
+2026-03-03 11:04:08,412 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 75.89 | 86.41 |
+|  water   | 91.45 | 97.07 |
+|   sky    | 90.77 | 92.08 |
++----------+-------+-------+
+2026-03-03 11:04:08,412 - mmseg - INFO - Summary:
+2026-03-03 11:04:08,413 - mmseg - INFO - 
++------+-------+-------+
+| aAcc |  mIoU |  mAcc |
++------+-------+-------+
+| 93.2 | 86.03 | 91.85 |
++------+-------+-------+
+2026-03-03 11:04:08,440 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2/best_mIoU_iter_500.pth was removed
+2026-03-03 11:04:08,794 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_1250.pth.
+2026-03-03 11:04:08,795 - mmseg - INFO - Best mIoU is 0.8603 at 1250 iter.
+2026-03-03 11:04:08,795 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9320, mIoU: 0.8603, mAcc: 0.9185, IoU.obstacle: 0.7589, IoU.water: 0.9145, IoU.sky: 0.9077, Acc.obstacle: 0.8641, Acc.water: 0.9707, Acc.sky: 0.9208
+2026-03-03 11:06:04,394 - mmseg - INFO - Iter [1300/1500]	lr: 5.243e-01, eta: 0:08:00, time: 2.634, data_time: 1.177, memory: 47165, decode.loss_ce: 0.1195, decode.acc_seg: 94.8805, aux_0.loss_ce: 0.9689, aux_0.acc_seg: 44.4268, aux_1.loss_ce: 0.2936, aux_1.acc_seg: 87.1971, aux_2.loss_ce: 0.1727, aux_2.acc_seg: 92.6607, aux_3.loss_ce: 0.1343, aux_3.acc_seg: 94.2669, loss: 1.6890
+2026-03-03 11:07:59,940 - mmseg - INFO - Iter [1350/1500]	lr: 4.054e-01, eta: 0:06:00, time: 2.311, data_time: 0.856, memory: 47165, decode.loss_ce: 0.1108, decode.acc_seg: 95.2340, aux_0.loss_ce: 0.9643, aux_0.acc_seg: 44.6033, aux_1.loss_ce: 0.2816, aux_1.acc_seg: 87.7076, aux_2.loss_ce: 0.1613, aux_2.acc_seg: 93.0835, aux_3.loss_ce: 0.1259, aux_3.acc_seg: 94.5789, loss: 1.6439
+2026-03-03 11:09:55,922 - mmseg - INFO - Iter [1400/1500]	lr: 2.823e-01, eta: 0:03:59, time: 2.319, data_time: 0.847, memory: 47165, decode.loss_ce: 0.1064, decode.acc_seg: 95.4563, aux_0.loss_ce: 0.9685, aux_0.acc_seg: 44.4219, aux_1.loss_ce: 0.2771, aux_1.acc_seg: 87.9311, aux_2.loss_ce: 0.1591, aux_2.acc_seg: 93.2095, aux_3.loss_ce: 0.1225, aux_3.acc_seg: 94.7707, loss: 1.6336
+2026-03-03 11:11:51,722 - mmseg - INFO - Iter [1450/1500]	lr: 1.527e-01, eta: 0:01:59, time: 2.316, data_time: 0.844, memory: 47165, decode.loss_ce: 0.0951, decode.acc_seg: 95.9105, aux_0.loss_ce: 0.9674, aux_0.acc_seg: 44.4969, aux_1.loss_ce: 0.2667, aux_1.acc_seg: 88.4894, aux_2.loss_ce: 0.1486, aux_2.acc_seg: 93.6655, aux_3.loss_ce: 0.1118, aux_3.acc_seg: 95.1983, loss: 1.5896
+2026-03-03 11:13:46,781 - mmseg - INFO - Saving checkpoint at 1500 iterations
+2026-03-03 11:13:48,016 - mmseg - INFO - Iter [1500/1500]	lr: 4.533e-03, eta: 0:00:00, time: 2.344, data_time: 0.849, memory: 47165, decode.loss_ce: 0.0831, decode.acc_seg: 96.4287, aux_0.loss_ce: 0.9691, aux_0.acc_seg: 44.5154, aux_1.loss_ce: 0.2465, aux_1.acc_seg: 89.4571, aux_2.loss_ce: 0.1360, aux_2.acc_seg: 94.1809, aux_3.loss_ce: 0.1002, aux_3.acc_seg: 95.6702, loss: 1.5349
+2026-03-03 11:14:03,076 - mmseg - INFO - per class results:
+2026-03-03 11:14:03,077 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 86.41 | 91.33 |
+|  water   | 94.88 | 98.01 |
+|   sky    | 96.38 | 98.27 |
++----------+-------+-------+
+2026-03-03 11:14:03,078 - mmseg - INFO - Summary:
+2026-03-03 11:14:03,078 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 96.46 | 92.55 | 95.87 |
++-------+-------+-------+
+2026-03-03 11:14:03,112 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/bisenetv2/best_mIoU_iter_1250.pth was removed
+2026-03-03 11:14:03,539 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_1500.pth.
+2026-03-03 11:14:03,540 - mmseg - INFO - Best mIoU is 0.9255 at 1500 iter.
+2026-03-03 11:14:03,541 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9646, mIoU: 0.9255, mAcc: 0.9587, IoU.obstacle: 0.8641, IoU.water: 0.9488, IoU.sky: 0.9638, Acc.obstacle: 0.9133, Acc.water: 0.9801, Acc.sky: 0.9827

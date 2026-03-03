@@ -23,7 +23,8 @@ RUN apt-get update && apt upgrade -y && \
     libxcb1 \
     libxcb-xinerama0 \
     libgl1 \
-    libglib2.0-0
+    libglib2.0-0 \
+    bash-completion
 
 
 # Create non-root user
@@ -45,6 +46,19 @@ RUN apt-get update && apt-get install -y sudo \
   && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME\
   && chmod 0440 /etc/sudoers.d/$USERNAME \
   && rm -rf /var/lib/apt/lists/*
+
+# Configure git system-wide and install gitleaks — both require root.
+# Must run before USER switch.
+RUN git config --system core.hooksPath .githooks
+
+ARG GITLEAKS_VERSION=8.30.0
+RUN curl -fsSL \
+        "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+        -o /tmp/gitleaks.tar.gz && \
+    tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks && \
+    mv /tmp/gitleaks /usr/local/bin/gitleaks && \
+    chmod +x /usr/local/bin/gitleaks && \
+    rm /tmp/gitleaks.tar.gz
 
 # Switch to non-root user
 USER  ${USERNAME}
@@ -154,6 +168,9 @@ WORKDIR ${MACVI_WS}
 
 # Add Claude to PATH
 ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
+
+# Shell conveniences
+RUN echo 'alias claude-skip="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc
 
 #Set shell profile
 ENV TERM="xterm-256color"

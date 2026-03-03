@@ -12,10 +12,6 @@
 outputs/
 work_dirs/
 
-# Fun experiment artifacts tracked deliberately (override rules above)
-!challenges/embedded-semantic-segmentation/fun_experiments/**/*.onnx
-!challenges/embedded-semantic-segmentation/fun_experiments/**/*.log
-
 # Python
 __pycache__/
 *.py[cod]
@@ -48,6 +44,16 @@ Thumbs.db
 *.log
 *.out
 *.err
+
+# Experiment artifacts tracked deliberately (must come after *.log / *.onnx / *.pth rules)
+!challenges/embedded-semantic-segmentation/fun_experiments/**/*.onnx
+!challenges/embedded-semantic-segmentation/fun_experiments/**/*.log
+!challenges/embedded-semantic-segmentation/phase1/**/*.onnx
+!challenges/embedded-semantic-segmentation/phase1/**/*.pth
+!challenges/embedded-semantic-segmentation/phase1/**/*.log
+
+# WandB local run cache (written to WANDB_DIR; never commit)
+wandb/
 
 # Credentials and tokens
 .env

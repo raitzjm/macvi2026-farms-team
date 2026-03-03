@@ -1,7 +1,7 @@
 # Embedded Semantic Segmentation Challenge
 
 ## Task
-3-class maritime segmentation (sky=0, water=1, obstacle=2) on LaRS dataset.
+3-class maritime segmentation (obstacle=0, water=1, sky=2) on LaRS dataset.
 We train and export an ONNX model. The challenge platform handles INT8
 quantization (Qualcomm SNPE) and deployment (Luxonis RVC4) - we do NOT do this.
 Our job: train model -> export ONNX -> submit ONNX to challenge server.
@@ -9,7 +9,7 @@ Winner: highest F1 detection score (FPS tiebreaker). Must achieve >=30 FPS at 76
 Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
-- LaRS: /home/farms/data/lars_dataset/ (train: 2607, val: 200, test: 1205 images)
+- LaRS: /home/farms/data/lars_dataset/ (train: 2605, val: 198, test: 1205 images)
 - Test set has NO segmentation masks
 - External data allowed but must be disclosed
 - img_dir: {split}/images/, ann_dir: {split}/semantic_masks/
@@ -26,6 +26,41 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - mmsegmentation 0.30.0 installed non-editable at /opt/macvi-env/mmsegmentation-macvi/
 - All baked into the Docker image — no post-start setup needed
 - Required patches baked in: setuptools<70, numpy<2, mmcv scatter patch (_functions.py)
+- **NOT baked in (must reapply after reinstall)**:
+  - `mmcv/parallel/distributed.py` line ~160: `self._use_replicated_tensor_module` →
+    `getattr(self, '_use_replicated_tensor_module', False)` (DDP eval fix for PyTorch 2.1.2)
+  - `wandb/sdk/lib/wbauth/validation.py`: add early-return for `wandb_` prefix before the
+    40-char check (required for new wandb API key format starting with `wandb_`)
+
+## WandB Experiment Tracking
+
+- **Package**: `wandb==0.25.0` installed in `macvi` env (`pip install wandb==0.25.0`)
+- **API key**: stored at `~/data/wandb_key.txt` (read-only mount — never commit)
+  - Key format starts with `wandb_` (new format) — requires the validation.py patch above
+  - Load via `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
+    or inline: `export WANDB_API_KEY=$(tr -d '[:space:]' < ~/data/wandb_key.txt)`
+- **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
+- **WANDB_DIR env var**: MUST be set to a directory that is NOT on `PYTHONPATH`
+  (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
+  cache directory instead of the wandb package — silently breaking all imports. The run
+  scripts set this correctly; check if adding new scripts.
+- **Hook config** (mmcv 1.7.2 `WandbLoggerHook` — logs scalars only, no images):
+  ```python
+  log_config = dict(
+      interval=50,
+      hooks=[
+          dict(type='TextLoggerHook'),
+          dict(type='WandbLoggerHook',
+               init_kwargs=dict(
+                   project='embedded_segmentation_macvi2026',
+                   entity='little_farms',
+                   name='<run_name>',
+               )),
+      ])
+  ```
+- **Image logging**: mmcv 1.7.2 `WandbLoggerHook` does NOT support image logging (scalars
+  only). Upgrade to mmseg 1.x / mmengine in Phase 2 for `WandbVisBackend` +
+  `SegVisualizationHook` which logs prediction overlays natively.
 
 ## Preprocessing Requirements (CRITICAL — must match challenge server exactly)
 
@@ -44,15 +79,57 @@ All three points must be matched in training pipelines. The fun experiments got 
   (`padding_mode='reflect'` is mirror padding; default `pad_val=0` is wrong)
 - Centering is handled automatically by mmseg when keep_ratio=True + Pad are combined
 
+## Config Philosophy (applies to all phases)
+
+Architecture-specific settings — optimizer type, base LR, loss functions, head config,
+auxiliary heads — are left **untouched** per model (inherited from the upstream LaRS or
+ADE20K reference config). These are tuned for each architecture and must not be
+homogenised across models.
+
+Shared settings — resolution, preprocessing pipeline, schedule length, eval frequency,
+dataset paths — are **standardised** across all models in each phase.
+
+**Runner type**: all mmseg-macvi LaRS configs use `IterBasedRunner` (iter-based, not
+epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models.
+
+**LR scaling when changing batch size** from the upstream reference:
+- SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
+  `new_lr = base_lr × (new_bs / reference_bs)`. Skipping this for large batch
+  size increases leaves SGD steps too small and weakens results artificially.
+- AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
+- Reference values and rationale are documented in issue #9.
+- Document both batch_size and lr in a comment in the config so Phase 2 can replicate
+  the exact (bs, lr) pair.
+
+**SyncBN for DDP**: models using BatchNorm must switch to `SyncBN` when training with DDP
+(multiple GPUs), so BN statistics are synchronized across GPUs rather than computed
+independently per device. This applies to STDC2 and BiSeNetV2. Models using LayerNorm
+(SegNeXt-T, SegFormer) are unaffected. Set `norm_cfg = dict(type='SyncBN', requires_grad=True)`
+in the model config. This setting is pinned — carry it into Phase 2.
+
+**Batch size strategy**: at the start of Phase 1, calibrate the maximum batch size that
+fits on the training GPU without OOM. Document this value in the config comment. This
+becomes the pinned batch size — reuse the exact same value in Phase 2 for the consistency
+check to remain valid. Do not change it between phases.
+
 ## Experiment Phases
-Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
-          architecture rankings. Models TBD.
+Phase 1: Short validation runs (~1.5k iters, ~1.25h per model) — validate correct preprocessing
+          and confirm architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
-          so Phase 2 translated configs can be cross-checked for consistency.
+          so Phase 2 translated configs can be cross-checked for consistency at the ~1.5k iter mark.
+          1.5k iters chosen for 2-GPU DDP: 1500 × total_bs ≈ 3000 × (total_bs/2) — same training
+          data as the original 1-GPU 3k plan, but half the wall-clock time (~1.25h/model, ~5h total).
+          Eval every 250 iters → 6 evaluation points. Phase 2 is the real baseline; Phase 1 is a sanity check.
+          See issue #9 for full details, batch size reference values, and smoke test workflow.
+          Once Phase 1 is complete, methodology and rationale will be captured in
+          `phase1/phase1_report.md` — that becomes the permanent team reference.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
-          (target: 1.2.2) for consistency. Verify Phase 2 results are consistent with
-          Phase 1 to confirm config translation introduced no bugs. All serious
-          experiments from here onward use this unified stack.
+          (target: 1.2.2) for consistency. All serious experiments from here onward
+          use this unified stack. New models may be introduced here.
+          Consistency check: compare val mIoU at the ~3k iter mark against Phase 1 logs.
+          Phase 2 eval frequency is independent (e.g. every 5k iters) — only one early
+          checkpoint near iter 3k is needed for the cross-check.
+          Batch size must match Phase 1 exactly — do not re-calibrate.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
@@ -64,9 +141,29 @@ Phases can be modified, reordered, added, or skipped as the project evolves.
 - Opset version: 13 (server uses SNPE which requires opset 13)
 - See fun_experiments/{model}/export_onnx.py for reference implementations
 
+## Output Directory Convention
+
+Training live outputs (checkpoints, logs) go to:
+  `challenges/embedded-semantic-segmentation/outputs/{phase}/{model_name}/`
+
+Pass this as `--work-dir` to the train script. Examples:
+  `outputs/phase1/stdc2/`
+  `outputs/phase2/stdc2/`
+
+This keeps phases isolated and prevents checkpoint collisions. The `outputs/` tree
+is gitignored — only curated artifacts are committed (see Phase 1 Artifact Archival).
+
+## Artifact Archival
+
+After each training run completes, use the `/archive-experiment` skill.
+It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
+experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
+
 ## Current Status
-Fun experiments complete (branch fun/experiments). Results archived in fun_experiments/.
-Next milestone: Phase 1 short validation runs with corrected preprocessing.
+Phase 1 COMPLETE (branch: exp/phase1-baselines). All 4 models done. See experiment-log.md.
+Final mIoU: SegFormer 97.00%, STDC2 95.76%, SegNeXt-T 95.61%, BiSeNetV2 92.55%.
+Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
+See issue #9 for task tracking and run decisions.
 
 ## Published Baselines (from challenge website)
 Three variants per model:

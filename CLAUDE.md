@@ -4,31 +4,22 @@
 Maritime computer vision challenge. Multiple challenge tracks under challenges/.
 Repo: macvi2026-farms-team
 
-## Architecture
-```
-macvi2026-farms-team/
-├── CLAUDE.md              (this file - global rules)
-├── README.md
-├── container/
-│   ├── Dockerfile
-│   └── scripts/
-│       ├── build.sh       (Docker default; --podman flag for Podman)
-│       └── run.sh         (Docker default; --podman flag for Podman)
-├── challenges/
-│   └── embedded-semantic-segmentation/
-│       ├── CLAUDE.md      (challenge-specific context)
-│       ├── experiment-log.md
-│       ├── mmsegmentation-macvi/  (copied from upstream, tracked directly)
-│       ├── configs/
-│       └── scripts/
-└── docs/
-```
-
 ## Safety Rules
-- NEVER commit dataset files, model weights (.pth, .onnx), or credentials
+- NEVER commit dataset files or credentials
+- NEVER commit model weights (.pth, .onnx) **except** where explicitly documented
+  in a challenge-specific CLAUDE.md (e.g. curated experiment artifacts committed via Git LFS)
 - NEVER modify files under /home/farms/data/ (mounted read-only datasets)
 - NEVER access repositories other than macvi2026-farms-team
 - Before any destructive action (deleting files, force push), ask for confirmation
+
+## Secret Scanning
+A gitleaks pre-commit hook runs automatically on every commit inside the container
+(baked into the image via system-level git config — no manual setup needed).
+If the hook blocks a commit:
+1. Remove the secret from the file
+2. Replace it with a placeholder (e.g. `# removed — use $ENV_VAR_NAME instead`)
+3. Notify the user
+4. NEVER use `--no-verify` to bypass this check
 
 ## Logging (CRITICAL)
 - The experiment log (experiment-log.md) is for training experiments ONLY
@@ -37,6 +28,9 @@ macvi2026-farms-team/
 - After completing a training run, update the entry with results and status
 - Each entry must log: config path, dataset, resolution, epochs, final
   metrics (val F1, val mIoU), and git commit hash
+  (val F1 is reported via post-export eval when the mmseg evaluator does not support it;
+  in that case record it in the phase report and note 'see phase report' in the experiment
+  log entry)
 - Non-experiment work (installations, refactors, scripts) is tracked through
   git commits only — do not clutter the experiment log with these
 
@@ -72,8 +66,12 @@ When installing new system or Python dependencies:
 5. Notify the user to rebuild the container after Dockerfile changes
 
 ## Environment
+- **All agent and user sessions run inside the container — no exceptions.**
+  Never assume you are on the host. If something seems wrong with the environment,
+  diagnose within the container rather than assuming a host context.
 - Base image: nvidia/cuda:12.1.1-devel-ubuntu22.04
-- Python: 3.12
+- System Python: Ubuntu 22.04 default (not used for ML work)
+- ML training env: conda env `macvi`, Python 3.11 (see challenge CLAUDE.md for details)
 - Datasets mounted read-only at /home/farms/data/ (pass --data-dir to run.sh)
 - Training outputs go to challenges/{challenge}/outputs/
 - See challenge-specific CLAUDE.md files for task details

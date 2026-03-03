@@ -90,11 +90,13 @@ else
     GPU_ARGS=(--gpus all)
 fi
 
-echo "Running with: $RUNTIME"
+HOST_SHM_BYTES=$(df --block-size=1 /dev/shm | awk 'NR==2{print $2}')
+
+echo "Running with: $RUNTIME (shm-size=${HOST_SHM_BYTES} bytes)"
 "$RUNTIME" run -it --rm \
     "${GPU_ARGS[@]}" \
     --network=host \
-    --shm-size=8g \
+    --shm-size="${HOST_SHM_BYTES}" \
     --ulimit memlock=-1 \
     -e GH_TOKEN="${MACVI_GH_TOKEN}" \
     "${VOLUMES[@]}" \

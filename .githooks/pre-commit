@@ -1,0 +1,19 @@
+#!/bin/bash
+# Pre-commit hook: scan staged files for secrets using gitleaks.
+# Installed via: git config core.hooksPath .githooks (one-time per clone)
+
+if ! command -v gitleaks &> /dev/null; then
+    echo "[pre-commit] WARNING: gitleaks not found — secret scan skipped. Rebuild the container."
+    exit 0
+fi
+
+gitleaks protect --staged --redact --verbose
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "[pre-commit] COMMIT BLOCKED: gitleaks detected potential secrets."
+    echo "  1. Remove the secret from the file."
+    echo "  2. Replace it with a placeholder (e.g. # removed: use \$ENV_VAR instead)."
+    echo "  3. Notify the user."
+    echo "  NEVER use --no-verify to bypass this check."
+    exit 1
+fi
