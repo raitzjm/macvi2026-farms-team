@@ -117,6 +117,10 @@ class SegWrapperLogits(nn.Module):
     def forward(self, img):
         feats  = self.model.backbone(img)
         logits = self.model.decode_head(feats)
+        # NOTE: align_corners=False used for all models. STDC2's decode_head has
+        # align_corners=True in its config — this is a known inconsistency that had
+        # no measurable effect (<0.01% delta) in Phase 1. Phase 2 export should
+        # match align_corners per model (add to MODELS registry).
         logits = F.interpolate(logits, size=(MODEL_H, MODEL_W),
                                mode='bilinear', align_corners=False)
         return logits

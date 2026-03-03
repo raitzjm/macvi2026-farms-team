@@ -1,7 +1,7 @@
 # Embedded Semantic Segmentation Challenge
 
 ## Task
-3-class maritime segmentation (sky=0, water=1, obstacle=2) on LaRS dataset.
+3-class maritime segmentation (obstacle=0, water=1, sky=2) on LaRS dataset.
 We train and export an ONNX model. The challenge platform handles INT8
 quantization (Qualcomm SNPE) and deployment (Luxonis RVC4) - we do NOT do this.
 Our job: train model -> export ONNX -> submit ONNX to challenge server.
@@ -9,7 +9,7 @@ Winner: highest F1 detection score (FPS tiebreaker). Must achieve >=30 FPS at 76
 Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
 ## Dataset
-- LaRS: /home/farms/data/lars_dataset/ (train: 2607, val: 200, test: 1205 images)
+- LaRS: /home/farms/data/lars_dataset/ (train: 2605, val: 198, test: 1205 images)
 - Test set has NO segmentation masks
 - External data allowed but must be disclosed
 - img_dir: {split}/images/, ann_dir: {split}/semantic_masks/

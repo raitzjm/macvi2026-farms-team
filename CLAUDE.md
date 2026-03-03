@@ -28,6 +28,9 @@ If the hook blocks a commit:
 - After completing a training run, update the entry with results and status
 - Each entry must log: config path, dataset, resolution, epochs, final
   metrics (val F1, val mIoU), and git commit hash
+  (val F1 is reported via post-export eval when the mmseg evaluator does not support it;
+  in that case record it in the phase report and note 'see phase report' in the experiment
+  log entry)
 - Non-experiment work (installations, refactors, scripts) is tracked through
   git commits only — do not clutter the experiment log with these
 

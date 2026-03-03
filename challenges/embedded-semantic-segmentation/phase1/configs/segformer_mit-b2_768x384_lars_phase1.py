@@ -21,13 +21,15 @@ Batch size / LR (AdamW — keep LR fixed regardless of batch size):
   Pinned for Phase 2 consistency: samples_per_gpu=36, num_gpus=2, lr=0.00006
 
 Run:
+  # Use run_one_model.sh for the standard launch with WandB setup.
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
-  python mmsegmentation-macvi/tools/train.py \\
-      challenges/embedded-semantic-segmentation/phase1/configs/segformer_mit-b2_768x384_lars_phase1.py \\
+  torchrun --standalone --nproc_per_node=2 \
+      mmsegmentation-macvi/tools/train.py --launcher pytorch \
+      challenges/embedded-semantic-segmentation/phase1/configs/segformer_mit-b2_768x384_lars_phase1.py \
       --work-dir challenges/embedded-semantic-segmentation/outputs/phase1/segformer_mit-b2/
 """
 
-MMSEG_ROOT = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi'
+# mmseg at: challenges/embedded-semantic-segmentation/mmsegmentation-macvi/
 DATA_ROOT  = '/home/farms/lars_linked/'
 
 custom_imports = dict(

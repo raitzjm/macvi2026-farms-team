@@ -10,7 +10,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 **Started:** 2026-03-03 08:22 UTC
 **Git commit:** `8ffd3aa`
 **Hardware:** 2× RTX A6000 48 GB, DDP (torchrun --standalone --nproc_per_node=2)
-**Dataset:** LaRS (train: 2607, val: 200) @ 768×384
+**Dataset:** LaRS (train: 2605, val: 198) @ 768×384
 **Schedule:** 1500 iters, eval every 250 (6 points), checkpoint every 750
 **WandB:** little_farms/embedded_segmentation_macvi2026
 
@@ -26,6 +26,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Finished:** 2026-03-03 10:06 UTC (~1h08m)
 - **Status:** COMPLETED ✓
 - **Best checkpoint:** `best_mIoU_iter_1250.pth`
+- **Val F1 (post-export eval, direct-resize):** 69.30% (see phase1/phase1_report.md §11)
 - **Val mIoU progression:**
 
 | Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
@@ -34,7 +35,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 | 500  | 95.44 | 97.90 | 91.71       | 97.11     | 97.50   |
 | 750  | 95.54 | 97.93 | 91.96       | 97.14     | 97.53   |
 | 1000 | 94.56 | 97.51 | 90.32       | 96.80     | 96.57   |
-| 1250 | **95.76** | 97.08 | **92.41** | **97.60** | 97.26 |
+| 1250 | **95.76** | 98.08 | **92.41** | **97.60** | 97.26 |
 | 1500 | 95.51 | 97.98 | 92.06       | 97.62     | 96.83   |
 
 ### EXP-002 — BiSeNetV2
@@ -42,13 +43,14 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Config:** `phase1/configs/bisenetv2_768x384_lars_phase1.py`
 - **Work dir:** `outputs/phase1/bisenetv2/`
 - **Optimizer:** SGD, lr=3.2, momentum=0.9, wd=0.0005
-- **Batch size:** samples_per_gpu=128 × 2 GPUs = 256 total (reduced from 152 after OOM — 5 aux heads)
+- **Batch size:** samples_per_gpu=128 × 2 GPUs = 256 total (reduced from 152 after OOM — 5 total prediction heads (1 decode_head + 4 auxiliary_heads))
 - **LR scaling:** linear (ref bs=4, ref lr=0.05 → scaled lr=0.05×256/4=3.2)
 - **Norm:** SyncBN (DDP, already set)
 - **Started:** 2026-03-03 10:12 UTC (restarted after OOM fix)
 - **Finished:** 2026-03-03 11:14 UTC (~1h02m)
 - **Status:** COMPLETED ✓
 - **Best checkpoint:** `best_mIoU_iter_1500.pth` (still climbing at end)
+- **Val F1 (post-export eval, direct-resize):** 60.84% (see phase1/phase1_report.md §11)
 - **Val mIoU progression:**
 
 | Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
@@ -68,12 +70,13 @@ instability; full recovery by iter 1000. Model still climbing at iter 1500 — w
 - **Config:** `phase1/configs/segnext_t_768x384_lars_phase1.py`
 - **Work dir:** `outputs/phase1/segnext_t/`
 - **Optimizer:** AdamW, lr=6e-5 (fixed — no linear scaling for AdamW)
-- **Batch size:** samples_per_gpu=75 × 2 GPUs = 150 total
+- **Batch size:** samples_per_gpu=56 × 2 GPUs = 112 total (reduced from 75 after OOM — HAM decoder)
 - **Norm:** LayerNorm (unaffected by DDP)
 - **Started:** 2026-03-03 11:20 UTC (restarted at bs=56 after OOM)
 - **Finished:** 2026-03-03 11:54 UTC (~34 min)
 - **Status:** COMPLETED ✓
 - **Best checkpoint:** `best_mIoU_iter_1500.pth` (still climbing at end)
+- **Val F1 (post-export eval, direct-resize):** 72.86% (see phase1/phase1_report.md §11)
 - **Val mIoU progression:**
 
 | Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |
@@ -98,6 +101,7 @@ Note: Monotonic convergence throughout. Still climbing at iter 1500. Very fast r
 - **Finished:** 2026-03-03 12:31 UTC (~36 min)
 - **Status:** COMPLETED ✓
 - **Best checkpoint:** `best_mIoU_iter_1000.pth` (plateaued after iter 1000)
+- **Val F1 (post-export eval, direct-resize):** 73.64% (see phase1/phase1_report.md §11)
 - **Val mIoU progression:**
 
 | Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |

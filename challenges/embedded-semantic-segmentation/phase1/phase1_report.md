@@ -31,7 +31,7 @@ Phase 2 is the real baseline (full training budget, mmseg 1.x migration). Phase 
 | MMCV | 1.7.2 (prebuilt wheel) |
 | MMSegmentation | 0.30.0 (mmsegmentation-macvi fork) |
 | CUDA | 12.1 |
-| Dataset | LaRS — train: 2607, val: 200, test: 1205 |
+| Dataset | LaRS — train: 2605, val: 198, test: 1205 |
 | Resolution | 768×384 (W×H) — target deployment resolution |
 | WandB project | `little_farms/embedded_segmentation_macvi2026` |
 
@@ -94,7 +94,7 @@ Val mIoU progression:
 | 500 | 95.44 | 97.90 | 91.71 | 97.11 | 97.50 |
 | 750 | 95.54 | 97.93 | 91.96 | 97.14 | 97.53 |
 | 1000 | 94.56 | 97.51 | 90.32 | 96.80 | 96.57 |
-| **1250** | **95.76** | 97.08 | **92.41** | **97.60** | 97.26 |
+| **1250** | **95.76** | 98.08 | **92.41** | **97.60** | 97.26 |
 | 1500 | 95.51 | 97.98 | 92.06 | 97.62 | 96.83 |
 
 ---
@@ -344,9 +344,9 @@ Batch size was calibrated by running fwd+bwd only. The full training step (loss 
 
 ---
 
-### [BiSeNetV2] OOM at bs=152 — 5 auxiliary heads are memory-intensive
+### [BiSeNetV2] OOM at bs=152 — 5 total prediction heads are memory-intensive
 
-BiSeNetV2 has 5 auxiliary segmentation heads in addition to the main head. Memory usage is significantly higher than STDC2 at equivalent backbone complexity. OOMed at bs=152; reduced to bs=128. LR scaled accordingly: 3.2 (= 0.05 × 256/4).
+BiSeNetV2 has 5 total prediction heads (1 decode_head + 4 auxiliary_heads). Memory usage is significantly higher than STDC2 at equivalent backbone complexity. OOMed at bs=152; reduced to bs=128. LR scaled accordingly: 3.2 (= 0.05 × 256/4).
 
 ---
 
@@ -396,6 +396,12 @@ These values must not be re-calibrated in Phase 2. The Phase 2 consistency cross
 ---
 
 ## 9. Phase 1 Archival Exceptions
+
+**Known export limitation — align_corners inconsistency:** `SegWrapperLogits.forward` uses
+`F.interpolate(..., align_corners=False)` for all models unconditionally. STDC2's decode head
+uses `align_corners=True` in its config. This mismatch had no measurable effect in Phase 1
+(<0.01% delta on logit diff). Phase 2 export should match `align_corners` per model by adding
+it to the `MODELS` registry in `export_and_eval.py`.
 
 The following steps from the standard `/archive-experiment` skill were **not performed** for Phase 1:
 
