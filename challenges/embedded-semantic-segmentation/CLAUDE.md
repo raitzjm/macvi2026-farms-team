@@ -26,6 +26,41 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - mmsegmentation 0.30.0 installed non-editable at /opt/macvi-env/mmsegmentation-macvi/
 - All baked into the Docker image — no post-start setup needed
 - Required patches baked in: setuptools<70, numpy<2, mmcv scatter patch (_functions.py)
+- **NOT baked in (must reapply after reinstall)**:
+  - `mmcv/parallel/distributed.py` line ~160: `self._use_replicated_tensor_module` →
+    `getattr(self, '_use_replicated_tensor_module', False)` (DDP eval fix for PyTorch 2.1.2)
+  - `wandb/sdk/lib/wbauth/validation.py`: add early-return for `wandb_` prefix before the
+    40-char check (required for new wandb API key format starting with `wandb_`)
+
+## WandB Experiment Tracking
+
+- **Package**: `wandb==0.25.0` installed in `macvi` env (`pip install wandb==0.25.0`)
+- **API key**: stored at `~/data/wandb_key.txt` (read-only mount — never commit)
+  - Key format starts with `wandb_` (new format) — requires the validation.py patch above
+  - Load via `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
+    or inline: `export WANDB_API_KEY=$(tr -d '[:space:]' < ~/data/wandb_key.txt)`
+- **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
+- **WANDB_DIR env var**: MUST be set to a directory that is NOT on `PYTHONPATH`
+  (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
+  cache directory instead of the wandb package — silently breaking all imports. The run
+  scripts set this correctly; check if adding new scripts.
+- **Hook config** (mmcv 1.7.2 `WandbLoggerHook` — logs scalars only, no images):
+  ```python
+  log_config = dict(
+      interval=50,
+      hooks=[
+          dict(type='TextLoggerHook'),
+          dict(type='WandbLoggerHook',
+               init_kwargs=dict(
+                   project='embedded_segmentation_macvi2026',
+                   entity='little_farms',
+                   name='<run_name>',
+               )),
+      ])
+  ```
+- **Image logging**: mmcv 1.7.2 `WandbLoggerHook` does NOT support image logging (scalars
+  only). Upgrade to mmseg 1.x / mmengine in Phase 2 for `WandbVisBackend` +
+  `SegVisualizationHook` which logs prediction overlays natively.
 
 ## Preprocessing Requirements (CRITICAL — must match challenge server exactly)
 
