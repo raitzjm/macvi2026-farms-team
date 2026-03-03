@@ -41,7 +41,7 @@ def parse_args():
     p.add_argument('--figures',  default=str(script_dir / 'figures'))
     p.add_argument('--db',       default=str(script_dir.parent / 'embeddings.db'))
     p.add_argument('--images',   default='/home/farms/data/lars_dataset/img_dir')
-    p.add_argument('--out',      default=str(script_dir / 'spatial_report.pdf'))
+    p.add_argument('--out',      default=str(script_dir.parent / 'reports' / 'spatial_ood_report.pdf'))
     return p.parse_args()
 
 
@@ -248,20 +248,22 @@ def build_html(args, df_hm, df_merged, names, splits, seqs, embeds, meta, max_si
         mean_sim  = row['mean_patch_sim']
         whole_sim = row.get('whole_max_sim', float('nan'))
         fig_path  = Path(args.figures) / f'{img_name}.png'
-        thumb_b64 = img_path_to_b64(fig_path, size=(200, 80))
-        thumb_tag = (
-            f'<img src="data:image/png;base64,{thumb_b64}" style="height:60px;border-radius:3px;">'
-            if thumb_b64 else '<em>n/a</em>'
+        img_b64   = img_path_to_b64(fig_path, size=(900, 300))
+        img_tag   = (
+            f'<img src="data:image/png;base64,{img_b64}" style="width:100%;border-radius:4px;">'
+            if img_b64 else '<em>overlay not available</em>'
         )
         whole_str = f'{whole_sim:.4f}' if not (isinstance(whole_sim, float) and (whole_sim != whole_sim)) else 'N/A'
         ood_rows_html += f"""
-        <tr>
-          <td>{rank}</td>
-          <td>{thumb_tag}</td>
-          <td style="font-family:monospace;font-size:0.82em">{img_name}</td>
+        <tr class="entry-img">
+          <td colspan="5" style="padding:6px 8px;border-bottom:none;">{img_tag}</td>
+        </tr>
+        <tr class="entry-data">
+          <td style="width:2.5em;text-align:center;font-weight:bold;">{rank}</td>
+          <td style="font-family:monospace;font-size:0.82em;word-break:break-all;">{img_name}</td>
           <td>{seq}</td>
-          <td><b>{mean_sim:.4f}</b></td>
-          <td>{whole_str}</td>
+          <td style="text-align:center;"><b>{mean_sim:.4f}</b></td>
+          <td style="text-align:center;">{whole_str}</td>
         </tr>"""
 
     html = f"""<!DOCTYPE html>
@@ -280,7 +282,8 @@ def build_html(args, df_hm, df_merged, names, splits, seqs, embeds, meta, max_si
   table {{ border-collapse: collapse; width: 100%; font-size: 0.9em; margin: 1em 0; }}
   th, td {{ border: 1px solid #ccc; padding: 7px 10px; text-align: left; }}
   th {{ background: #f0f0f0; font-weight: bold; }}
-  tr:nth-child(even) {{ background: #fafafa; }}
+  tr.entry-img  {{ background: #fff; border-top: 2px solid #999; }}
+  tr.entry-data {{ background: #f7f7f7; border-bottom: 2px solid #999; }}
   .finding  {{ background: #e8f4f8; border-left: 4px solid #2196F3;
                padding: 10px 16px; margin: 16px 0; border-radius: 4px; }}
   .warning  {{ background: #fff8e1; border-left: 4px solid #FF9800;
@@ -298,7 +301,7 @@ def build_html(args, df_hm, df_merged, names, splits, seqs, embeds, meta, max_si
 <h2>1. Introduction</h2>
 
 <p>This report is a companion to the whole-image embedding analysis
-(<code>analysis.ipynb</code> / <code>report.pdf</code>). That analysis used the
+(<code>whole_image_ood/whole_image_ood.ipynb</code> / <code>reports/whole_image_ood.pdf</code>). That analysis used the
 spatial mean embedding — a single vector per image summarising the entire scene —
 to measure how well each test image is covered by the training distribution.</p>
 
@@ -395,7 +398,7 @@ similarity values in the table below for cross-image comparisons.</div>
 <p>Ranked by lowest mean patch cosine similarity to any patch in the subsampled
 training set.</p>
 <table>
-  <tr><th>#</th><th>Heatmap overlay</th><th>Image name</th><th>Sequence</th>
+  <tr><th>#</th><th>Image name</th><th>Sequence</th>
       <th>Mean patch sim ↑</th><th>Whole-img sim</th></tr>
   {ood_rows_html}
 </table>

@@ -57,8 +57,9 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Analysis intermediate artifacts
-challenges/common/lars-analysis/report.html
+# Analysis intermediate artifacts (HTML intermediates from weasyprint)
+challenges/common/lars-analysis/whole_image_ood/report.html
+challenges/common/lars-analysis/reports/*.html
 challenges/common/lars-analysis/spatial_ood/spatial_report.html
 
 # Spatial OOD extension — large intermediate files (not committed)
