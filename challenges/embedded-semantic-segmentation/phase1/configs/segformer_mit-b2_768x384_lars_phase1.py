@@ -11,11 +11,13 @@ Preprocessing fixes vs original segformer lars config (mandatory — matches cha
   - Test  mode: 'whole' instead of 'slide'   (training at target res — no sliding window needed)
 
 Batch size / LR (AdamW — keep LR fixed regardless of batch size):
-  Hardware:    RTX A6000 48 GB
+  Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   AdamW, lr=0.00006, bs=4  (segformer_mit-b0_8x1_1024x1024_160k_lars.py per-GPU)
-  Calibrated:  bs=45  (max OOM-free at 768×384; OOM at bs=46)
+  Per-GPU:     samples_per_gpu=45  (OOM boundary at 768×384; OOM at bs=46)
+  Effective:   total_bs=90 (45 × 2 GPUs)
   LR:          0.00006 (fixed — AdamW does not use linear scaling)
-  Pinned for Phase 2 consistency: bs=45, lr=0.00006
+  Norm: LayerNorm — SyncBN not applicable
+  Pinned for Phase 2 consistency: samples_per_gpu=45, num_gpus=2, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh

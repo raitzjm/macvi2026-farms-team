@@ -7,18 +7,20 @@
 #
 # Runs: EXP-001 (stdc2) → EXP-002 (bisenetv2) → EXP-003 (segnext_t) → EXP-004 (segformer_mit-b2)
 
-set -euo pipefail
+set -uo pipefail   # -e removed: individual model failures must not abort remaining runs
 
 REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 CHALLENGE="challenges/embedded-semantic-segmentation"
 MMSEG="$CHALLENGE/mmsegmentation-macvi"
 CONFIGS="$CHALLENGE/phase1/configs"
 OUTPUTS="$CHALLENGE/outputs"
+NUM_GPUS=2
 
 echo "========================================================"
 echo "Phase 1 training — $(date -u +'%Y-%m-%d %H:%M UTC')"
 echo "Repo root: $REPO_ROOT"
-echo "GPU: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || echo 'N/A')"
+echo "GPUs: $(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || echo 'N/A')"
+echo "NUM_GPUS: $NUM_GPUS"
 echo "========================================================"
 
 cd "$REPO_ROOT"
@@ -55,7 +57,7 @@ run_model() {
     echo "--------------------------------------------------------"
     mkdir -p "$work_dir"
 
-    python "$MMSEG/tools/train.py" "$CONFIGS/$config" --work-dir "$work_dir"
+    bash "$MMSEG/tools/dist_train.sh" "$CONFIGS/$config" "$NUM_GPUS" --work-dir "$work_dir"
     local exit_code=$?
 
     echo ""
@@ -67,12 +69,18 @@ run_model() {
     return $exit_code
 }
 
-run_model "EXP-001" "stdc2"            "stdc2_768x384_lars_phase1.py"
-run_model "EXP-002" "bisenetv2"        "bisenetv2_768x384_lars_phase1.py"
-run_model "EXP-003" "segnext_t"        "segnext_t_768x384_lars_phase1.py"
-run_model "EXP-004" "segformer_mit-b2" "segformer_mit-b2_768x384_lars_phase1.py"
+FAILED=()
+run_model "EXP-001" "stdc2"            "stdc2_768x384_lars_phase1.py"            || FAILED+=("EXP-001 stdc2")
+run_model "EXP-002" "bisenetv2"        "bisenetv2_768x384_lars_phase1.py"        || FAILED+=("EXP-002 bisenetv2")
+run_model "EXP-003" "segnext_t"        "segnext_t_768x384_lars_phase1.py"        || FAILED+=("EXP-003 segnext_t")
+run_model "EXP-004" "segformer_mit-b2" "segformer_mit-b2_768x384_lars_phase1.py" || FAILED+=("EXP-004 segformer_mit-b2")
 
 echo ""
 echo "========================================================"
 echo "All Phase 1 runs complete — $(date -u +'%Y-%m-%d %H:%M UTC')"
+if [ ${#FAILED[@]} -gt 0 ]; then
+    echo "FAILED runs: ${FAILED[*]}"
+else
+    echo "All runs succeeded."
+fi
 echo "========================================================"

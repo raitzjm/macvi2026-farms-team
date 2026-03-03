@@ -9,12 +9,13 @@ Preprocessing fixes vs original bisenetv2 lars config (mandatory — matches cha
   - Test  Pad: size=crop_size, reflect       (original had NO Pad in test pipeline)
 
 Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
-  Hardware:    RTX A6000 48 GB
+  Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   bs=4,   lr=0.05  (bisenetv2_fcn_4x4_1024x1024_160k_lars.py upstream, per-GPU)
-  Calibrated:  bs=152, lr=1.9   (max OOM-free at 768×384; lr = 0.05 × 152/4)
-  NOTE: lr=1.9 is a large value; the poly decay schedule (power=0.9, min_lr=1e-4, 10k iters)
-        and linear warmup (1000 iters) are expected to stabilise training.
-  Pinned for Phase 2 consistency: bs=152, lr=1.9
+  Per-GPU:     samples_per_gpu=152  (OOM boundary at 768×384)
+  Effective:   total_bs=304 (152 × 2 GPUs), lr=3.8 (= 0.05 × 304/4)
+  NOTE: lr=3.8 is large; poly decay + warmup expected to stabilise training.
+  Pinned for Phase 2 consistency: samples_per_gpu=152, num_gpus=2, lr=3.8
+  Norm: SyncBN already set (required for DDP)
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -178,8 +179,8 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (SGD — architecture-specific, do not change type/momentum/wd) ───
-# bs=152, lr=1.9: linear-scaled from ref (bs=4, lr=0.05): 0.05 × (152/4) = 1.9
-optimizer = dict(type='SGD', lr=1.9, momentum=0.9, weight_decay=0.0005)
+# total_bs=304 (152×2 GPUs), lr=3.8: linear-scaled from ref (bs=4, lr=0.05): 0.05 × (304/4)
+optimizer = dict(type='SGD', lr=3.8, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 
 lr_config = dict(

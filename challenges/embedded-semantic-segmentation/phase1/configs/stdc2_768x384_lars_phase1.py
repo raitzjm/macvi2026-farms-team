@@ -9,12 +9,12 @@ Preprocessing fixes vs fun_experiments (mandatory — matches challenge server):
   - Test  Pad: size=crop_size, reflect       (fun_experiments had NO Pad in test pipeline)
 
 Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
-  Hardware:    RTX A6000 48 GB
+  Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   bs=12,  lr=0.01  (stdc1_in1k-pre_512x1024_80k_lars.py upstream)
-  Calibrated:  bs=160, lr=0.133 (max OOM-free at 768×384 including loss step; lr = 0.01 × 160/12)
-  Note: forward+backward OOM probe found bs=174 (OOM@175), but loss computation
-  (accuracy metric) requires ~1.1 GB extra. Reduced to bs=160 for safe headroom.
-  Pinned for Phase 2 consistency: bs=160, lr=0.133
+  Per-GPU:     samples_per_gpu=160  (OOM boundary incl. loss step; fwd+bwd OOM@175)
+  Effective:   total_bs=320 (160 × 2 GPUs), lr=0.267 (= 0.01 × 320/12)
+  Pinned for Phase 2 consistency: samples_per_gpu=160, num_gpus=2, lr=0.267
+  Norm: SyncBN required for DDP (BN stats synchronized across GPUs)
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -40,7 +40,7 @@ img_norm_cfg = dict(
 
 # ── Model (STDC2: STDCContextPathNet + STDCNet2 backbone) ─────────────────────
 checkpoint_stdc2 = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/stdc/stdc2_20220308-7dbd9127.pth'  # noqa
-norm_cfg = dict(type='BN', requires_grad=True)
+norm_cfg = dict(type='SyncBN', requires_grad=True)
 
 model = dict(
     type='EncoderDecoder',
@@ -183,8 +183,8 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (SGD — architecture-specific, do not change type/momentum/wd) ───
-# bs=160, lr=0.133: linear-scaled from ref (bs=12, lr=0.01): 0.01 × (160/12) = 0.133
-optimizer = dict(type='SGD', lr=0.133, momentum=0.9, weight_decay=0.0005)
+# total_bs=320 (160×2 GPUs), lr=0.267: linear-scaled from ref (bs=12, lr=0.01): 0.01 × (320/12)
+optimizer = dict(type='SGD', lr=0.267, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 
 lr_config = dict(

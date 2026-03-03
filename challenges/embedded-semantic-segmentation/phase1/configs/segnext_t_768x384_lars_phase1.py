@@ -9,11 +9,13 @@ Preprocessing fixes vs fun_experiments segnext_t config (mandatory — matches c
   - Test  Pad: size=crop_size, reflect       (fun_experiments had NO Pad in test pipeline)
 
 Batch size / LR (AdamW — keep LR fixed regardless of batch size):
-  Hardware:    RTX A6000 48 GB
+  Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   AdamW, lr=0.00006  (upstream SegNeXt config)
-  Calibrated:  bs=75  (max OOM-free at 768×384; OOM at bs=76)
+  Per-GPU:     samples_per_gpu=75  (OOM boundary at 768×384; OOM at bs=76)
+  Effective:   total_bs=150 (75 × 2 GPUs)
   LR:          0.00006 (fixed — AdamW does not use linear scaling)
-  Pinned for Phase 2 consistency: bs=75, lr=0.00006
+  Norm: LayerNorm — SyncBN not applicable
+  Pinned for Phase 2 consistency: samples_per_gpu=75, num_gpus=2, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
