@@ -11,8 +11,10 @@ Preprocessing fixes vs fun_experiments (mandatory — matches challenge server):
 Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
   Hardware:    RTX A6000 48 GB
   Reference:   bs=12,  lr=0.01  (stdc1_in1k-pre_512x1024_80k_lars.py upstream)
-  Calibrated:  bs=174, lr=0.145 (max OOM-free at 768×384; lr = 0.01 × 174/12)
-  Pinned for Phase 2 consistency: bs=174, lr=0.145
+  Calibrated:  bs=160, lr=0.133 (max OOM-free at 768×384 including loss step; lr = 0.01 × 160/12)
+  Note: forward+backward OOM probe found bs=174 (OOM@175), but loss computation
+  (accuracy metric) requires ~1.1 GB extra. Reduced to bs=160 for safe headroom.
+  Pinned for Phase 2 consistency: bs=160, lr=0.133
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -162,9 +164,9 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=174 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=175)
+    # bs=160 calibrated on RTX A6000 48 GB at 768×384 (full forward+loss cycle)
     # Pinned for Phase 2 — do not re-calibrate.
-    samples_per_gpu=174,
+    samples_per_gpu=160,
     workers_per_gpu=4,
     pin_memory=False,
     train=dict(
@@ -181,8 +183,8 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (SGD — architecture-specific, do not change type/momentum/wd) ───
-# bs=174, lr=0.145: linear-scaled from ref (bs=12, lr=0.01): 0.01 × (174/12) = 0.145
-optimizer = dict(type='SGD', lr=0.145, momentum=0.9, weight_decay=0.0005)
+# bs=160, lr=0.133: linear-scaled from ref (bs=12, lr=0.01): 0.01 × (160/12) = 0.133
+optimizer = dict(type='SGD', lr=0.133, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 
 lr_config = dict(
