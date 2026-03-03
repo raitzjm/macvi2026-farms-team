@@ -72,12 +72,13 @@ becomes the pinned batch size — reuse the exact same value in Phase 2 for the 
 check to remain valid. Do not change it between phases.
 
 ## Experiment Phases
-Phase 1: Short validation runs (~3k iters, ~2h per model) — validate correct preprocessing
+Phase 1: Short validation runs (~1.5k iters, ~1.25h per model) — validate correct preprocessing
           and confirm architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
-          so Phase 2 translated configs can be cross-checked for consistency at the ~3k iter mark.
-          3k iters chosen deliberately — long enough for meaningful mIoU comparison, short enough
-          to run all 4 models in ~1 day. Phase 2 is the real baseline; Phase 1 is a sanity check.
+          so Phase 2 translated configs can be cross-checked for consistency at the ~1.5k iter mark.
+          1.5k iters chosen for 2-GPU DDP: 1500 × total_bs ≈ 3000 × (total_bs/2) — same training
+          data as the original 1-GPU 3k plan, but half the wall-clock time (~1.25h/model, ~5h total).
+          Eval every 250 iters → 6 evaluation points. Phase 2 is the real baseline; Phase 1 is a sanity check.
           See issue #9 for full details, batch size reference values, and smoke test workflow.
           Once Phase 1 is complete, methodology and rationale will be captured in
           `phase1/phase1_report.md` — that becomes the permanent team reference.
@@ -118,7 +119,7 @@ It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
 experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
 
 ## Current Status
-Phase 1 training in progress (branch: exp/phase1-baselines).
+Phase 1 training in progress (branch: exp/phase1-baselines). 1.5k iters, eval every 250.
 Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
 See issue #9 for task tracking and run decisions.
 

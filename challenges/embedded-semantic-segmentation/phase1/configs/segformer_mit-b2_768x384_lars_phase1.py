@@ -151,16 +151,18 @@ optimizer_config = dict()
 lr_config = dict(
     policy='poly',
     warmup='linear',
-    warmup_iters=500,
+    warmup_iters=250,
     warmup_ratio=1e-6,
     power=1.0,
     min_lr=0.0,
     by_epoch=False)
 
-# ── Phase 1 Schedule (3k iters — short validation run; Phase 2 is the real baseline) ──
-runner = dict(type='IterBasedRunner', max_iters=3000)
-checkpoint_config = dict(by_epoch=False, interval=1500)
-evaluation = dict(interval=500, metric='mIoU', pre_eval=True, save_best='mIoU')
+# ── Phase 1 Schedule (1.5k iters — 2 GPUs; equivalent data to 1-GPU 3k plan) ──
+# 1500 iters × 90 total_bs = 135k samples = 3000 iters × 45 (original 1-GPU plan).
+# Warmup scaled proportionally: 250 = 500 × (1500/3000).
+runner = dict(type='IterBasedRunner', max_iters=1500)
+checkpoint_config = dict(by_epoch=False, interval=750)
+evaluation = dict(interval=250, metric='mIoU', pre_eval=True, save_best='mIoU')
 
 # ── Logging (WandB + text) ────────────────────────────────────────────────────
 # WANDB_API_KEY must be set before training:  source phase1/scripts/setup_wandb.sh
