@@ -55,7 +55,7 @@ USER  ${USERNAME}
 RUN git config --system core.hooksPath .githooks
 
 # Install gitleaks for pre-commit secret scanning
-ARG GITLEAKS_VERSION=8.21.2
+ARG GITLEAKS_VERSION=8.30.0
 RUN curl -fsSL \
         "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
         -o /tmp/gitleaks.tar.gz && \
