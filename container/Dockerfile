@@ -23,7 +23,8 @@ RUN apt-get update && apt upgrade -y && \
     libxcb1 \
     libxcb-xinerama0 \
     libgl1 \
-    libglib2.0-0
+    libglib2.0-0 \
+    bash-completion
 
 
 # Create non-root user
@@ -170,6 +171,9 @@ WORKDIR ${MACVI_WS}
 
 # Add Claude to PATH
 ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
+
+# Shell conveniences
+RUN echo 'alias claude-unsafe="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc
 
 #Set shell profile
 ENV TERM="xterm-256color"
