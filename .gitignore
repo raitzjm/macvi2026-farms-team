@@ -58,6 +58,7 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Analysis intermediate artifacts (HTML intermediates from weasyprint)
+challenges/common/lars-analysis/*.html
 challenges/common/lars-analysis/whole_image_ood/report.html
 challenges/common/lars-analysis/reports/*.html
 challenges/common/lars-analysis/spatial_ood/spatial_report.html
