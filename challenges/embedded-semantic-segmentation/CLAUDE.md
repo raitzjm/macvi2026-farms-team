@@ -50,9 +50,19 @@ Phase 1: Short validation runs (~10k iters) — validate correct preprocessing a
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
           so Phase 2 translated configs can be cross-checked for consistency.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
-          (target: 1.2.2) for consistency. Verify Phase 2 results are consistent with
-          Phase 1 to confirm config translation introduced no bugs. All serious
-          experiments from here onward use this unified stack.
+          (target: 1.2.2) for consistency. All serious experiments from here onward
+          use this unified stack.
+
+          Consistency check workflow vs Phase 1:
+          1. Smoke test (200–500 iters) at the start of each Phase 2 run — starting
+             loss and early trajectory must match Phase 1 for the same model. A large
+             divergence (e.g. 2× loss difference) means the config translation has a
+             bug; fix before committing to the full run.
+          2. After all Phase 2 models finish, compare val mIoU curves at matching
+             iteration milestones (2k, 4k, 6k, 8k, 10k) against Phase 1 logs.
+             Significant divergence at iter 10k indicates a translation bug.
+          3. Batch size must be pinned to the same value as Phase 1 for the
+             comparison to be meaningful (do not use whatever fits in VRAM).
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
