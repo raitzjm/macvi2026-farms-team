@@ -1,19 +1,21 @@
 """
 SegFormer MiT-B2 @ 768×384 — LaRS — Phase 1 baseline
-(Upper-bound reference model — above 30 FPS threshold but useful for accuracy comparison)
+(Upper-bound accuracy reference; above 30 FPS threshold but useful for comparison)
 mmsegmentation 0.30.0 + mmcv-full 1.7.2 + PyTorch 2.1.2+cu121
-Conda env: macvi  |  macvi conda env at /home/farms/miniforge3/envs/macvi/
+Conda env: macvi  |  /home/farms/miniforge3/envs/macvi/
 
-Preprocessing fixes vs original segformer lars config (mandatory, matches challenge server):
-  - Train Pad: padding_mode='reflect'  (was pad_val=0 zero-padding)
-  - Test Resize: keep_ratio=True       (was keep_ratio=True in lars.py — now explicit)
-  - Test Pad: size=crop_size, padding_mode='reflect'  (was absent)
-  - Test mode: 'whole' instead of 'slide' (we train at target res; slide is for multi-scale)
+Preprocessing fixes vs original segformer lars config (mandatory — matches challenge server):
+  - Train Pad: padding_mode='reflect'        (original had pad_val=0 zero-padding)
+  - Test  Resize: keep_ratio=True            (original lars.py had keep_ratio=True — now explicit)
+  - Test  Pad: size=crop_size, reflect       (original had NO Pad in test pipeline)
+  - Test  mode: 'whole' instead of 'slide'   (training at target res — no sliding window needed)
 
-Batch size / LR calibration (AdamW — keep LR fixed regardless of batch size):
-  Reference: AdamW, lr=0.00006, bs=4  (segformer_mit-b0_8x1_1024x1024_160k_lars.py)
-  Phase 1:   bs=4, lr=0.00006   (conservative start; calibrate upward at 768×384 if headroom)
-  NOTE: At 768×384 the GPU may fit more than bs=4. Increase bs if OOM-free (lr stays fixed).
+Batch size / LR (AdamW — keep LR fixed regardless of batch size):
+  Hardware:    RTX A6000 48 GB
+  Reference:   AdamW, lr=0.00006, bs=4  (segformer_mit-b0_8x1_1024x1024_160k_lars.py per-GPU)
+  Calibrated:  bs=45  (max OOM-free at 768×384; OOM at bs=46)
+  LR:          0.00006 (fixed — AdamW does not use linear scaling)
+  Pinned for Phase 2 consistency: bs=45, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -69,10 +71,10 @@ model = dict(
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
     train_cfg=dict(),
-    # 'whole' mode: we train at target res, no need for sliding window
+    # FIX vs upstream: 'whole' mode — training at 768×384 target res; no sliding window
     test_cfg=dict(mode='whole'))
 
-# ── Pipelines (corrected preprocessing) ───────────────────────────────────────
+# ── Pipelines ─────────────────────────────────────────────────────────────────
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
@@ -81,7 +83,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
-    # FIX: reflect padding matches challenge server mirror-padding
+    # FIX vs original: reflect padding matches challenge server mirror-padding
     dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255, padding_mode='reflect'),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
@@ -94,11 +96,11 @@ test_pipeline = [
         img_scale=img_scale,
         flip=False,
         transforms=[
-            # FIX: keep_ratio=True preserves aspect ratio (challenge server behaviour)
+            # FIX vs original: explicit keep_ratio=True (challenge server behaviour)
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
-            # FIX: reflect-pad to exact crop_size (centering + mirror padding)
+            # FIX vs original: reflect-pad to exact crop_size (was absent)
             dict(type='Pad', size=crop_size, padding_mode='reflect'),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
@@ -107,10 +109,10 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=4 is reference from 1024×1024 config; calibrate upward at 768×384 if headroom exists.
-    # AdamW: lr stays fixed at 0.00006 regardless of bs change.
-    samples_per_gpu=4,
-    workers_per_gpu=2,
+    # bs=45 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=46)
+    # Pinned for Phase 2 — do not re-calibrate.
+    samples_per_gpu=45,
+    workers_per_gpu=4,
     pin_memory=False,
     train=dict(
         type='LaRSDataset',
@@ -126,7 +128,7 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (AdamW — architecture-specific, do not change) ──────────────────
-# AdamW: LR kept fixed at 0.00006 regardless of batch size (no linear scaling).
+# AdamW: LR fixed at 0.00006 regardless of batch size (no linear scaling).
 optimizer = dict(
     type='AdamW',
     lr=0.00006,
@@ -151,14 +153,11 @@ lr_config = dict(
 
 # ── Phase 1 Schedule (10k iters) ──────────────────────────────────────────────
 runner = dict(type='IterBasedRunner', max_iters=10000)
-# interval=5000 ensures a periodic checkpoint before the run ends (inherited
-# schedule_160k has interval=16000 which would miss the 10k window)
 checkpoint_config = dict(by_epoch=False, interval=5000)
 evaluation = dict(interval=2000, metric='mIoU', pre_eval=True, save_best='mIoU')
 
 # ── Logging (WandB + text) ────────────────────────────────────────────────────
-# WANDB_API_KEY must be set in the environment before training.
-# Load it with:  source phase1/scripts/setup_wandb.sh
+# WANDB_API_KEY must be set before training:  source phase1/scripts/setup_wandb.sh
 log_config = dict(
     interval=50,
     hooks=[
@@ -166,8 +165,9 @@ log_config = dict(
         dict(
             type='WandbLoggerHook',
             init_kwargs=dict(
-                project='MacVi2026_Embedded_Semantic_Segmentation_Phase1',
-                name='segformer_mit-b2_phase1',
+                entity='little_farms',
+                project='embedded_segmentation_macvi2026',
+                name='phase1_segformer_mit-b2',
             ),
             interval=50,
             by_epoch=False,

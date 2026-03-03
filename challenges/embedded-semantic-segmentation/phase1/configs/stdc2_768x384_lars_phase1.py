@@ -1,17 +1,18 @@
 """
 STDC2 @ 768×384 — LaRS — Phase 1 baseline
 mmsegmentation 0.30.0 + mmcv-full 1.7.2 + PyTorch 2.1.2+cu121
-Conda env: macvi  |  macvi conda env at /home/farms/miniforge3/envs/macvi/
+Conda env: macvi  |  /home/farms/miniforge3/envs/macvi/
 
-Preprocessing fixes vs fun_experiments (mandatory, matches challenge server):
-  - Train Pad: padding_mode='reflect'  (was pad_val=0 zero-padding)
-  - Test Resize: keep_ratio=True       (was keep_ratio=False)
-  - Test Pad: size=crop_size, padding_mode='reflect'  (was absent)
+Preprocessing fixes vs fun_experiments (mandatory — matches challenge server):
+  - Train Pad: padding_mode='reflect'        (fun_experiments had pad_val=0 zero-padding)
+  - Test  Resize: keep_ratio=True            (fun_experiments had keep_ratio=False)
+  - Test  Pad: size=crop_size, reflect       (fun_experiments had NO Pad in test pipeline)
 
-Batch size / LR calibration (SGD — linear scaling rule):
-  Reference: bs=12, lr=0.01  (stdc1_in1k-pre_512x1024_80k_lars.py)
-  Phase 1:   bs=12, lr=0.01  (calibrated on RTX 3050 4GB at 768×384 in fun_experiments)
-  LR kept same because batch size matches reference.
+Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
+  Hardware:    RTX A6000 48 GB
+  Reference:   bs=12,  lr=0.01  (stdc1_in1k-pre_512x1024_80k_lars.py upstream)
+  Calibrated:  bs=174, lr=0.145 (max OOM-free at 768×384; lr = 0.01 × 174/12)
+  Pinned for Phase 2 consistency: bs=174, lr=0.145
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -31,7 +32,7 @@ img_scale = (768, 384)   # (W, H) — for mmseg Resize
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
-# ── Model (STDC2: STDCContextPathNet with STDCNet2 backbone) ──────────────────
+# ── Model (STDC2: STDCContextPathNet + STDCNet2 backbone) ─────────────────────
 checkpoint_stdc2 = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/stdc/stdc2_20220308-7dbd9127.pth'  # noqa
 norm_cfg = dict(type='BN', requires_grad=True)
 
@@ -122,7 +123,7 @@ model = dict(
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
 
-# ── Pipelines (corrected preprocessing) ───────────────────────────────────────
+# ── Pipelines ─────────────────────────────────────────────────────────────────
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
@@ -131,7 +132,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
-    # FIX: reflect padding matches challenge server mirror-padding
+    # FIX vs fun_experiments: reflect padding matches challenge server mirror-padding
     dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255, padding_mode='reflect'),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
@@ -144,11 +145,11 @@ test_pipeline = [
         img_scale=img_scale,
         flip=False,
         transforms=[
-            # FIX: keep_ratio=True preserves aspect ratio (challenge server behaviour)
+            # FIX vs fun_experiments: keep_ratio=True preserves aspect ratio
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
-            # FIX: reflect-pad to exact crop_size (centering + mirror padding)
+            # FIX vs fun_experiments: reflect-pad to exact crop_size (was absent)
             dict(type='Pad', size=crop_size, padding_mode='reflect'),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
@@ -157,9 +158,10 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=12 calibrated at 768×384 on RTX 3050 4GB (fun_experiments stdc2)
-    samples_per_gpu=12,
-    workers_per_gpu=2,
+    # bs=174 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=175)
+    # Pinned for Phase 2 — do not re-calibrate.
+    samples_per_gpu=174,
+    workers_per_gpu=4,
     pin_memory=False,
     train=dict(
         type='LaRSDataset',
@@ -174,9 +176,9 @@ data = dict(
         data_root=DATA_ROOT + 'test',
         pipeline=test_pipeline))
 
-# ── Optimizer (SGD — architecture-specific, do not change) ────────────────────
-# bs=12, lr=0.01: matches reference; no LR scaling needed.
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
+# ── Optimizer (SGD — architecture-specific, do not change type/momentum/wd) ───
+# bs=174, lr=0.145: linear-scaled from ref (bs=12, lr=0.01): 0.01 × (174/12) = 0.145
+optimizer = dict(type='SGD', lr=0.145, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 
 lr_config = dict(
@@ -189,14 +191,11 @@ lr_config = dict(
 
 # ── Phase 1 Schedule (10k iters) ──────────────────────────────────────────────
 runner = dict(type='IterBasedRunner', max_iters=10000)
-# interval=5000 ensures a periodic checkpoint before the run ends (inherited
-# schedule_80k has interval=8000 which would miss the 10k window)
 checkpoint_config = dict(by_epoch=False, interval=5000)
 evaluation = dict(interval=2000, metric='mIoU', pre_eval=True, save_best='mIoU')
 
 # ── Logging (WandB + text) ────────────────────────────────────────────────────
-# WANDB_API_KEY must be set in the environment before training.
-# Load it with:  source phase1/scripts/setup_wandb.sh
+# WANDB_API_KEY must be set before training:  source phase1/scripts/setup_wandb.sh
 log_config = dict(
     interval=50,
     hooks=[
@@ -204,8 +203,9 @@ log_config = dict(
         dict(
             type='WandbLoggerHook',
             init_kwargs=dict(
-                project='MacVi2026_Embedded_Semantic_Segmentation_Phase1',
-                name='stdc2_phase1',
+                entity='little_farms',
+                project='embedded_segmentation_macvi2026',
+                name='phase1_stdc2',
             ),
             interval=50,
             by_epoch=False,

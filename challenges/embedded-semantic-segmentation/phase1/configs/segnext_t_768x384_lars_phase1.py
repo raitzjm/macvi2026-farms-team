@@ -1,16 +1,19 @@
 """
 SegNeXt-T @ 768×384 — LaRS — Phase 1 baseline
 mmsegmentation 0.30.0 + mmcv-full 1.7.2 + PyTorch 2.1.2+cu121
-Conda env: macvi  |  macvi conda env at /home/farms/miniforge3/envs/macvi/
+Conda env: macvi  |  /home/farms/miniforge3/envs/macvi/
 
-Preprocessing fixes vs fun_experiments segnext_t config (mandatory, matches challenge server):
-  - Train Pad: padding_mode='reflect'  (was pad_val=0 zero-padding)
-  - Test Resize: keep_ratio=True       (was keep_ratio=False)
-  - Test Pad: size=crop_size, padding_mode='reflect'  (was absent)
+Preprocessing fixes vs fun_experiments segnext_t config (mandatory — matches challenge server):
+  - Train Pad: padding_mode='reflect'        (fun_experiments had pad_val=0 zero-padding)
+  - Test  Resize: keep_ratio=True            (fun_experiments had keep_ratio=False)
+  - Test  Pad: size=crop_size, reflect       (fun_experiments had NO Pad in test pipeline)
 
-Batch size / LR calibration (AdamW — keep LR fixed regardless of batch size):
-  Reference: AdamW, lr=0.00006  (upstream SegNeXt config)
-  Phase 1:   bs=5, lr=0.00006   (calibrated on RTX 3050 4GB at 768×384 in fun_experiments)
+Batch size / LR (AdamW — keep LR fixed regardless of batch size):
+  Hardware:    RTX A6000 48 GB
+  Reference:   AdamW, lr=0.00006  (upstream SegNeXt config)
+  Calibrated:  bs=75  (max OOM-free at 768×384; OOM at bs=76)
+  LR:          0.00006 (fixed — AdamW does not use linear scaling)
+  Pinned for Phase 2 consistency: bs=75, lr=0.00006
 
 Run:
   source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh
@@ -72,7 +75,7 @@ model = dict(
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
 
-# ── Pipelines (corrected preprocessing) ───────────────────────────────────────
+# ── Pipelines ─────────────────────────────────────────────────────────────────
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
@@ -81,7 +84,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
-    # FIX: reflect padding matches challenge server mirror-padding
+    # FIX vs fun_experiments: reflect padding matches challenge server mirror-padding
     dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255, padding_mode='reflect'),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_semantic_seg']),
@@ -94,11 +97,11 @@ test_pipeline = [
         img_scale=img_scale,
         flip=False,
         transforms=[
-            # FIX: keep_ratio=True preserves aspect ratio (challenge server behaviour)
+            # FIX vs fun_experiments: keep_ratio=True preserves aspect ratio
             dict(type='Resize', keep_ratio=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
-            # FIX: reflect-pad to exact crop_size (centering + mirror padding)
+            # FIX vs fun_experiments: reflect-pad to exact crop_size (was absent)
             dict(type='Pad', size=crop_size, padding_mode='reflect'),
             dict(type='ImageToTensor', keys=['img']),
             dict(type='Collect', keys=['img']),
@@ -107,9 +110,10 @@ test_pipeline = [
 
 # ── Dataset ───────────────────────────────────────────────────────────────────
 data = dict(
-    # bs=5 calibrated at 768×384 on RTX 3050 4GB (fun_experiments segnext_t)
-    samples_per_gpu=5,
-    workers_per_gpu=2,
+    # bs=75 calibrated on RTX A6000 48 GB at 768×384 (OOM at bs=76)
+    # Pinned for Phase 2 — do not re-calibrate.
+    samples_per_gpu=75,
+    workers_per_gpu=4,
     pin_memory=False,
     train=dict(
         type='LaRSDataset',
@@ -125,7 +129,7 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (AdamW — architecture-specific, do not change) ──────────────────
-# AdamW: LR kept fixed at 0.00006 regardless of batch size (no linear scaling).
+# AdamW: LR fixed at 0.00006 regardless of batch size (no linear scaling).
 optimizer = dict(
     type='AdamW',
     lr=0.00006,
@@ -154,8 +158,7 @@ checkpoint_config = dict(by_epoch=False, interval=5000)
 evaluation = dict(interval=2000, metric='mIoU', pre_eval=True, save_best='mIoU')
 
 # ── Logging (WandB + text) ────────────────────────────────────────────────────
-# WANDB_API_KEY must be set in the environment before training.
-# Load it with:  source phase1/scripts/setup_wandb.sh
+# WANDB_API_KEY must be set before training:  source phase1/scripts/setup_wandb.sh
 log_config = dict(
     interval=50,
     hooks=[
@@ -163,8 +166,9 @@ log_config = dict(
         dict(
             type='WandbLoggerHook',
             init_kwargs=dict(
-                project='MacVi2026_Embedded_Semantic_Segmentation_Phase1',
-                name='segnext_t_phase1',
+                entity='little_farms',
+                project='embedded_segmentation_macvi2026',
+                name='phase1_segnext_t',
             ),
             interval=50,
             by_epoch=False,
