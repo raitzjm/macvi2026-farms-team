@@ -11,8 +11,9 @@ Preprocessing fixes vs original bisenetv2 lars config (mandatory — matches cha
 Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   bs=4,   lr=0.05  (bisenetv2_fcn_4x4_1024x1024_160k_lars.py upstream, per-GPU)
-  Per-GPU:     samples_per_gpu=128  (OOM at bs=152 during first fwd pass — 5 aux heads need more memory
-               than STDC2's 3 heads; reduced from 152 after confirmed OOM at full training step)
+  Per-GPU:     samples_per_gpu=128  (OOM at bs=152 during first fwd pass — 5 total prediction heads
+               (1 decode_head + 4 auxiliary_heads) need more memory than STDC2's 3 heads;
+               reduced from 152 after confirmed OOM at full training step)
   Effective:   total_bs=256 (128 × 2 GPUs), lr=3.2 (= 0.05 × 256/4)
   NOTE: lr=3.2 is large; poly decay + warmup expected to stabilise training.
   Pinned for Phase 2 consistency: samples_per_gpu=128, num_gpus=2, lr=3.2
@@ -182,7 +183,7 @@ data = dict(
         pipeline=test_pipeline))
 
 # ── Optimizer (SGD — architecture-specific, do not change type/momentum/wd) ───
-# total_bs=304 (152×2 GPUs), lr=3.8: linear-scaled from ref (bs=4, lr=0.05): 0.05 × (304/4)
+# total_bs=256 (128×2 GPUs), lr=3.2: linear-scaled from ref (bs=4, lr=0.05): 0.05 × (256/4)
 optimizer = dict(type='SGD', lr=3.2, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 

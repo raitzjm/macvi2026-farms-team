@@ -50,7 +50,7 @@ Tracks training experiments only. Install/refactor/script work is tracked via gi
 - **Finished:** 2026-03-03 11:14 UTC (~1h02m)
 - **Status:** COMPLETED ✓
 - **Best checkpoint:** `best_mIoU_iter_1500.pth` (still climbing at end)
-- **Val F1 (post-export eval, direct-resize):** 60.84% (see phase1/phase1_report.md §11)
+- **Val F1 (post-export eval, PyTorch, direct-resize):** 60.84% (ONNX: 60.81% — see phase1_report.md §11)
 - **Val mIoU progression:**
 
 | Iter | mIoU  | aAcc  | IoU obstacle | IoU water | IoU sky |

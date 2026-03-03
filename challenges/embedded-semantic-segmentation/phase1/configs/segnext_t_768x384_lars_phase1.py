@@ -162,7 +162,7 @@ lr_config = dict(
     by_epoch=False)
 
 # ── Phase 1 Schedule (1.5k iters — 2 GPUs; equivalent data to 1-GPU 3k plan) ──
-# 1500 iters × 150 total_bs = 225k samples = 3000 iters × 75 (original 1-GPU plan).
+# 1500 iters × 112 total_bs = 168k samples = 3000 iters × 56 (original 1-GPU plan).
 # Warmup scaled proportionally: 250 = 500 × (1500/3000).
 runner = dict(type='IterBasedRunner', max_iters=1500)
 checkpoint_config = dict(by_epoch=False, interval=750)
