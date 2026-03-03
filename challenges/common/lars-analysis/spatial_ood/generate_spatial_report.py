@@ -39,7 +39,7 @@ def parse_args():
     script_dir = Path(__file__).parent
     p.add_argument('--heatmaps', default=str(script_dir / 'heatmaps'))
     p.add_argument('--figures',  default=str(script_dir / 'figures'))
-    p.add_argument('--db',       default=str(script_dir.parent / 'embeddings.db'))
+    p.add_argument('--db',       default=str(script_dir.parent / 'shared_data' / 'embeddings.db'))
     p.add_argument('--images',   default='/home/farms/data/lars_dataset/img_dir')
     p.add_argument('--out',      default=str(script_dir.parent / 'reports' / 'spatial_ood_report.pdf'))
     return p.parse_args()

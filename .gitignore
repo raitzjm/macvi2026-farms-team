@@ -78,10 +78,10 @@ challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
 # faiss_index.bin is already covered by *.bin above
 
 # Explicitly track the lars analysis log despite *.log rule
-!challenges/common/lars-analysis/logs/analysis.log
+!challenges/common/lars-analysis/whole_image_ood/logs/analysis.log
 
 # Explicitly track the spatial OOD log despite *.log rule
-!challenges/common/lars-analysis/logs/spatial_ood.log
+!challenges/common/lars-analysis/spatial_ood/logs/spatial_ood.log
 
 # Explicitly track the failure analysis inference log despite *.log rule
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384/logs/inference.log
