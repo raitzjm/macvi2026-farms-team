@@ -11,12 +11,12 @@ per_image_metrics.csv    per-image IoU / Dice / pixel-accuracy for all models
 logs/inference.log       progress + per-image timing
 
 Usage (from repo root, macvi conda env active):
-    python challenges/common/lars-analysis/failure_analysis/infer_and_eval.py
+    python challenges/common/lars-analysis/failure_analysis_embedded_768x384/infer_and_eval.py
 
 Optional flags:
     --val-img-dir   /home/farms/lars_linked/val/images
     --val-seg-dir   /home/farms/lars_linked/val/semantic_masks
-    --out-csv       challenges/common/lars-analysis/failure_analysis/per_image_metrics.csv
+    --out-csv       challenges/common/lars-analysis/failure_analysis_embedded_768x384/per_image_metrics.csv
     --models        stdc2 segnext_t segformer  (default: all three)
 """
 

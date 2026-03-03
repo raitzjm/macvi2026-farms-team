@@ -1,8 +1,13 @@
-# Phase 1 Failure Analysis
+# Phase 1 Failure Analysis — Embedded Semantic Segmentation (768×384)
 
 Per-image segmentation failure analysis for the three Phase 1 ONNX models on the
-LaRS validation set (198 images). Requested by Rahul in issue #12 for "Dice, mIoU,
-Accuracy — per patch metrics — all the metrics for all the classes."
+LaRS validation set (198 images).
+
+**Challenge:** Embedded Semantic Segmentation (≥30 FPS on Luxonis RVC4)
+**Inference resolution:** 768×384 — the embedded challenge target resolution. All models were
+trained and evaluated at this resolution; results are specific to this resolution.
+
+Requested by Rahul in issue #12 for "Dice, mIoU, Accuracy — per patch metrics — all the metrics for all the classes."
 
 ## Models
 
@@ -17,7 +22,7 @@ BiSeNetV2 is excluded — training was unstable and no ONNX was committed.
 ## Files
 
 ```
-failure_analysis/
+failure_analysis_embedded_768x384/
 ├── README.md                  ← this file
 ├── setup.md                   ← environment install log
 ├── GOTCHAS.md                 ← failures, fixes, methodology decisions
@@ -36,7 +41,7 @@ failure_analysis/
     └── inference.log
 ```
 
-Report: `../reports/failure_analysis_report.pdf`
+Report: `../reports/failure_analysis_embedded_768x384_report.pdf`
 
 ## How to reproduce
 
@@ -54,10 +59,10 @@ done
 
 # 3. Run inference (generates per_image_metrics.csv and inference.log)
 cd /home/farms/macvi2026-farms-team
-python challenges/common/lars-analysis/failure_analysis/infer_and_eval.py
+python challenges/common/lars-analysis/failure_analysis_embedded_768x384/infer_and_eval.py
 
 # 4. Generate figures and PDF report
-python challenges/common/lars-analysis/failure_analysis/build_report.py
+python challenges/common/lars-analysis/failure_analysis_embedded_768x384/build_report.py
 ```
 
 ## Class ordering

@@ -1,17 +1,21 @@
 """
-Phase 1 failure analysis — figure generation and PDF report builder.
+Embedded Semantic Segmentation Challenge — Phase 1 failure analysis
+Figure generation and PDF report builder.
+
+Inference resolution: 768×384 (embedded challenge target resolution).
+All three models were trained and evaluated at 768×384.
 
 Reads per_image_metrics.csv and the val images/masks.
 Generates PNG figures and a weasyprint PDF report.
 
 Usage (from repo root, macvi conda env active):
-    python challenges/common/lars-analysis/failure_analysis/build_report.py
+    python challenges/common/lars-analysis/failure_analysis_embedded_768x384/build_report.py
 
 Optional flags:
     --csv           path to per_image_metrics.csv
     --val-img-dir   /home/farms/lars_linked/val/images
     --val-seg-dir   /home/farms/lars_linked/val/semantic_masks
-    --out-report    challenges/common/lars-analysis/reports/failure_analysis_report.pdf
+    --out-report    challenges/common/lars-analysis/reports/failure_analysis_embedded_768x384_report.pdf
     --no-pdf        skip PDF generation (figures only)
 """
 
@@ -43,7 +47,7 @@ REPORTS_DIR  = ANALYSIS_DIR.parent / "reports"
 FIGURES_DIR  = ANALYSIS_DIR / "figures"
 
 DEFAULT_CSV     = ANALYSIS_DIR / "per_image_metrics.csv"
-DEFAULT_OUT_PDF = REPORTS_DIR  / "failure_analysis_report.pdf"
+DEFAULT_OUT_PDF = REPORTS_DIR  / "failure_analysis_embedded_768x384_report.pdf"
 DEFAULT_IMG_DIR = Path("/home/farms/lars_linked/val/images")
 DEFAULT_SEG_DIR = Path("/home/farms/lars_linked/val/semantic_masks")
 
@@ -508,7 +512,7 @@ def build_html(df: pd.DataFrame, suspects: pd.DataFrame, figures: dict) -> str:
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<title>Phase 1 Failure Analysis Report</title>
+<title>Embedded Segmentation — Phase 1 Failure Analysis (768×384)</title>
 <style>
   body {{ font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11pt;
          margin: 40px; line-height: 1.5; color: #222; }}
@@ -528,7 +532,11 @@ def build_html(df: pd.DataFrame, suspects: pd.DataFrame, figures: dict) -> str:
 </head>
 <body>
 
-<h1>Phase 1 Model Failure Analysis — LaRS Validation Set</h1>
+<h1>Embedded Semantic Segmentation Challenge<br/>
+Phase 1 Failure Analysis — LaRS Validation Set</h1>
+<p style="font-size:12pt; color:#37474f;">
+<b>Inference resolution: 768×384</b> (embedded challenge target — trained and evaluated at this resolution)
+</p>
 <p><b>Date:</b> 2026-03-03 &nbsp;&nbsp;
    <b>Branch:</b> analysis/phase1-failure-analysis &nbsp;&nbsp;
    <b>Issue:</b> #12</p>
