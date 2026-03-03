@@ -39,13 +39,18 @@ If the hook blocks a commit:
 - Branch only when needed for isolation (risky refactors, parallel work)
 - Branch naming when used: {type}/{short-description}
   (e.g. exp/baseline-deeplabv3, fix/onnx-export, feat/4class-training)
-  Branches should be created from a GitHub issue when one exists.
+- **Always create branches linked to their GitHub issue** using:
+  `gh issue develop <issue-number> --name <branch-name> --checkout`
+  This registers a development link so GitHub auto-closes the issue when the PR merges.
+  Never use plain `git checkout -b` for issue-tracked work.
 - Commit with descriptive messages referencing experiment IDs when applicable
 - ALL agent commits must start with [agent] tag in the subject line
   (e.g. "[agent] install Python 3.12 and pip build tools")
 - In the extended commit body, include the model name that performed the work
   (e.g. "Claude Sonnet 4.6 Agent", "Claude Opus 4.6 Agent")
 - Push and open PR for teammate review before merging branches
+- Every PR that resolves an issue must include `Closes #N` in the PR body
+  as a fallback in case the development link was not set at branch creation
 
 ## GitHub Issues Workflow
 - Use GitHub Issues to track tasks, record decisions, and hand off context between agents
