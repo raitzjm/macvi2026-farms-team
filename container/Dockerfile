@@ -173,7 +173,7 @@ WORKDIR ${MACVI_WS}
 ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 # Shell conveniences
-RUN echo 'alias claude-unsafe="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc
+RUN echo 'alias claude-skip="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc
 
 #Set shell profile
 ENV TERM="xterm-256color"
