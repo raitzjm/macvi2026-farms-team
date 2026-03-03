@@ -47,16 +47,10 @@ RUN apt-get update && apt-get install -y sudo \
   && chmod 0440 /etc/sudoers.d/$USERNAME \
   && rm -rf /var/lib/apt/lists/*
 
-# Configure git to use committed hooks (.githooks/) in all repos.
-# System-level config has lowest priority — won't override user or local config.
-# The host ~/.gitconfig mounted at runtime only sets user.name/email, so this sticks.
-# Must run as root (before USER switch) to write to /etc/gitconfig.
+# Configure git system-wide and install gitleaks — both require root.
+# Must run before USER switch.
 RUN git config --system core.hooksPath .githooks
 
-# Switch to non-root user
-USER  ${USERNAME}
-
-# Install gitleaks for pre-commit secret scanning
 ARG GITLEAKS_VERSION=8.30.0
 RUN curl -fsSL \
         "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
@@ -65,6 +59,9 @@ RUN curl -fsSL \
     mv /tmp/gitleaks /usr/local/bin/gitleaks && \
     chmod +x /usr/local/bin/gitleaks && \
     rm /tmp/gitleaks.tar.gz
+
+# Switch to non-root user
+USER  ${USERNAME}
 
 #Install Github CLI
 RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
