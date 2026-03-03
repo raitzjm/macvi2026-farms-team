@@ -72,18 +72,21 @@ becomes the pinned batch size — reuse the exact same value in Phase 2 for the 
 check to remain valid. Do not change it between phases.
 
 ## Experiment Phases
-Phase 1: Short validation runs (~10k iters) — validate correct preprocessing and confirm
-          architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
+Phase 1: Short validation runs (~3k iters, ~2h per model) — validate correct preprocessing
+          and confirm architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
           Purpose: establish a reference baseline before the mmseg migration in Phase 2,
-          so Phase 2 translated configs can be cross-checked for consistency.
+          so Phase 2 translated configs can be cross-checked for consistency at the ~3k iter mark.
+          3k iters chosen deliberately — long enough for meaningful mIoU comparison, short enough
+          to run all 4 models in ~1 day. Phase 2 is the real baseline; Phase 1 is a sanity check.
           See issue #9 for full details, batch size reference values, and smoke test workflow.
           Once Phase 1 is complete, methodology and rationale will be captured in
           `phase1/phase1_report.md` — that becomes the permanent team reference.
 Phase 2: Full training runs — migrate all models to a single unified mmseg version
           (target: 1.2.2) for consistency. All serious experiments from here onward
           use this unified stack. New models may be introduced here.
-          Consistency check: smoke test (200–500 iters) at start of each Phase 2 run;
-          compare val mIoU curves at 2k/4k/6k/8k/10k iter milestones against Phase 1 logs.
+          Consistency check: compare val mIoU at the ~3k iter mark against Phase 1 logs.
+          Phase 2 eval frequency is independent (e.g. every 5k iters) — only one early
+          checkpoint near iter 3k is needed for the cross-check.
           Batch size must match Phase 1 exactly — do not re-calibrate.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
@@ -115,8 +118,9 @@ It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
 experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
 
 ## Current Status
-Phase 1 planning complete. Next: write Phase 1 configs and run training.
-See issue #9 for Phase 1 task tracking.
+Phase 1 training in progress (branch: exp/phase1-baselines).
+Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
+See issue #9 for task tracking and run decisions.
 
 ## Published Baselines (from challenge website)
 Three variants per model:
