@@ -1,0 +1,652 @@
+2026-03-03 11:21:04,245 - mmseg - INFO - Multi-processing start method is `None`
+2026-03-03 11:21:04,246 - mmseg - INFO - OpenCV num_threads is `16
+2026-03-03 11:21:04,246 - mmseg - INFO - OMP num threads is 1
+2026-03-03 11:21:04,262 - mmseg - INFO - Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.11.14 | packaged by conda-forge | (main, Jan 26 2026, 23:48:32) [GCC 14.3.0]
+CUDA available: True
+GPU 0,1: NVIDIA RTX A6000
+CUDA_HOME: /usr/local/cuda
+NVCC: Cuda compilation tools, release 12.1, V12.1.105
+GCC: gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+PyTorch: 2.1.2+cu121
+PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.1.1 (Git Hash 64f6bcbcbab628e96f33a62c3e975f8535a7bde4)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 12.1
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90
+  - CuDNN 8.9.2
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.1, CUDNN_VERSION=8.9.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-unused-private-field -Wno-aligned-allocation-unavailable -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_DISABLE_GPU_ASSERTS=ON, TORCH_VERSION=2.1.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+TorchVision: 0.16.2+cu121
+OpenCV: 4.10.0
+MMCV: 1.7.2
+MMCV Compiler: GCC 9.3
+MMCV CUDA Compiler: 12.1
+MMSegmentation: 0.30.0+be2e890
+------------------------------------------------------------
+
+2026-03-03 11:21:04,262 - mmseg - INFO - Distributed training: True
+2026-03-03 11:21:04,656 - mmseg - INFO - Config:
+MMSEG_ROOT = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi'
+DATA_ROOT = '/home/farms/lars_linked/'
+custom_imports = dict(
+    imports=['challenges.embedded-semantic-segmentation.phase1.pipelines'],
+    allow_failed_imports=False)
+crop_size = (384, 768)
+img_scale = (768, 384)
+img_norm_cfg = dict(
+    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth'
+ham_norm_cfg = dict(type='GN', num_groups=32, requires_grad=True)
+model = dict(
+    type='EncoderDecoder',
+    pretrained=None,
+    backbone=dict(
+        type='MSCAN',
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint=
+            'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth'
+        ),
+        embed_dims=[32, 64, 160, 256],
+        mlp_ratios=[8, 8, 4, 4],
+        drop_rate=0.0,
+        drop_path_rate=0.1,
+        depths=[3, 3, 5, 2],
+        attention_kernel_sizes=[5, [1, 7], [1, 11], [1, 21]],
+        attention_kernel_paddings=[2, [0, 3], [0, 5], [0, 10]],
+        act_cfg=dict(type='GELU'),
+        norm_cfg=dict(type='BN', requires_grad=True)),
+    decode_head=dict(
+        type='LightHamHead',
+        in_channels=[64, 160, 256],
+        in_index=[1, 2, 3],
+        channels=256,
+        ham_channels=256,
+        dropout_ratio=0.1,
+        num_classes=3,
+        ignore_index=255,
+        norm_cfg=dict(type='GN', num_groups=32, requires_grad=True),
+        align_corners=False,
+        loss_decode=dict(
+            type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+        ham_kwargs=dict(
+            MD_S=1,
+            MD_R=16,
+            train_steps=6,
+            eval_steps=7,
+            inv_t=100,
+            rand_init=True)),
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(type='Resize', img_scale=(768, 384), ratio_range=(0.5, 2.0)),
+    dict(type='RandomCrop', crop_size=(384, 768), cat_max_ratio=0.75),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PhotoMetricDistortion'),
+    dict(
+        type='Normalize',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True),
+    dict(type='ReflectPad', size=(384, 768), seg_pad_val=255),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(768, 384),
+        flip=False,
+        transforms=[
+            dict(type='Resize', keep_ratio=True),
+            dict(type='RandomFlip'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='ReflectPad', size=(384, 768)),
+            dict(type='ImageToTensor', keys=['img']),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+data = dict(
+    samples_per_gpu=56,
+    workers_per_gpu=4,
+    pin_memory=False,
+    train=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/train',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations'),
+            dict(type='Resize', img_scale=(768, 384), ratio_range=(0.5, 2.0)),
+            dict(type='RandomCrop', crop_size=(384, 768), cat_max_ratio=0.75),
+            dict(type='RandomFlip', prob=0.5),
+            dict(type='PhotoMetricDistortion'),
+            dict(
+                type='Normalize',
+                mean=[123.675, 116.28, 103.53],
+                std=[58.395, 57.12, 57.375],
+                to_rgb=True),
+            dict(type='ReflectPad', size=(384, 768), seg_pad_val=255),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img', 'gt_semantic_seg'])
+        ]),
+    val=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(768, 384),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ReflectPad', size=(384, 768)),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]),
+    test=dict(
+        type='LaRSDataset',
+        data_root='/home/farms/lars_linked/test',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(
+                type='MultiScaleFlipAug',
+                img_scale=(768, 384),
+                flip=False,
+                transforms=[
+                    dict(type='Resize', keep_ratio=True),
+                    dict(type='RandomFlip'),
+                    dict(
+                        type='Normalize',
+                        mean=[123.675, 116.28, 103.53],
+                        std=[58.395, 57.12, 57.375],
+                        to_rgb=True),
+                    dict(type='ReflectPad', size=(384, 768)),
+                    dict(type='ImageToTensor', keys=['img']),
+                    dict(type='Collect', keys=['img'])
+                ])
+        ]))
+optimizer = dict(
+    type='AdamW',
+    lr=6e-05,
+    betas=(0.9, 0.999),
+    weight_decay=0.01,
+    paramwise_cfg=dict(
+        custom_keys=dict(
+            pos_block=dict(decay_mult=0.0),
+            norm=dict(decay_mult=0.0),
+            head=dict(lr_mult=10.0))))
+optimizer_config = dict()
+lr_config = dict(
+    policy='poly',
+    warmup='linear',
+    warmup_iters=250,
+    warmup_ratio=1e-06,
+    power=1.0,
+    min_lr=0.0,
+    by_epoch=False)
+runner = dict(type='IterBasedRunner', max_iters=1500)
+checkpoint_config = dict(by_epoch=False, interval=750)
+evaluation = dict(interval=250, metric='mIoU', pre_eval=True, save_best='mIoU')
+log_config = dict(
+    interval=50,
+    hooks=[
+        dict(type='TextLoggerHook', by_epoch=False),
+        dict(
+            type='WandbLoggerHook',
+            init_kwargs=dict(
+                entity='little_farms',
+                project='embedded_segmentation_macvi2026',
+                name='phase1_segnext_t'),
+            interval=50,
+            by_epoch=False,
+            with_step=True,
+            log_artifact=False)
+    ])
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = None
+resume_from = None
+workflow = [('train', 1)]
+cudnn_benchmark = True
+seed = 42
+work_dir = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t'
+gpu_ids = range(0, 2)
+auto_resume = False
+
+2026-03-03 11:21:05,485 - mmseg - INFO - Set random seed to 1721085051, deterministic: False
+2026-03-03 11:21:05,814 - mmseg - INFO - EncoderDecoder(
+  (backbone): MSCAN(
+    (patch_embed1): StemConv(
+      (proj): Sequential(
+        (0): Conv2d(3, 16, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        (1): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): GELU(approximate='none')
+        (3): Conv2d(16, 32, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        (4): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (block1): ModuleList(
+      (0): MSCABlock(
+        (norm1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (attn): MSCASpatialAttention(
+          (proj_1): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (activation): GELU(approximate='none')
+          (spatial_gating_unit): MSCAAttention(
+            (conv0): Conv2d(32, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=32)
+            (conv0_1): Conv2d(32, 32, kernel_size=(1, 7), stride=(1, 1), padding=(0, 3), groups=32)
+            (conv0_2): Conv2d(32, 32, kernel_size=(7, 1), stride=(1, 1), padding=(3, 0), groups=32)
+            (conv1_1): Conv2d(32, 32, kernel_size=(1, 11), stride=(1, 1), padding=(0, 5), groups=32)
+            (conv1_2): Conv2d(32, 32, kernel_size=(11, 1), stride=(1, 1), padding=(5, 0), groups=32)
+            (conv2_1): Conv2d(32, 32, kernel_size=(1, 21), stride=(1, 1), padding=(0, 10), groups=32)
+            (conv2_2): Conv2d(32, 32, kernel_size=(21, 1), stride=(1, 1), padding=(10, 0), groups=32)
+            (conv3): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (proj_2): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (drop_path): Identity()
+        (norm2): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (mlp): Mlp(
+          (fc1): Conv2d(32, 256, kernel_size=(1, 1), stride=(1, 1))
+          (dwconv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=256)
+          (act): GELU(approximate='none')
+          (fc2): Conv2d(256, 32, kernel_size=(1, 1), stride=(1, 1))
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (1-2): 2 x MSCABlock(
+        (norm1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (attn): MSCASpatialAttention(
+          (proj_1): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (activation): GELU(approximate='none')
+          (spatial_gating_unit): MSCAAttention(
+            (conv0): Conv2d(32, 32, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=32)
+            (conv0_1): Conv2d(32, 32, kernel_size=(1, 7), stride=(1, 1), padding=(0, 3), groups=32)
+            (conv0_2): Conv2d(32, 32, kernel_size=(7, 1), stride=(1, 1), padding=(3, 0), groups=32)
+            (conv1_1): Conv2d(32, 32, kernel_size=(1, 11), stride=(1, 1), padding=(0, 5), groups=32)
+            (conv1_2): Conv2d(32, 32, kernel_size=(11, 1), stride=(1, 1), padding=(5, 0), groups=32)
+            (conv2_1): Conv2d(32, 32, kernel_size=(1, 21), stride=(1, 1), padding=(0, 10), groups=32)
+            (conv2_2): Conv2d(32, 32, kernel_size=(21, 1), stride=(1, 1), padding=(10, 0), groups=32)
+            (conv3): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (proj_2): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (drop_path): DropPath()
+        (norm2): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (mlp): Mlp(
+          (fc1): Conv2d(32, 256, kernel_size=(1, 1), stride=(1, 1))
+          (dwconv): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=256)
+          (act): GELU(approximate='none')
+          (fc2): Conv2d(256, 32, kernel_size=(1, 1), stride=(1, 1))
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+    (patch_embed2): OverlapPatchEmbed(
+      (proj): Conv2d(32, 64, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (norm): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (block2): ModuleList(
+      (0-2): 3 x MSCABlock(
+        (norm1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (attn): MSCASpatialAttention(
+          (proj_1): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+          (activation): GELU(approximate='none')
+          (spatial_gating_unit): MSCAAttention(
+            (conv0): Conv2d(64, 64, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=64)
+            (conv0_1): Conv2d(64, 64, kernel_size=(1, 7), stride=(1, 1), padding=(0, 3), groups=64)
+            (conv0_2): Conv2d(64, 64, kernel_size=(7, 1), stride=(1, 1), padding=(3, 0), groups=64)
+            (conv1_1): Conv2d(64, 64, kernel_size=(1, 11), stride=(1, 1), padding=(0, 5), groups=64)
+            (conv1_2): Conv2d(64, 64, kernel_size=(11, 1), stride=(1, 1), padding=(5, 0), groups=64)
+            (conv2_1): Conv2d(64, 64, kernel_size=(1, 21), stride=(1, 1), padding=(0, 10), groups=64)
+            (conv2_2): Conv2d(64, 64, kernel_size=(21, 1), stride=(1, 1), padding=(10, 0), groups=64)
+            (conv3): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (proj_2): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (drop_path): DropPath()
+        (norm2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (mlp): Mlp(
+          (fc1): Conv2d(64, 512, kernel_size=(1, 1), stride=(1, 1))
+          (dwconv): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=512)
+          (act): GELU(approximate='none')
+          (fc2): Conv2d(512, 64, kernel_size=(1, 1), stride=(1, 1))
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+    (patch_embed3): OverlapPatchEmbed(
+      (proj): Conv2d(64, 160, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (norm): BatchNorm2d(160, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (block3): ModuleList(
+      (0-4): 5 x MSCABlock(
+        (norm1): BatchNorm2d(160, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (attn): MSCASpatialAttention(
+          (proj_1): Conv2d(160, 160, kernel_size=(1, 1), stride=(1, 1))
+          (activation): GELU(approximate='none')
+          (spatial_gating_unit): MSCAAttention(
+            (conv0): Conv2d(160, 160, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=160)
+            (conv0_1): Conv2d(160, 160, kernel_size=(1, 7), stride=(1, 1), padding=(0, 3), groups=160)
+            (conv0_2): Conv2d(160, 160, kernel_size=(7, 1), stride=(1, 1), padding=(3, 0), groups=160)
+            (conv1_1): Conv2d(160, 160, kernel_size=(1, 11), stride=(1, 1), padding=(0, 5), groups=160)
+            (conv1_2): Conv2d(160, 160, kernel_size=(11, 1), stride=(1, 1), padding=(5, 0), groups=160)
+            (conv2_1): Conv2d(160, 160, kernel_size=(1, 21), stride=(1, 1), padding=(0, 10), groups=160)
+            (conv2_2): Conv2d(160, 160, kernel_size=(21, 1), stride=(1, 1), padding=(10, 0), groups=160)
+            (conv3): Conv2d(160, 160, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (proj_2): Conv2d(160, 160, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (drop_path): DropPath()
+        (norm2): BatchNorm2d(160, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (mlp): Mlp(
+          (fc1): Conv2d(160, 640, kernel_size=(1, 1), stride=(1, 1))
+          (dwconv): Conv2d(640, 640, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=640)
+          (act): GELU(approximate='none')
+          (fc2): Conv2d(640, 160, kernel_size=(1, 1), stride=(1, 1))
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (norm3): LayerNorm((160,), eps=1e-05, elementwise_affine=True)
+    (patch_embed4): OverlapPatchEmbed(
+      (proj): Conv2d(160, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+      (norm): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (block4): ModuleList(
+      (0-1): 2 x MSCABlock(
+        (norm1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (attn): MSCASpatialAttention(
+          (proj_1): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1))
+          (activation): GELU(approximate='none')
+          (spatial_gating_unit): MSCAAttention(
+            (conv0): Conv2d(256, 256, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=256)
+            (conv0_1): Conv2d(256, 256, kernel_size=(1, 7), stride=(1, 1), padding=(0, 3), groups=256)
+            (conv0_2): Conv2d(256, 256, kernel_size=(7, 1), stride=(1, 1), padding=(3, 0), groups=256)
+            (conv1_1): Conv2d(256, 256, kernel_size=(1, 11), stride=(1, 1), padding=(0, 5), groups=256)
+            (conv1_2): Conv2d(256, 256, kernel_size=(11, 1), stride=(1, 1), padding=(5, 0), groups=256)
+            (conv2_1): Conv2d(256, 256, kernel_size=(1, 21), stride=(1, 1), padding=(0, 10), groups=256)
+            (conv2_2): Conv2d(256, 256, kernel_size=(21, 1), stride=(1, 1), padding=(10, 0), groups=256)
+            (conv3): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1))
+          )
+          (proj_2): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1))
+        )
+        (drop_path): DropPath()
+        (norm2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (mlp): Mlp(
+          (fc1): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1))
+          (dwconv): Conv2d(1024, 1024, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=1024)
+          (act): GELU(approximate='none')
+          (fc2): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1))
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (norm4): LayerNorm((256,), eps=1e-05, elementwise_affine=True)
+  )
+  init_cfg={'type': 'Pretrained', 'checkpoint': 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segnext/mscan_t_20230227-119e8c9f.pth'}
+  (decode_head): LightHamHead(
+    input_transform=multiple_select, ignore_index=255, align_corners=False
+    (loss_decode): CrossEntropyLoss(avg_non_ignore=False)
+    (conv_seg): Conv2d(256, 3, kernel_size=(1, 1), stride=(1, 1))
+    (dropout): Dropout2d(p=0.1, inplace=False)
+    (squeeze): ConvModule(
+      (conv): Conv2d(480, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (gn): GroupNorm(32, 256, eps=1e-05, affine=True)
+      (activate): ReLU(inplace=True)
+    )
+    (hamburger): Hamburger(
+      (ham_in): ConvModule(
+        (conv): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1))
+      )
+      (ham): NMF2D()
+      (ham_out): ConvModule(
+        (conv): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (gn): GroupNorm(32, 256, eps=1e-05, affine=True)
+      )
+    )
+    (align): ConvModule(
+      (conv): Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (gn): GroupNorm(32, 256, eps=1e-05, affine=True)
+      (activate): ReLU(inplace=True)
+    )
+  )
+  init_cfg={'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv_seg'}}
+)
+2026-03-03 11:21:05,834 - mmseg - INFO - Loaded 2605 images
+2026-03-03 11:21:07,476 - mmseg - INFO - Loaded 198 images
+2026-03-03 11:21:07,478 - mmseg - INFO - Start running, host: farms@79db954e-18c7-460c-9560-290338c0b3b3, work_dir: /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t
+2026-03-03 11:21:07,478 - mmseg - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) PolyLrUpdaterHook                  
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+ -------------------- 
+after_train_iter:
+(ABOVE_NORMAL) OptimizerHook                      
+(NORMAL      ) CheckpointHook                     
+(LOW         ) IterTimerHook                      
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) CheckpointHook                     
+(LOW         ) DistEvalHook                       
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_val_epoch:
+(LOW         ) IterTimerHook                      
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+before_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(LOW         ) IterTimerHook                      
+ -------------------- 
+after_val_epoch:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+after_run:
+(VERY_LOW    ) TextLoggerHook                     
+(VERY_LOW    ) WandbLoggerHook                    
+ -------------------- 
+2026-03-03 11:21:07,479 - mmseg - INFO - workflow: [('train', 1)], max: 1500 iters
+2026-03-03 11:21:07,479 - mmseg - INFO - Checkpoints will be saved to /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t by HardDiskBackend.
+2026-03-03 11:22:30,233 - mmseg - INFO - Iter [50/1500]	lr: 1.138e-05, eta: 0:31:51, time: 1.318, data_time: 0.292, memory: 44003, decode.loss_ce: 0.9424, decode.acc_seg: 44.7355, loss: 0.9424
+2026-03-03 11:23:31,434 - mmseg - INFO - Iter [100/1500]	lr: 2.219e-05, eta: 0:29:39, time: 1.224, data_time: 0.250, memory: 44003, decode.loss_ce: 0.5655, decode.acc_seg: 79.1186, loss: 0.5655
+2026-03-03 11:24:32,671 - mmseg - INFO - Iter [150/1500]	lr: 3.221e-05, eta: 0:28:15, time: 1.225, data_time: 0.253, memory: 44003, decode.loss_ce: 0.2312, decode.acc_seg: 90.9831, loss: 0.2312
+2026-03-03 11:25:33,436 - mmseg - INFO - Iter [200/1500]	lr: 4.142e-05, eta: 0:26:59, time: 1.215, data_time: 0.245, memory: 44003, decode.loss_ce: 0.1513, decode.acc_seg: 93.9505, loss: 0.1513
+2026-03-03 11:26:34,204 - mmseg - INFO - Iter [250/1500]	lr: 4.984e-05, eta: 0:25:49, time: 1.215, data_time: 0.246, memory: 44003, decode.loss_ce: 0.1219, decode.acc_seg: 94.9898, loss: 0.1219
+2026-03-03 11:26:55,293 - mmseg - INFO - per class results:
+2026-03-03 11:26:55,308 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 84.19 | 90.42 |
+|  water   | 94.44 | 96.88 |
+|   sky    | 92.91 |  97.8 |
++----------+-------+-------+
+2026-03-03 11:26:55,309 - mmseg - INFO - Summary:
+2026-03-03 11:26:55,309 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 95.56 | 90.51 | 95.03 |
++-------+-------+-------+
+2026-03-03 11:26:55,512 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_250.pth.
+2026-03-03 11:26:55,512 - mmseg - INFO - Best mIoU is 0.9051 at 250 iter.
+2026-03-03 11:26:55,513 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9556, mIoU: 0.9051, mAcc: 0.9503, IoU.obstacle: 0.8419, IoU.water: 0.9444, IoU.sky: 0.9291, Acc.obstacle: 0.9042, Acc.water: 0.9688, Acc.sky: 0.9780
+2026-03-03 11:28:00,474 - mmseg - INFO - Iter [300/1500]	lr: 4.804e-05, eta: 0:26:24, time: 1.725, data_time: 0.753, memory: 44003, decode.loss_ce: 0.1058, decode.acc_seg: 95.5971, loss: 0.1058
+2026-03-03 11:29:01,034 - mmseg - INFO - Iter [350/1500]	lr: 4.604e-05, eta: 0:25:00, time: 1.211, data_time: 0.245, memory: 44003, decode.loss_ce: 0.0887, decode.acc_seg: 96.2768, loss: 0.0887
+2026-03-03 11:30:01,784 - mmseg - INFO - Iter [400/1500]	lr: 4.404e-05, eta: 0:23:43, time: 1.215, data_time: 0.246, memory: 44003, decode.loss_ce: 0.0827, decode.acc_seg: 96.5098, loss: 0.0827
+2026-03-03 11:31:03,156 - mmseg - INFO - Iter [450/1500]	lr: 4.204e-05, eta: 0:22:30, time: 1.227, data_time: 0.251, memory: 44003, decode.loss_ce: 0.0756, decode.acc_seg: 96.8057, loss: 0.0756
+2026-03-03 11:32:03,890 - mmseg - INFO - Iter [500/1500]	lr: 4.004e-05, eta: 0:21:19, time: 1.214, data_time: 0.246, memory: 44003, decode.loss_ce: 0.0683, decode.acc_seg: 97.1022, loss: 0.0683
+2026-03-03 11:32:19,689 - mmseg - INFO - per class results:
+2026-03-03 11:32:19,690 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 90.12 | 95.06 |
+|  water   |  96.5 | 97.86 |
+|   sky    | 96.16 |  98.5 |
++----------+-------+-------+
+2026-03-03 11:32:19,690 - mmseg - INFO - Summary:
+2026-03-03 11:32:19,690 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 97.35 | 94.26 | 97.14 |
++-------+-------+-------+
+2026-03-03 11:32:19,707 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t/best_mIoU_iter_250.pth was removed
+2026-03-03 11:32:19,960 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_500.pth.
+2026-03-03 11:32:19,963 - mmseg - INFO - Best mIoU is 0.9426 at 500 iter.
+2026-03-03 11:32:19,963 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9735, mIoU: 0.9426, mAcc: 0.9714, IoU.obstacle: 0.9012, IoU.water: 0.9650, IoU.sky: 0.9616, Acc.obstacle: 0.9506, Acc.water: 0.9786, Acc.sky: 0.9850
+2026-03-03 11:33:20,833 - mmseg - INFO - Iter [550/1500]	lr: 3.804e-05, eta: 0:20:37, time: 1.539, data_time: 0.565, memory: 44003, decode.loss_ce: 0.0671, decode.acc_seg: 97.1418, loss: 0.0671
+2026-03-03 11:34:25,773 - mmseg - INFO - Iter [600/1500]	lr: 3.604e-05, eta: 0:19:32, time: 1.299, data_time: 0.326, memory: 44003, decode.loss_ce: 0.0633, decode.acc_seg: 97.2764, loss: 0.0633
+2026-03-03 11:35:26,969 - mmseg - INFO - Iter [650/1500]	lr: 3.404e-05, eta: 0:18:21, time: 1.224, data_time: 0.245, memory: 44003, decode.loss_ce: 0.0603, decode.acc_seg: 97.4066, loss: 0.0603
+2026-03-03 11:36:28,059 - mmseg - INFO - Iter [700/1500]	lr: 3.204e-05, eta: 0:17:12, time: 1.222, data_time: 0.250, memory: 44003, decode.loss_ce: 0.0587, decode.acc_seg: 97.4658, loss: 0.0587
+2026-03-03 11:37:29,460 - mmseg - INFO - Saving checkpoint at 750 iterations
+2026-03-03 11:37:29,638 - mmseg - INFO - Iter [750/1500]	lr: 3.004e-05, eta: 0:16:05, time: 1.232, data_time: 0.251, memory: 44003, decode.loss_ce: 0.0573, decode.acc_seg: 97.5403, loss: 0.0573
+2026-03-03 11:37:44,890 - mmseg - INFO - per class results:
+2026-03-03 11:37:44,891 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 91.19 | 96.35 |
+|  water   | 96.86 |  98.0 |
+|   sky    | 96.91 | 98.28 |
++----------+-------+-------+
+2026-03-03 11:37:44,891 - mmseg - INFO - Summary:
+2026-03-03 11:37:44,892 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 97.68 | 94.99 | 97.55 |
++-------+-------+-------+
+2026-03-03 11:37:44,904 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t/best_mIoU_iter_500.pth was removed
+2026-03-03 11:37:45,178 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_750.pth.
+2026-03-03 11:37:45,180 - mmseg - INFO - Best mIoU is 0.9499 at 750 iter.
+2026-03-03 11:37:45,181 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9768, mIoU: 0.9499, mAcc: 0.9755, IoU.obstacle: 0.9119, IoU.water: 0.9686, IoU.sky: 0.9691, Acc.obstacle: 0.9635, Acc.water: 0.9800, Acc.sky: 0.9828
+2026-03-03 11:38:46,381 - mmseg - INFO - Iter [800/1500]	lr: 2.804e-05, eta: 0:15:11, time: 1.535, data_time: 0.558, memory: 44003, decode.loss_ce: 0.0541, decode.acc_seg: 97.6753, loss: 0.0541
+2026-03-03 11:39:46,861 - mmseg - INFO - Iter [850/1500]	lr: 2.604e-05, eta: 0:14:03, time: 1.209, data_time: 0.242, memory: 44003, decode.loss_ce: 0.0554, decode.acc_seg: 97.6043, loss: 0.0554
+2026-03-03 11:40:51,754 - mmseg - INFO - Iter [900/1500]	lr: 2.404e-05, eta: 0:12:58, time: 1.298, data_time: 0.327, memory: 44003, decode.loss_ce: 0.0541, decode.acc_seg: 97.6463, loss: 0.0541
+2026-03-03 11:41:52,825 - mmseg - INFO - Iter [950/1500]	lr: 2.204e-05, eta: 0:11:51, time: 1.221, data_time: 0.248, memory: 44003, decode.loss_ce: 0.0518, decode.acc_seg: 97.7639, loss: 0.0518
+2026-03-03 11:42:54,104 - mmseg - INFO - Exp name: segnext_t_768x384_lars_phase1.py
+2026-03-03 11:42:54,105 - mmseg - INFO - Iter [1000/1500]	lr: 2.004e-05, eta: 0:10:44, time: 1.226, data_time: 0.249, memory: 44003, decode.loss_ce: 0.0506, decode.acc_seg: 97.7969, loss: 0.0506
+2026-03-03 11:43:09,625 - mmseg - INFO - per class results:
+2026-03-03 11:43:09,625 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 91.83 | 96.46 |
+|  water   | 97.13 | 98.18 |
+|   sky    |  97.2 | 98.59 |
++----------+-------+-------+
+2026-03-03 11:43:09,625 - mmseg - INFO - Summary:
+2026-03-03 11:43:09,626 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 97.87 | 95.39 | 97.74 |
++-------+-------+-------+
+2026-03-03 11:43:09,639 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t/best_mIoU_iter_750.pth was removed
+2026-03-03 11:43:09,808 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_1000.pth.
+2026-03-03 11:43:09,809 - mmseg - INFO - Best mIoU is 0.9539 at 1000 iter.
+2026-03-03 11:43:09,809 - mmseg - INFO - Exp name: segnext_t_768x384_lars_phase1.py
+2026-03-03 11:43:09,810 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9787, mIoU: 0.9539, mAcc: 0.9774, IoU.obstacle: 0.9183, IoU.water: 0.9713, IoU.sky: 0.9720, Acc.obstacle: 0.9646, Acc.water: 0.9818, Acc.sky: 0.9859
+2026-03-03 11:44:10,689 - mmseg - INFO - Iter [1050/1500]	lr: 1.804e-05, eta: 0:09:45, time: 1.532, data_time: 0.558, memory: 44003, decode.loss_ce: 0.0490, decode.acc_seg: 97.8695, loss: 0.0490
+2026-03-03 11:45:11,127 - mmseg - INFO - Iter [1100/1500]	lr: 1.604e-05, eta: 0:08:38, time: 1.209, data_time: 0.241, memory: 44003, decode.loss_ce: 0.0490, decode.acc_seg: 97.8660, loss: 0.0490
+2026-03-03 11:46:12,327 - mmseg - INFO - Iter [1150/1500]	lr: 1.404e-05, eta: 0:07:32, time: 1.224, data_time: 0.249, memory: 44003, decode.loss_ce: 0.0486, decode.acc_seg: 97.8872, loss: 0.0486
+2026-03-03 11:47:17,243 - mmseg - INFO - Iter [1200/1500]	lr: 1.204e-05, eta: 0:06:28, time: 1.298, data_time: 0.325, memory: 44003, decode.loss_ce: 0.0485, decode.acc_seg: 97.9155, loss: 0.0485
+2026-03-03 11:48:18,493 - mmseg - INFO - Iter [1250/1500]	lr: 1.004e-05, eta: 0:05:22, time: 1.225, data_time: 0.246, memory: 44003, decode.loss_ce: 0.0491, decode.acc_seg: 97.8657, loss: 0.0491
+2026-03-03 11:48:34,907 - mmseg - INFO - per class results:
+2026-03-03 11:48:34,908 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 91.86 | 95.75 |
+|  water   | 97.19 | 98.45 |
+|   sky    | 97.21 | 98.84 |
++----------+-------+-------+
+2026-03-03 11:48:34,908 - mmseg - INFO - Summary:
+2026-03-03 11:48:34,908 - mmseg - INFO - 
++------+-------+-------+
+| aAcc |  mIoU |  mAcc |
++------+-------+-------+
+| 97.9 | 95.42 | 97.68 |
++------+-------+-------+
+2026-03-03 11:48:34,925 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t/best_mIoU_iter_1000.pth was removed
+2026-03-03 11:48:35,255 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_1250.pth.
+2026-03-03 11:48:35,256 - mmseg - INFO - Best mIoU is 0.9542 at 1250 iter.
+2026-03-03 11:48:35,256 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9790, mIoU: 0.9542, mAcc: 0.9768, IoU.obstacle: 0.9186, IoU.water: 0.9719, IoU.sky: 0.9721, Acc.obstacle: 0.9575, Acc.water: 0.9845, Acc.sky: 0.9884
+2026-03-03 11:49:36,242 - mmseg - INFO - Iter [1300/1500]	lr: 8.040e-06, eta: 0:04:20, time: 1.555, data_time: 0.580, memory: 44003, decode.loss_ce: 0.0470, decode.acc_seg: 97.9602, loss: 0.0470
+2026-03-03 11:50:37,283 - mmseg - INFO - Iter [1350/1500]	lr: 6.040e-06, eta: 0:03:14, time: 1.221, data_time: 0.245, memory: 44003, decode.loss_ce: 0.0468, decode.acc_seg: 97.9476, loss: 0.0468
+2026-03-03 11:51:38,420 - mmseg - INFO - Iter [1400/1500]	lr: 4.040e-06, eta: 0:02:09, time: 1.223, data_time: 0.251, memory: 44003, decode.loss_ce: 0.0466, decode.acc_seg: 97.9794, loss: 0.0466
+2026-03-03 11:52:43,746 - mmseg - INFO - Iter [1450/1500]	lr: 2.040e-06, eta: 0:01:04, time: 1.307, data_time: 0.322, memory: 44003, decode.loss_ce: 0.0463, decode.acc_seg: 97.9822, loss: 0.0463
+2026-03-03 11:53:44,939 - mmseg - INFO - Saving checkpoint at 1500 iterations
+2026-03-03 11:53:45,105 - mmseg - INFO - Iter [1500/1500]	lr: 4.000e-08, eta: 0:00:00, time: 1.227, data_time: 0.244, memory: 44003, decode.loss_ce: 0.0469, decode.acc_seg: 97.9561, loss: 0.0469
+2026-03-03 11:54:01,564 - mmseg - INFO - per class results:
+2026-03-03 11:54:01,565 - mmseg - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 92.19 | 96.01 |
+|  water   | 97.34 | 98.54 |
+|   sky    | 97.31 | 98.77 |
++----------+-------+-------+
+2026-03-03 11:54:01,565 - mmseg - INFO - Summary:
+2026-03-03 11:54:01,565 - mmseg - INFO - 
++-------+-------+-------+
+|  aAcc |  mIoU |  mAcc |
++-------+-------+-------+
+| 97.99 | 95.61 | 97.77 |
++-------+-------+-------+
+2026-03-03 11:54:01,578 - mmseg - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase1/segnext_t/best_mIoU_iter_1250.pth was removed
+2026-03-03 11:54:01,779 - mmseg - INFO - Now best checkpoint is saved as best_mIoU_iter_1500.pth.
+2026-03-03 11:54:01,780 - mmseg - INFO - Best mIoU is 0.9561 at 1500 iter.
+2026-03-03 11:54:01,780 - mmseg - INFO - Iter(val) [99]	aAcc: 0.9799, mIoU: 0.9561, mAcc: 0.9777, IoU.obstacle: 0.9219, IoU.water: 0.9734, IoU.sky: 0.9731, Acc.obstacle: 0.9601, Acc.water: 0.9854, Acc.sky: 0.9877
