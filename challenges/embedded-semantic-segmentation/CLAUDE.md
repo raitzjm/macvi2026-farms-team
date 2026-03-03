@@ -27,17 +27,43 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - All baked into the Docker image — no post-start setup needed
 - Required patches baked in: setuptools<70, numpy<2, mmcv scatter patch (_functions.py)
 
+## Preprocessing Requirements (CRITICAL — must match challenge server exactly)
+
+The challenge server preprocesses images before feeding them to our ONNX:
+1. Resize with **bilinear interpolation, aspect ratio preserved** → fits within 384×768
+2. **Center** the resized image in the 384×768 canvas
+3. Fill remaining space with **mirror padding** (not zero padding)
+4. Normalize with ImageNet mean/std (mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+
+All three points must be matched in training pipelines. The fun experiments got this wrong
+(used keep_ratio=False + zero padding), causing a train/test mismatch.
+
+**Required mmseg pipeline settings for every Phase 1+ config:**
+- Test pipeline: `dict(type='Resize', keep_ratio=True)` inside MultiScaleFlipAug
+- Train + test Pad op: `dict(type='Pad', size=crop_size, padding_mode='reflect')`
+  (`padding_mode='reflect'` is mirror padding; default `pad_val=0` is wrong)
+- Centering is handled automatically by mmseg when keep_ratio=True + Pad are combined
+
 ## Experiment Phases
-Phase 1: Baselines - default mmseg-macvi configs, LaRS-only, no changes
-Phase 2: Augmentation - same models, vary augmentation strategies
-Phase 3: Training tricks - 4-class training, loss tuning, architecture experiments
-Phase 4: External data - conditional, only if distribution analysis shows gaps
+Phase 1: Short validation runs (~10k iters) — validate correct preprocessing, confirm
+          architecture rankings. Models: PIDNet-S, SegNeXt-T (STDC2 dropped).
+          Use current split envs (macvi/0.30.0 for SegNeXt-T, pidnet/1.2.2 for PIDNet-S).
+Phase 2: Full training runs — migrate all models to a single unified mmseg version
+          (target: 1.2.2) for consistency. All serious experiments from here onward.
+Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
+Phase 4: External data — conditional, only if distribution analysis shows gaps
 
 Phases can be modified, reordered, added, or skipped as the project evolves.
 
-## Current Status: READY FOR TRAINING
-Container environment validated (issue #2). Dependency stack baked into image.
-Next milestone: Phase 1 baselines (DeepLabv3+ ResNet-101, BiSeNetv2, STDC1/2).
+## ONNX Export Requirements
+- Output: argmaxed class map, shape 1×1×384×768, dtype int64
+- Use ArgMax(keepdims=0) + Unsqueeze pattern (NOT keepdims=1) — SNPE requires this
+- Opset version: 13 (server uses SNPE which requires opset 13)
+- See fun_experiments/{model}/export_onnx.py for reference implementations
+
+## Current Status
+Fun experiments complete (branch fun/experiments). Results archived in fun_experiments/.
+Next milestone: Phase 1 short validation runs with corrected preprocessing.
 
 ## Published Baselines (from challenge website)
 Three variants per model:
