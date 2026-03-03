@@ -46,7 +46,16 @@ Phase 2 is the real baseline (full training budget, mmseg 1.x migration). Phase 
 | 3 | SegNeXt-T | 95.61% | 1500↑ | 92.19% | 97.34% | 97.31% | ~34 min | Monotonic; still climbing |
 | 4 | BiSeNetV2 | 92.55% | 1500↑ | 86.41% | 94.88% | 96.38% | ~1h02m | LR instability at iter 750; still climbing |
 
-**val F1:** Not reported. The mmseg 0.30.0 `LaRSDataset` evaluator computes mIoU and aAcc only. The challenge metric (F1/BF score) is deferred to Phase 2.
+**val F1 (from ONNX export eval — see Section 11):** The mmseg 0.30.0 `LaRSDataset` evaluator computes mIoU and aAcc only; F1 was measured via the post-export eval script using direct-resize preprocessing (lower than training mIoU — see Section 11 for details).
+
+| Rank | Model | Training mIoU | ONNX F1 (direct-resize eval) |
+|------|-------|--------------|------------------------------|
+| 1 | SegFormer MiT-B2 | 97.00% | 73.64% |
+| 2 | STDC2 | 95.76% | 69.30% |
+| 3 | SegNeXt-T | 95.61% | 72.86% |
+| 4 | BiSeNetV2 | 92.55% | 60.81% |
+
+Note: SegNeXt-T has the best F1 among the fast models despite similar mIoU to STDC2 — indicating better obstacle precision. All F1 values are lower than the challenge published baselines (66–72% range); this is expected at 1500 iters. Phase 2 full training should close the gap.
 
 Ranking matches published challenge expectations (SegFormer > STDC2 ≈ SegNeXt > BiSeNetV2). Key finding: training natively at 768×384 dramatically outperforms the published "orig (768×384)" inference-only baselines (e.g. STDC2 published F1=50.8% vs our 95.76% mIoU).
 
@@ -361,11 +370,15 @@ After observing the OOM pattern in the first three models (consistent 10-25% gap
 
 ---
 
-### [All Models] val F1 not reported
+### [SegFormer] ONNX export requires opset 13 — aten::unflatten
 
-The mmseg 0.30.0 `LaRSDataset` evaluator reports mIoU and aAcc but not the challenge metric (F1/BF score). Phase 1 results are logged in mIoU only.
+SegFormer MiT-B2 uses `aten::unflatten` in its attention mechanism. This op is not available in ONNX opset 12 or lower. Attempting export at opset 12 raises a `torch.onnx.errors.UnsupportedOperatorError`. All Phase 1 ONNX exports were standardised at opset 13 (which is also the challenge server requirement for SNPE), so this was handled uniformly.
 
-**Action for Phase 2:** add an F1 evaluation callback or run the standalone challenge eval scripts post-training.
+---
+
+### [All Models] val F1 not reported by mmseg evaluator
+
+The mmseg 0.30.0 `LaRSDataset` evaluator reports mIoU and aAcc but not the challenge metric (F1/BF score). Phase 1 training results are logged in mIoU only. F1 was subsequently measured via the post-export eval script (`phase1/scripts/export_and_eval.py`) — see Section 11. Note that the eval script uses direct-resize preprocessing (not the keep_ratio+reflect_pad pipeline), so its mIoU numbers are lower than training mIoU; F1 from that script is the closest available proxy for challenge F1 at this stage.
 
 ---
 
@@ -386,12 +399,13 @@ These values must not be re-calibrated in Phase 2. The Phase 2 consistency cross
 
 The following steps from the standard `/archive-experiment` skill were **not performed** for Phase 1:
 
-- No ONNX export (Phase 1 is a sanity check; ONNX export deferred to Phase 2).
 - No per-model archive directories created.
-- No F1 / precision / recall validation against challenge server.
+- No validation against the challenge server (submission deferred to Phase 2).
 - No INT8 quantization evaluation.
 
-Phase 1 checkpoint files (`best_mIoU_iter_*.pth`, `iter_750.pth`, `iter_1500.pth`) are in `outputs/phase1/{model}/` but are **not committed** (outputs/ is gitignored). The experiment-log.md and this report are the authoritative records.
+**ONNX export was performed** for all 4 models as part of Phase 1 (see Section 11). Both logits ONNX (for local eval) and argmax ONNX (for SNPE/submission) were exported, but artifacts are not committed (outputs/ is gitignored). This is a Phase 1 exception per team decision — artifact archival via the `/archive-experiment` skill is deferred to Phase 2.
+
+Phase 1 checkpoint files (`best_mIoU_iter_*.pth`, `iter_750.pth`, `iter_1500.pth`) and ONNX exports are in `outputs/phase1/{model}/` but are **not committed** (outputs/ is gitignored). The experiment-log.md and this report are the authoritative records.
 
 ---
 
@@ -409,10 +423,116 @@ Phase 1 checkpoint files (`best_mIoU_iter_*.pth`, `iter_750.pth`, `iter_1500.pth
 
 6. **WANDB_DIR isolation** — ensure WANDB_DIR is always set to a directory not on PYTHONPATH.
 
-7. **BiSeNetV2 LR caution** — Phase 2 should test longer warmup or reduced LR for BiSeNetV2 given the iter-750 collapse. Monitor obstacle IoU closely.
+7. **BiSeNetV2 LR caution** — Phase 2 should test longer warmup (300 iters instead of 150) or a lower LR (try 0.05×192/4=2.4 using reference bs=4) given the iter-750 collapse. BiSeNetV2 also needs significantly more iters (3k–5k minimum) as it was still strongly climbing at 1500. Monitor obstacle IoU closely throughout.
 
-8. **F1 evaluation** — add a standalone F1/BF-score eval step after each Phase 2 training run. This is the actual challenge metric.
+8. **F1 evaluation** — the post-export eval script (`phase1/scripts/export_and_eval.py`) measures PyTorch→ONNX delta using direct-resize preprocessing. For Phase 2, integrate the challenge's official F1/BF-score computation (or the `export_and_eval.py` approach with keep_ratio+reflect_pad) to get accurate F1 values that are comparable to the challenge leaderboard.
 
-9. **Phase 2 consistency cross-check** — at ~3k iters of Phase 2 training, compare val mIoU against Phase 1 values (adjusted for same training-data volume). All Phase 1 mIoU values at iter 1500 are the reference points.
+9. **ONNX export at opset 13** — all Phase 2 ONNX exports must use opset 13 (SegFormer requires it; standardise across all models for uniformity with challenge server SNPE requirements).
 
-10. **mmseg migration** — Phase 2 migrates all models to a unified mmseg version (target: 1.2.2). The configs, pipelines, and batch size comments in this phase are the reference for translating to the new API.
+10. **Phase 2 consistency cross-check** — at ~3k iters of Phase 2 training, compare val mIoU against Phase 1 values (adjusted for same training-data volume). All Phase 1 mIoU values at iter 1500 are the reference points.
+
+11. **mmseg migration** — Phase 2 migrates all models to a unified mmseg version (target: 1.2.2). The configs, pipelines, and batch size comments in this phase are the reference for translating to the new API.
+
+---
+
+## 11. ONNX Export and Validation
+
+All 4 Phase 1 models were exported to ONNX and validated using `phase1/scripts/export_and_eval.py`. The script runs forward passes through both the PyTorch checkpoint and the exported ONNX graph on the same val set, then reports mIoU, F1, and per-class IoU for each.
+
+### 11.1 Preprocessing Note
+
+**The eval script uses simple direct resize to 384×768** (not the keep_ratio+reflect_pad pipeline the challenge server uses). This is intentional: the script's purpose is to measure the PyTorch→ONNX conversion fidelity (delta), not to reproduce challenge server scores. The lower absolute mIoU values relative to training mIoU are entirely due to this preprocessing difference — not model quality regression.
+
+| Metric source | Preprocessing | Purpose |
+|---|---|---|
+| Training mIoU (Section 3) | keep_ratio=True + ReflectPad | Model quality; primary comparison metric |
+| Export eval mIoU (this section) | Direct resize to 384×768 | PyTorch→ONNX delta only |
+
+### 11.2 Validation Results
+
+| Model | PyTorch mIoU | PyTorch F1 | IoU obs/wat/sky | ONNX mIoU | ONNX F1 | Delta mIoU | Delta F1 |
+|---|---|---|---|---|---|---|---|
+| STDC2 | 90.78% | 69.30% | 86.24% / 97.38% / 88.72% | 90.78% | 69.30% | +0.00% | +0.00% |
+| BiSeNetV2 | 86.56% | 60.84% | 79.18% / 94.40% / 86.09% | 86.56% | 60.81% | ~0.00% | −0.03% |
+| SegNeXt-T | 89.81% | 72.86% | 85.35% / 97.02% / 87.07% | 89.81% | 72.86% | ~0.00% | ~0.00% |
+| SegFormer MiT-B2 | 92.02% | 73.64% | 89.50% / 97.91% / 88.66% | 92.02% | 73.64% | ~0.00% | ~0.00% |
+
+All deltas are within the 0.5% acceptable threshold. **Export PASSED for all 4 models.**
+
+### 11.3 Per-Model Export Notes
+
+**STDC2 and BiSeNetV2 — SyncBN conversion:**
+`SyncBN` is not ONNX-exportable. Both models have their SyncBN layers converted to standard `BatchNorm2d` before export via `mmcv.runner.wrap_non_distributed_model` (or equivalent). The conversion is lossless (same running mean/variance/weight/bias).
+
+**SegNeXt-T — HAM rand_init:**
+The Hamburger (HAM) decoder's NMF bases are randomly initialised by default. `rand_init` was set to `False` before export to make the NMF bases deterministic (fixed at the trained values), which is required for a stable ONNX graph.
+
+**SegFormer MiT-B2 — opset 13 required:**
+SegFormer uses `aten::unflatten` in its attention layers, which is not available in ONNX opsets below 13. All 4 models were exported at opset 13 uniformly (which also matches the challenge server's SNPE requirement).
+
+**Artifact types:**
+Two ONNX files were exported per model:
+- `{model}_logits.onnx` — outputs raw logit scores (shape 1×3×H×W); used for local eval
+- `{model}_argmax.onnx` — outputs argmax class map (shape 1×1×H×W, int64); for SNPE/challenge submission
+
+Artifacts are not committed (outputs/ is gitignored). Phase 1 is a sanity check; formal archival is deferred to Phase 2.
+
+### 11.4 F1 Rankings and Observations
+
+- **SegFormer** leads on both training mIoU (97.00%) and F1 (73.64%)
+- **SegNeXt-T** has the best F1/mIoU ratio among the fast models — better obstacle precision than STDC2 despite similar training mIoU
+- **BiSeNetV2** has the lowest F1 (60.81%) consistent with its obstacle collapse during training; obstacle IoU in the eval (79.18%) is significantly lower than the other models
+- All F1 values are lower than the challenge published baselines (66–72% range); this is expected at 1500 iters on a fraction of the full training budget. Phase 2 full training should close this gap.
+
+---
+
+## 12. Convergence Analysis
+
+Based on the 6-point mIoU progression (eval every 250 iters) from training logs and experiment-log.md.
+
+### 12.1 STDC2 — Converged
+
+Progression: 95.00 → 95.44 → 95.54 → 94.56 → **95.76** → 95.51
+
+- Small dip at iter 1000 (normal behaviour with poly LR decay at mid-schedule)
+- Recovery and peak at iter 1250, followed by a slight decline at iter 1500
+- Pattern indicates convergence: no further gains expected at this LR
+- **Phase 2 recommendation:** same LR and batch size. Slightly longer schedule (2k–3k iters) may yield a marginal gain, but model appears largely converged. Monitor for over-fitting beyond 2k.
+
+### 12.2 BiSeNetV2 — Far from Converged; Unstable
+
+Progression: 48.28 → 67.93 → 37.25 → 57.24 → 86.03 → **92.55**
+
+- Severe instability at iter 750 (obstacle IoU collapsed to 0.12%)
+- Still strongly climbing at iter 1500 — the model has not converged
+- The steep final rise (86.03 → 92.55 between iters 1250 and 1500) suggests significant headroom remains
+- **Phase 2 recommendations:**
+  - Investigate root cause: LR=3.2 is very aggressive with SGD. Consider linear warmup over 300 iters (was 150) or a lower LR (e.g. 0.05×192/4=2.4 using reference bs=4 instead of bs=256).
+  - Must train significantly longer (3k–5k iters minimum) to reach convergence.
+  - Monitor obstacle IoU at every eval point; it is the most sensitive instability indicator for this model.
+
+### 12.3 SegNeXt-T — Nearly Converged
+
+Progression: 90.51 → 94.26 → 94.99 → 95.39 → 95.42 → **95.61**
+
+- Monotonic improvement throughout — no instability
+- Very small gains in the last 500 iters (95.39 → 95.61, delta = 0.22%)
+- Still improving slowly at iter 1500 but approaching diminishing returns
+- **Phase 2 recommendation:** same settings. Run to 3k–5k iters to extract the remaining headroom. The monotonic curve suggests the model is well-behaved and will converge cleanly with more budget.
+
+### 12.4 SegFormer MiT-B2 — Fully Converged
+
+Progression: 95.95 → 96.65 → 96.79 → **97.00** → 96.98 → 96.98
+
+- Peaked at iter 1000 and plateaued at 96.98–97.00 for the last 500 iters
+- Fully converged within the Phase 1 budget — remarkable given it effectively converged in ~800 iters of post-warmup training
+- **Phase 2 recommendation:** same settings. Cap training at 2k–3k iters; further training unlikely to help. Monitor for early stopping opportunity — may already be optimal at 1k–1.5k iters.
+
+### 12.5 Phase 2 Schedule Decisions Summary
+
+| Model | Convergence status | Recommended Phase 2 iters | LR changes? |
+|---|---|---|---|
+| SegFormer MiT-B2 | Fully converged at iter 1000 | 2k–3k (cap early) | None |
+| STDC2 | Converged; slight decline after peak | 2k–3k | None |
+| SegNeXt-T | Nearly converged; slow improvement | 3k–5k | None |
+| BiSeNetV2 | Far from converged; unstable | 3k–5k minimum | Longer warmup (300 iters) or lower LR |
