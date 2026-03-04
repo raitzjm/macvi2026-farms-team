@@ -16,17 +16,15 @@ Architecture: UNet 5-stage encoder-decoder + FCNHead (1-conv) main head
   Auxiliary loss: CE only (loss_weight=0.4, standard).
   No pretrained backbone (UNet is trained from scratch).
 
-Batch size / LR (SGD — linear scaling rule):
+Batch size / LR (AdamW — LR fixed, no linear scaling):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
-  Reference:   unet-s5-d16_fcn_4xb4-ce-1.0-dice-3.0-40k_drive-64x64.py
-               4 GPUs × 4/GPU = total_bs=16, lr=0.01 (SGD, PolyLR)
+  Optimizer:   AdamW (same as SegFormer/SegNeXt); original SGD reference not used.
+  LR:          6e-5 (same as all AdamW models in Phase 2; no scaling).
   Input size:  768×384 (LaRS) vs 64×64 (DRIVE) — much larger; OOM boundary unknown.
   Calibration: test fwd+bwd at bs=4, 6, 8 per GPU on A6000 48 GB.
     Starting estimate: 4/GPU (total_bs=8) — conservative due to 768×384 resolution
     and UNet full encoder-decoder (large memory footprint at this resolution).
-  LR:          0.01 × (total_bs / 16) = e.g. if total_bs=8: lr=0.005
-               If total_bs=16: lr=0.01 (no scaling).
-  NOTE: After calibration, update samples_per_gpu, lr, and issue.
+  NOTE: Calibrate BS before training; update samples_per_gpu and issue.
 
   SyncBN required for DDP (UNet uses BN in all stages).
 
@@ -66,7 +64,7 @@ vis_backends = [
         init_kwargs=dict(
             entity='little_farms',
             project='embedded_segmentation_macvi2026',
-            name='phase2_unet',
+            name='phase2_unet_adamw',
         )),
 ]
 visualizer = dict(
@@ -145,33 +143,32 @@ model = dict(
 # Calibrate before first run. Update after calibration.
 train_dataloader = dict(batch_size=4)
 
-# ── Optimizer (SGD — architecture-specific, matches upstream UNet) ────────────
-# Reference: upstream total_bs=16 (4×4), lr=0.01 (SGD PolyLR).
-# Estimated: total_bs=8 (4×2 GPUs) → lr=0.01×(8/16)=0.005.
-# UPDATE after calibration: adjust lr proportionally.
+# ── Optimizer (AdamW — same as SegFormer/SegNeXt in Phase 2) ─────────────────
+# LR=6e-5 fixed (AdamW; no linear scaling). Same for all Phase 2 AdamW models.
+# UNet trains from scratch — standard AdamW weight decay.
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(
-        type='SGD',
-        lr=0.005,           # 0.01 × (8/16); update after calibration
-        momentum=0.9,
-        weight_decay=0.0005))
+        type='AdamW',
+        lr=6e-5,
+        betas=(0.9, 0.999),
+        weight_decay=0.01))
 
 # ── Schedule ──────────────────────────────────────────────────────────────────
-# 5k iters; warmup 300 iters (UNet trains from scratch — warmup helps).
+# 5k iters; warmup 500 iters (AdamW standard; PolyLR linear decay).
 iters = 5000
 param_scheduler = [
     dict(
         type='LinearLR',
-        start_factor=1e-3,
+        start_factor=1e-6,
         begin=0,
-        end=300,
+        end=500,
         by_epoch=False),
     dict(
         type='PolyLR',
-        eta_min=1e-4,
-        power=0.9,
-        begin=300,
+        eta_min=0.0,
+        power=1.0,
+        begin=500,
         end=iters,
         by_epoch=False),
 ]

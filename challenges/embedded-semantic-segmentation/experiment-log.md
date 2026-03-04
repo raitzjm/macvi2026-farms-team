@@ -24,7 +24,10 @@ Each entry follows this structure:
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
 | EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
-| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -138,17 +141,17 @@ Each entry follows this structure:
 - **ID**: EXP-010
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2) [added late]
-- **Status**: PLANNED
-- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Status**: IN PROGRESS
+- **Branch/Commit**: exp/phase2-mmseg122 @ 25654da
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_s_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=TBD (calibrate before training; est. 48), total_bs=TBD, lr=6e-5 (AdamW fixed; no scaling)
+- **bs / lr**: samples_per_gpu=40, total_bs=80, lr=6e-5 (AdamW fixed; calibrated 2026-03-04; OOM boundary ~50/GPU → bs=40)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_s
 - **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 cross-check). SegNeXt-S larger backbone than T (embed_dims [64,128,320,512] vs T [32,64,160,256]). Calibrate BS before training.
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). SegNeXt-S larger backbone than T (embed_dims [64,128,320,512] vs T [32,64,160,256]). BS calibrated: bs=32→30.4GB, bs=48→45.5GB, bs=56→OOM.
 
 ---
 
@@ -163,10 +166,64 @@ Each entry follows this structure:
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 4), total_bs=TBD, lr=TBD (SGD linear-scaled from ref total_bs=16 lr=0.01)
-- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet
+- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 4), total_bs=TBD, lr=6e-5 (AdamW fixed; switched from SGD per user request 2026-03-04)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet_adamw
 - **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 cross-check). Ref: unet-s5-d16_deeplabv3_4xb4-40k_drive; mmsegmentation-macvi also has fcn_unet LaRS config. UNet trains from scratch (no pretrained backbone). Loss: CE+Dice on main head. Calibrate BS before training.
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Optimizer changed to AdamW with lr=6e-5 (user request). Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. Calibrate BS before training.
+
+---
+
+## EXP-012
+- **ID**: EXP-012
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — AdamW variant of SGD STDC2 (EXP-007)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_adamw_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 64), total_bs=TBD, lr=6e-5 (AdamW fixed; no linear scaling)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_stdc2_adamw
+- **Results (val)**: TBD
+- **Notes**: Same STDC2 architecture as EXP-007 (SGD). AdamW replaces SGD. Calibrate BS (AdamW needs ~20% more memory for optimizer state). 5k iters (extended from SGD's 3k; AdamW may converge slower).
+
+---
+
+## EXP-013
+- **ID**: EXP-013
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — AdamW variant of SGD BiSeNetV2 (EXP-009)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/bisenetv2_adamw_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 64), total_bs=TBD, lr=6e-5 (AdamW fixed; no linear scaling)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_bisenetv2_adamw
+- **Results (val)**: TBD
+- **Notes**: Same BiSeNetV2 architecture as EXP-009 (SGD). AdamW replaces SGD. Calibrate BS before first run. 5k iters.
+
+---
+
+## EXP-014
+- **ID**: EXP-014
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — AdamW variant of SGD PIDNet-S (EXP-008)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_adamw_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 64), total_bs=TBD, lr=6e-5 (AdamW fixed; no linear scaling)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets_adamw
+- **Results (val)**: TBD
+- **Notes**: Same PIDNet-S architecture as EXP-008 (SGD). AdamW replaces SGD. Requires GenerateEdge in train pipeline (same as SGD version). Calibrate BS before first run. 5k iters.
 
 ---
 
