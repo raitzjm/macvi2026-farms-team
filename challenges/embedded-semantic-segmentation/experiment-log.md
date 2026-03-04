@@ -21,10 +21,10 @@ Each entry follows this structure:
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
-| EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
-| EXP-011 | UNet-s5-d16 (DeepLabv3) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -96,8 +96,8 @@ Each entry follows this structure:
 - **ID**: EXP-008
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: IN PROGRESS
-- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2-mmseg122 @ f27a5a1
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -105,11 +105,12 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD linear-scaled; calibrated 2026-03-04; OOM boundary ~220/GPU)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets
-- **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 baseline). BS calibrated 2026-03-04: OOM boundary ~220/GPU → bs=160/GPU (74% util), lr=0.267.
+- **Results (val)**: best mIoU=**89.92%** @ iter 4750 (aAcc=95.40%, mAcc=94.72%); final iter 5000: 89.56%; Val F1 TBD (see Phase 2 report)
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). BS calibrated 2026-03-04 (OOM boundary ~220/GPU → bs=160/GPU, 74% util).
   Run 1: GenerateEdge IndexError — ReflectPad not updating img_shape. Fixed commit 2043c36. Failed run tm8mvsxr deleted.
-  Run 2: LR=0.267 caused severe oscillations (79%–89% on val, never stabilised over 1750 iters). Stopped. Failed run vwmbx1eu deleted.
-  Run 3 (final): lr=0.133 (halved; 0.01×160/12, single-GPU linear scale), warmup extended to 1000 iters. Restarted 2026-03-04 @ 07:18 UTC.
+  Run 2: lr=0.267 (0.01×320/12) caused severe oscillations (79–89% range); stopped at iter 1750. Failed run vwmbx1eu deleted.
+  Run 3 (final): lr=0.133 (0.01×160/12, halved), warmup extended to 1000 iters — stable convergence, new best at iter 4750.
+  WandB: 380 media files logged. Checkpoint: best_mIoU_iter_4750.pth.
 
 ---
 

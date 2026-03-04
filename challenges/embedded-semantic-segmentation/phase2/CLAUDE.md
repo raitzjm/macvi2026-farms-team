@@ -95,7 +95,7 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 | SegNeXt-T | 56 | 112 | 6e-5 | AdamW |
 | STDC2 | 160 | 320 | 0.267 | SGD |
 | BiSeNetV2 | 128 | 256 | 0.80 (CORRECTED — Phase 1 used 3.2, wrong) | SGD |
-| PIDNet-S | 160 | 320 | 0.267 (0.01×320/12; calibrated 2026-03-04; OOM boundary ~220/GPU) | SGD |
+| PIDNet-S | 160 | 320 | 0.133 (0.01×160/12; REVISED 2026-03-04; 0.267 caused 9% oscillations) | SGD |
 
 ## New Models (added late to Phase 2)
 | Model | samples_per_gpu | total_bs | LR | Optimizer | Notes |
