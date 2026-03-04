@@ -202,22 +202,17 @@ RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
 # wandb 0.25.0 rejects keys starting with "wandb_" (new key format) because
 # the 40-char minimum check fires after stripping the "wandb_" prefix.
 # Insert an early-return for the wandb_ prefix before the length check.
-RUN python3 - << 'PYEOF'
-import pathlib
-p = pathlib.Path(
-    '/home/farms/miniforge3/envs/macvi2/lib/python3.11'
-    '/site-packages/wandb/sdk/lib/wbauth/validation.py')
-src = p.read_text()
-needle = '    # On-prem API keys have a variable-length prefix'
-insert = (
-    '    # New wandb_ key format (36+ chars) -- accept as-is.\n'
-    '    if key.startswith("wandb_"):\n'
-    '        return None\n\n'
-)
-assert needle in src, f'patch anchor not found in {p}'
-p.write_text(src.replace(needle, insert + needle))
-print('validation.py patched OK')
-PYEOF
+# Note: single-line python3 -c used (Podman imagebuilder does not support heredocs).
+RUN python3 -c '\
+import pathlib; \
+p = pathlib.Path("/home/farms/miniforge3/envs/macvi2/lib/python3.11/site-packages/wandb/sdk/lib/wbauth/validation.py"); \
+src = p.read_text(); \
+needle = "    # On-prem API keys have a variable-length prefix"; \
+ins = "    # New wandb_ key format (36+ chars) -- accept as-is.\n    if key.startswith(\"wandb_\"):\n        return None\n\n"; \
+assert needle in src, "wandb validation.py patch anchor not found"; \
+p.write_text(src.replace(needle, ins + needle)); \
+print("validation.py patched OK") \
+'
 
 # =============================================================================
 # END ML DEPENDENCY STACK
