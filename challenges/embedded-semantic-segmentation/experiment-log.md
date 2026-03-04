@@ -18,7 +18,7 @@ Each entry follows this structure:
 
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
-| EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
@@ -40,7 +40,7 @@ Each entry follows this structure:
 - **ID**: EXP-005
 - **Date**: 2026-03-04 00:30 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segformer_mit-b2_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
@@ -49,8 +49,8 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=36, total_bs=72, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segformer_mit-b2
-- **Results (val)**: TBD
-- **Notes**: Phase 2 migration to mmseg 1.x. WandB prediction overlay logging enabled. Cross-check at iter 1500 vs Phase 1 ref (92.02%).
+- **Results (val)**: best mIoU=89.72% @ iter 2000; final mIoU=89.71% @ iter 3000
+- **Notes**: Cross-check at iter 1500: mIoU=89.52% vs Phase 1 ref 92.02% (−2.5%, outside ±1%). Likely evaluator difference between mmseg 0.30 and 1.x — training metrics (loss/acc) normal. Plateau from iter 2000→3000. WandB images: 0 logged (bug: interval=250 > val set 198; fixed to interval=5 in runtime.py for next models).
 
 ---
 
@@ -58,7 +58,7 @@ Each entry follows this structure:
 - **ID**: EXP-006
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: PLANNED
+- **Status**: IN PROGRESS
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)

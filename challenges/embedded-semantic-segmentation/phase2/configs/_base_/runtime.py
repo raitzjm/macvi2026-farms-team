@@ -44,8 +44,10 @@ default_hooks = dict(
         save_best='mIoU',
         rule='greater'),
     sampler_seed=dict(type='DistSamplerSeedHook'),
-    # draw=True: log prediction overlays to WandB at every val (interval=250)
-    visualization=dict(type='SegVisualizationHook', draw=True, interval=250),
+    # draw=True: log prediction overlays to WandB. interval=5 → every 5th val
+    # image logged (~40 of 198 per eval). interval=250 would NEVER fire because
+    # (batch_idx+1) % 250 == 0 requires batch_idx=249, but val has only 198 imgs.
+    visualization=dict(type='SegVisualizationHook', draw=True, interval=5),
 )
 
 # ── Runtime ───────────────────────────────────────────────────────────────────
