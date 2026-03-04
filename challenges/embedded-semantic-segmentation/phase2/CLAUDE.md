@@ -106,7 +106,7 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 | Model | samples_per_gpu | total_bs | LR | Optimizer | Notes |
 |---|---|---|---|---|---|
 | SegNeXt-S | 40 | 80 | 6e-5 | AdamW | OOM@56 → 40/GPU (20% reduction from ~50 boundary); CALIBRATED 2026-03-04 |
-| UNet-s5-d16 | TBD (est. 4; calibrate) | TBD | 6e-5 (fixed; AdamW) | AdamW | Trains from scratch; no LR scaling |
+| UNet-s5-d16 | 16 | 32 | 6e-5 (fixed; AdamW) | AdamW | Trains from scratch; CALIBRATED 2026-03-04: OOM@~19 → bs=16 (82%); bs=18→44.4GB |
 
 Ref for SegNeXt-S: upstream mscan-s_1xb16-adamw-160k_ade20k (same backbone, larger dims).
 Ref for UNet: switched to AdamW (user request 2026-03-04). Starting estimate bs=4/GPU; calibrate before first run.

@@ -23,7 +23,7 @@ Each entry follows this structure:
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
-| EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.62% | — | — | f94b3a5 |
 | EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
@@ -141,8 +141,8 @@ Each entry follows this structure:
 - **ID**: EXP-010
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2) [added late]
-- **Status**: IN PROGRESS
-- **Branch/Commit**: exp/phase2-mmseg122 @ 25654da
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2-mmseg122 @ f94b3a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_s_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -150,8 +150,8 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=40, total_bs=80, lr=6e-5 (AdamW fixed; calibrated 2026-03-04; OOM boundary ~50/GPU → bs=40)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_s
-- **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 cross-check). SegNeXt-S larger backbone than T (embed_dims [64,128,320,512] vs T [32,64,160,256]). BS calibrated: bs=32→30.4GB, bs=48→45.5GB, bs=56→OOM.
+- **Results (val)**: mIoU=89.62% best @ iter 4750; aAcc=95.13%, mAcc=94.55%
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). SegNeXt-S larger backbone than T (embed_dims [64,128,320,512] vs T [32,64,160,256]). BS calibrated: bs=32→30.4GB, bs=48→45.5GB, bs=56→OOM. Late improvement at iter 4750 — good to run 5k iters. Comparable to SegNeXt-T (89.40%) and STDC2 (89.08%).
 
 ---
 
@@ -166,10 +166,10 @@ Each entry follows this structure:
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 4), total_bs=TBD, lr=6e-5 (AdamW fixed; switched from SGD per user request 2026-03-04)
+- **bs / lr**: samples_per_gpu=16, total_bs=32, lr=6e-5 (AdamW fixed; switched from SGD per user request 2026-03-04)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet_adamw
 - **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Optimizer changed to AdamW with lr=6e-5 (user request). Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. Calibrate BS before training.
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Optimizer changed to AdamW with lr=6e-5 (user request). Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. BS calibrated 2026-03-04: OOM@~bs=19 → bs=16/GPU (82% VRAM).
 
 ---
 

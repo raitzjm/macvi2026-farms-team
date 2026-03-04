@@ -139,9 +139,11 @@ model = dict(
     test_cfg=dict(mode='whole'))
 
 # ── Dataloader (batch_size overrides _base_) ──────────────────────────────────
-# Starting estimate: 4/GPU (total_bs=8). UNet at 768×384 has large memory footprint.
-# Calibrate before first run. Update after calibration.
-train_dataloader = dict(batch_size=4)
+# CALIBRATED 2026-03-04 (single-GPU fwd+bwd, BN, 768×384, A6000 48 GB):
+#   bs=4→10.1GB  bs=8→19.9GB  bs=12→29.7GB  bs=14→34.6GB
+#   bs=16→39.5GB(82%)  bs=18→44.4GB(93%)  bs=20→OOM
+# OOM boundary ≈ 19/GPU. 20% reduction → bs=16/GPU (total_bs=32, 82% utilization).
+train_dataloader = dict(batch_size=16)
 
 # ── Optimizer (AdamW — same as SegFormer/SegNeXt in Phase 2) ─────────────────
 # LR=6e-5 fixed (AdamW; no linear scaling). Same for all Phase 2 AdamW models.
