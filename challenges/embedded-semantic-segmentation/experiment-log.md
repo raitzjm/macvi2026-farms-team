@@ -177,17 +177,17 @@ Each entry follows this structure:
 - **ID**: EXP-012
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — AdamW variant of SGD STDC2 (EXP-007)
-- **Status**: PLANNED
+- **Status**: IN PROGRESS
 - **Branch/Commit**: exp/phase2-mmseg122 @ TBD
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 64), total_bs=TBD, lr=6e-5 (AdamW fixed; no linear scaling)
+- **bs / lr**: samples_per_gpu=128, total_bs=256, lr=6e-5 (AdamW fixed; no linear scaling; calibrated 2026-03-04: OOM@~192/GPU → bs=128, 72.8% VRAM)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_stdc2_adamw
 - **Results (val)**: TBD
-- **Notes**: Same STDC2 architecture as EXP-007 (SGD). AdamW replaces SGD. Calibrate BS (AdamW needs ~20% more memory for optimizer state). 5k iters (extended from SGD's 3k; AdamW may converge slower).
+- **Notes**: Same STDC2 architecture as EXP-007 (SGD). AdamW replaces SGD. 5k iters (extended from SGD's 3k; AdamW may converge slower).
 
 ---
 
