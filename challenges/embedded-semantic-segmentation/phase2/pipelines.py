@@ -53,6 +53,7 @@ class ReflectPad:
         # < image dimension).
         if h >= target_h and w >= target_w:
             results['img'] = img
+            results['img_shape'] = img.shape[:2]
             results['pad_shape'] = img.shape
             return
 
@@ -61,6 +62,7 @@ class ReflectPad:
 
         padded = mmcv.impad(img, shape=self.size, padding_mode=mode)
         results['img'] = padded
+        results['img_shape'] = padded.shape[:2]
         results['pad_shape'] = padded.shape
 
     def _pad_seg(self, results):
