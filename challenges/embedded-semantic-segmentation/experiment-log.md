@@ -23,6 +23,8 @@ Each entry follows this structure:
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-011 | UNet-s5-d16 (DeepLabv3) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -123,6 +125,42 @@ Each entry follows this structure:
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_bisenetv2
 - **Results (val)**: TBD
 - **Notes**: LR corrected to 0.80 (0.05 × 256/16 total-to-total). Phase 1 3.2 caused obstacle collapse. Longer warmup for stability.
+
+---
+
+## EXP-010
+- **ID**: EXP-010
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2) [added late]
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_s_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=TBD (calibrate before training; est. 48), total_bs=TBD, lr=6e-5 (AdamW fixed; no scaling)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_s
+- **Results (val)**: TBD
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). SegNeXt-S larger backbone than T (embed_dims [64,128,320,512] vs T [32,64,160,256]). Calibrate BS before training.
+
+---
+
+## EXP-011
+- **ID**: EXP-011
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2) [added late]
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/unet_s5d16_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 4), total_bs=TBD, lr=TBD (SGD linear-scaled from ref total_bs=16 lr=0.01)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet
+- **Results (val)**: TBD
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). Ref: unet-s5-d16_deeplabv3_4xb4-40k_drive; mmsegmentation-macvi also has fcn_unet LaRS config. UNet trains from scratch (no pretrained backbone). Loss: CE+Dice on main head. Calibrate BS before training.
 
 ---
 

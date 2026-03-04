@@ -5,7 +5,7 @@
 #   source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
 #   bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh <model>
 #
-# <model> is one of: segformer_mit-b2 | segnext_t | stdc2 | pidnets | bisenetv2
+# <model> is one of: segformer_mit-b2 | segnext_t | segnext_s | stdc2 | pidnets | bisenetv2 | unet
 #
 # The script:
 #   1. Rebuilds the LaRS symlink tree if not present
@@ -38,7 +38,11 @@ MMSEG_TRAIN="/home/farms/miniforge3/envs/macvi2/lib/python3.11/site-packages/mms
 CONDA_RUN="/home/farms/miniforge3/bin/conda"
 
 # ── Config file resolution ────────────────────────────────────────────────────
-CONFIG_FILE="${MODEL}_768x384_lars_phase2.py"
+# unet maps to the full filename unet_s5d16_768x384_lars_phase2.py
+case "$MODEL" in
+    unet) CONFIG_FILE="unet_s5d16_768x384_lars_phase2.py" ;;
+    *)    CONFIG_FILE="${MODEL}_768x384_lars_phase2.py" ;;
+esac
 if [ ! -f "$CONFIGS/$CONFIG_FILE" ]; then
     echo "ERROR: Config not found: $CONFIGS/$CONFIG_FILE" >&2
     exit 1

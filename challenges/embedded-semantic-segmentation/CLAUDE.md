@@ -134,6 +134,11 @@ Phase 2: Full training runs — migrate all models to a single unified mmseg ver
           Phase 2 eval frequency is independent (e.g. every 5k iters) — only one early
           checkpoint near iter 3k is needed for the cross-check.
           Batch size must match Phase 1 exactly — do not re-calibrate.
+          Models: SegFormer MiT-B2, SegNeXt-T, STDC2, PIDNet-S, BiSeNetV2 (original 5).
+          Added late to Phase 2: SegNeXt-S (EXP-010), UNet-s5-d16 (EXP-011).
+            SegNeXt-S: larger backbone than T (AdamW, LR=6e-5 fixed, calibrate BS).
+            UNet-s5-d16: DeepLabv3 head + CE+Dice loss, SGD (linear-scale LR), no pretrain.
+            Reference configs: segnext_s/unet_s5d16_768x384_lars_phase2.py in phase2/configs/.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 

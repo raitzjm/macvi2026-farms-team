@@ -25,9 +25,11 @@ phase2/
 │   │   └── runtime.py         ← WandB vis backend, hooks, env_cfg
 │   ├── segformer_mit-b2_768x384_lars_phase2.py  (3k iters)
 │   ├── segnext_t_768x384_lars_phase2.py          (5k iters)
+│   ├── segnext_s_768x384_lars_phase2.py          (5k iters) [added late to Phase 2]
 │   ├── stdc2_768x384_lars_phase2.py              (3k iters)
 │   ├── pidnets_768x384_lars_phase2.py            (5k iters)
-│   └── bisenetv2_768x384_lars_phase2.py          (6k iters)
+│   ├── bisenetv2_768x384_lars_phase2.py          (6k iters)
+│   └── unet_s5d16_768x384_lars_phase2.py        (5k iters) [added late to Phase 2]
 └── scripts/
     ├── run_phase2.sh       ← DDP launcher (torchrun, 2 GPUs, macvi2 env)
     ├── setup_wandb.sh      ← load WANDB_API_KEY from ~/data/wandb_key.txt
@@ -51,7 +53,7 @@ PYTHONPATH must include the repo root (handled by run_phase2.sh).
 # From repo root, inside container
 source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
 bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh <model>
-# <model>: segformer_mit-b2 | segnext_t | stdc2 | pidnets | bisenetv2
+# <model>: segformer_mit-b2 | segnext_t | segnext_s | stdc2 | pidnets | bisenetv2 | unet
 ```
 
 The run script rebuilds the LaRS symlink tree if not present.
@@ -95,6 +97,17 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 | STDC2 | 160 | 320 | 0.267 | SGD |
 | BiSeNetV2 | 128 | 256 | 0.80 (CORRECTED — Phase 1 used 3.2, wrong) | SGD |
 | PIDNet-S | TBD (calibrate before training) | TBD | TBD | SGD |
+
+## New Models (added late to Phase 2)
+| Model | samples_per_gpu | total_bs | LR | Optimizer | Notes |
+|---|---|---|---|---|---|
+| SegNeXt-S | TBD (est. 48; calibrate) | TBD | 6e-5 | AdamW | Larger than T; same LR fixed rule |
+| UNet-s5-d16 | TBD (est. 4; calibrate) | TBD | TBD (0.01 × total_bs/16) | SGD | Trains from scratch; ref total_bs=16 lr=0.01 |
+
+Ref for SegNeXt-S: upstream mscan-s_1xb16-adamw-160k_ade20k (same backbone, larger dims).
+Ref for UNet: upstream unet-s5-d16_deeplabv3_4xb4-40k_drive (total_bs=16, lr=0.01, SGD).
+  mmsegmentation-macvi also has: fcn_unet_s5-d16_4x4_512x1024_160k_lars.py (Phase 1 fork, old API).
+Both require calibration before first run. Update configs + issue after calibration.
 
 ## Phase 2 Cross-check vs Phase 1
 At iter 1500, record mIoU and compare to Phase 1 reference:
