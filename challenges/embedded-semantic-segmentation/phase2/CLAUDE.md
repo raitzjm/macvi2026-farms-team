@@ -76,13 +76,12 @@ Test pipeline:  `Resize (keep_ratio=True)` → `ReflectPad` → `PackSegInputs`
 - Normalization is in `data_preprocessor` (NOT in pipeline — mmseg 1.x change)
 - `ReflectPad` registered via `@TRANSFORMS.register_module()` from `mmseg.registry`
 
-## PIDNet Batch Size Calibration
-PIDNet-S was not in Phase 1, so its batch size must be calibrated.
-**Before starting PIDNet training:**
-1. Run a calibration forward+backward pass loop at bs=80, 100, 120 to find OOM boundary
-2. Apply 20% pre-emptive reduction from OOM boundary
-3. Update `samples_per_gpu` and `lr` in `pidnets_768x384_lars_phase2.py`
-4. Update this file with pinned bs/lr + comment; update issue #14 with calibrated values
+## PIDNet Batch Size Calibration — DONE (2026-03-04)
+Calibrated with single-GPU fwd+bwd at 768×384 (A6000 48 GB):
+  bs=80→17.8 GB, bs=120→26.7 GB, bs=160→35.5 GB, bs=200→44.4 GB, bs=220→48.9 GB (OOM boundary)
+OOM boundary ≈ 220/GPU. 20% reduction → 176. Rounded to **bs=160** (74% utilization).
+LR = 0.01 × (320/12) = **0.267** (linear scaling, SGD).
+Config updated. Issue #14 notified.
 
 ## WandB Prediction Image Logging
 Phase 2 uses `WandbVisBackend` + `SegVisualizationHook` for prediction overlay images.
@@ -96,7 +95,7 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 | SegNeXt-T | 56 | 112 | 6e-5 | AdamW |
 | STDC2 | 160 | 320 | 0.267 | SGD |
 | BiSeNetV2 | 128 | 256 | 0.80 (CORRECTED — Phase 1 used 3.2, wrong) | SGD |
-| PIDNet-S | TBD (calibrate before training) | TBD | TBD | SGD |
+| PIDNet-S | 160 | 320 | 0.267 (0.01×320/12; calibrated 2026-03-04; OOM boundary ~220/GPU) | SGD |
 
 ## New Models (added late to Phase 2)
 | Model | samples_per_gpu | total_bs | LR | Optimizer | Notes |

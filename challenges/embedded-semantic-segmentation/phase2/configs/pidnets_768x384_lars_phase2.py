@@ -7,11 +7,11 @@ Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   pidnet-s_2xb6-120k_1024x1024-cityscapes.py:
                2 GPUs × 6/GPU = total_bs=12, lr=0.01 (SGD)
-  Calibration needed before first run at 768×384 on A6000 48 GB.
-    Starting estimate: samples_per_gpu=80 (pre-emptive 20% below expected OOM boundary).
-    OOM boundary unknown — calibrate with fwd+bwd pass at 768×384.
-    After calibration, pin samples_per_gpu and update this comment.
-  LR (estimated): 0.01 × (total_bs / 12)  — e.g. if total_bs=160: lr=0.133
+  Calibrated on 2026-03-04 with fwd+bwd pass (single A6000 48 GB):
+    bs=80:  17.8 GB | bs=120: 26.7 GB | bs=160: 35.5 GB | bs=200: 44.4 GB | bs=220: 48.9 GB (OOM boundary)
+    OOM boundary ≈ 220/GPU. 20% pre-emptive reduction → 176. Rounded to 160 (clean, 74% utilization).
+  samples_per_gpu = 160, total_bs = 320 (160 × 2 GPUs)
+  LR: 0.01 × (320 / 12) = 0.267 (linear scaling rule, SGD)
   NOTE: warmup added for stability with large LR (not in upstream default).
   Norm: SyncBN required for DDP (PIDNet uses BN)
   NOTE: No Phase 1 cross-check for PIDNet (new model in Phase 2).
@@ -30,8 +30,7 @@ Run:
   source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
   bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh pidnets
 
-  !! Before first run: calibrate batch size by testing fwd+bwd at bs=80, 100, 120 !!
-  !! Then update samples_per_gpu and lr in this config accordingly.               !!
+  Calibrated 2026-03-04: bs=160/GPU (total_bs=320), lr=0.267 (0.01×320/12).
 """
 
 _base_ = [
@@ -84,12 +83,10 @@ pidnet_train_pipeline = [
     dict(type='PackSegInputs'),
 ]
 
-# ── Dataloader override ────────────────────────────────────────────────────────
-# CALIBRATE before training: test fwd+bwd at bs=80, 100, 120 on A6000 48GB.
-# Reference: upstream total_bs=12 on Cityscapes 1024×1024.
-# Starting estimate: bs=80/GPU → total_bs=160. Update after calibration.
+# ── Dataloader ─────────────────────────────────────────────────────────────────
+# CALIBRATED 2026-03-04: bs=160/GPU → total_bs=320. OOM boundary ~220/GPU.
 train_dataloader = dict(
-    batch_size=80,
+    batch_size=160,
     dataset=dict(pipeline=pidnet_train_pipeline))
 
 # ── Model (PIDNet-S — architecture-specific, do not change) ───────────────────
@@ -153,7 +150,7 @@ optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(
         type='SGD',
-        lr=0.133,           # 0.01 × (160/12); update after calibration
+        lr=0.267,           # 0.01 × (320/12); CALIBRATED 2026-03-04
         momentum=0.9,
         weight_decay=0.0005))
 
