@@ -18,6 +18,11 @@ Each entry follows this structure:
 
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
+| EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -28,6 +33,96 @@ Each entry follows this structure:
 ## Entries
 
 (entries will be appended below by the agent)
+
+---
+
+## EXP-005
+- **ID**: EXP-005
+- **Date**: 2026-03-04 00:30 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
+- **Status**: IN PROGRESS
+- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segformer_mit-b2_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 3000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=36, total_bs=72, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segformer_mit-b2
+- **Results (val)**: TBD
+- **Notes**: Phase 2 migration to mmseg 1.x. WandB prediction overlay logging enabled. Cross-check at iter 1500 vs Phase 1 ref (92.02%).
+
+---
+
+## EXP-006
+- **ID**: EXP-006
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=56, total_bs=112, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t
+- **Results (val)**: TBD
+- **Notes**: Phase 2 migration. Cross-check at iter 1500 vs Phase 1 ref (89.81%).
+
+---
+
+## EXP-007
+- **ID**: EXP-007
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 3000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD, poly, warmup 300 iters; pinned from Phase 1)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_stdc2
+- **Results (val)**: TBD
+- **Notes**: Phase 2 migration. Cross-check at iter 1500 vs Phase 1 ref (90.78%).
+
+---
+
+## EXP-008
+- **ID**: EXP-008
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: TBD (calibrate before training; upstream ref total_bs=12, lr=0.01)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets
+- **Results (val)**: TBD
+- **Notes**: New model in Phase 2 (no Phase 1 baseline). Batch size to be calibrated.
+
+---
+
+## EXP-009
+- **ID**: EXP-009
+- **Date**: 2026-03-04 UTC
+- **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/bisenetv2_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 6000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=128, total_bs=256, lr=0.80 (SGD corrected; Phase 1 used 3.2 — wrong); warmup 300 iters
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_bisenetv2
+- **Results (val)**: TBD
+- **Notes**: LR corrected to 0.80 (0.05 × 256/16 total-to-total). Phase 1 3.2 caused obstacle collapse. Longer warmup for stability.
 
 ---
 
