@@ -25,7 +25,7 @@ Each entry follows this structure:
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
 | EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.62% | — | — | f94b3a5 |
 | EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 85.42% | — | — | f0ad3e5 |
-| EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.18% | — | — | TBD |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
@@ -177,7 +177,7 @@ Each entry follows this structure:
 - **ID**: EXP-012
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — AdamW variant of SGD STDC2 (EXP-007)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED
 - **Branch/Commit**: exp/phase2-mmseg122 @ TBD
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
@@ -186,8 +186,8 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=128, total_bs=256, lr=6e-5 (AdamW fixed; no linear scaling; calibrated 2026-03-04: OOM@~192/GPU → bs=128, 72.8% VRAM)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_stdc2_adamw
-- **Results (val)**: TBD
-- **Notes**: Same STDC2 architecture as EXP-007 (SGD). AdamW replaces SGD. 5k iters (extended from SGD's 3k; AdamW may converge slower).
+- **Results (val)**: best mIoU=**89.18%** @ iter 2750 (aAcc=94.98%, mAcc=94.39%); final iter 5000: 89.06%; Val F1 TBD (see Phase 2 report)
+- **Notes**: Same STDC2 architecture as EXP-007 (SGD). AdamW replaces SGD. Very smooth convergence — no SGD oscillations. Best at iter 2750, slight plateau afterwards with minor fluctuations (88.86–89.18%). +0.10% vs EXP-007 SGD (89.08%). WandB: 380 media files logged. Checkpoint: best_mIoU_iter_2750.pth.
 
 ---
 
