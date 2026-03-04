@@ -6,13 +6,13 @@ Conda env: macvi2  |  /home/farms/miniforge3/envs/macvi2/
 Batch size / LR (AdamW — keep LR fixed regardless of batch size):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Reference:   AdamW, lr=0.00006 (upstream SegNeXt-S, same as T)
-  Per-GPU:     samples_per_gpu=48 (starting estimate; calibrate before first run)
-               SegNeXt-T was limited to 56/GPU by HAM decoder; S is larger so
-               start at 48. Calibrate fwd+bwd at 48, 56 to find OOM boundary.
-  Effective:   total_bs=96 (48 × 2 GPUs) — update after calibration
+  Calibrated 2026-03-04 (fwd+bwd, single A6000 48 GB):
+    bs=32: 30.4 GB | bs=48: 45.5 GB | bs=56: OOM
+    OOM boundary (linear extrapolation) ≈ 50/GPU.
+    20% pre-emptive reduction → 40 (rounded; 80% utilization).
+  samples_per_gpu=40, total_bs=80 (40 × 2 GPUs)
   LR:          0.00006 (fixed — AdamW does not use linear scaling)
   Norm: LayerNorm — SyncBN not applicable
-  NOTE: After calibration, update samples_per_gpu, total_bs comment, and issue.
 
 Phase 2 schedule:
   5k iters. SegNeXt-S is new in Phase 2 (no Phase 1 cross-check).
@@ -22,9 +22,6 @@ Phase 2 schedule:
 Run:
   source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
   bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh segnext_s
-
-  !! Before first run: calibrate batch size by testing fwd+bwd at bs=48, 56 !!
-  !! Then update samples_per_gpu and total_bs comment accordingly.          !!
 """
 
 _base_ = [
@@ -107,8 +104,8 @@ model = dict(
     test_cfg=dict(mode='whole'))
 
 # ── Dataloader (batch_size overrides _base_) ──────────────────────────────────
-# Starting estimate: 48/GPU (total_bs=96). Update after calibration.
-train_dataloader = dict(batch_size=48)
+# CALIBRATED 2026-03-04: OOM boundary ≈50/GPU → 20% reduction → bs=40/GPU (total_bs=80).
+train_dataloader = dict(batch_size=40)
 
 # ── Optimizer (AdamW — architecture-specific, do not change) ──────────────────
 # AdamW: LR fixed at 0.00006 regardless of batch size (no linear scaling).

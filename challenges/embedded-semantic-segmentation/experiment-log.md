@@ -22,7 +22,7 @@ Each entry follows this structure:
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
-| EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
 | EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
@@ -118,8 +118,8 @@ Each entry follows this structure:
 - **ID**: EXP-009
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: PLANNED
-- **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2-mmseg122 @ aecd436
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/bisenetv2_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -127,8 +127,10 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=128, total_bs=256, lr=0.80 (SGD corrected; Phase 1 used 3.2 — wrong); warmup 300 iters
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_bisenetv2
-- **Results (val)**: TBD
-- **Notes**: LR corrected to 0.80 (0.05 × 256/16 total-to-total). Phase 1 3.2 caused obstacle collapse. Longer warmup for stability.
+- **Results (val)**: best mIoU=**89.12%** @ iter 6000 (aAcc=94.98%, mAcc=94.22%); Val F1 TBD (see Phase 2 report)
+- **Notes**: LR corrected to 0.80 (0.05×256/16 total-to-total). Phase 1's wrong lr=3.2 caused instability. SGD oscillations throughout but clear upward trend; new bests at iters 500, 1000, 1500, 2250, 2500, 3250, 4250, 5000, 5500, 5750, 6000.
+  Final best at last iter (6000) = 89.12% — much better than Phase 1 86.56% due to correct LR and full 6k training.
+  456 WandB media files logged. Checkpoint: best_mIoU_iter_6000.pth.
 
 ---
 
