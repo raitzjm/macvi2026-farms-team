@@ -195,17 +195,17 @@ Each entry follows this structure:
 - **ID**: EXP-013
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — AdamW variant of SGD BiSeNetV2 (EXP-009)
-- **Status**: PLANNED
+- **Status**: IN PROGRESS
 - **Branch/Commit**: exp/phase2-mmseg122 @ TBD
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/bisenetv2_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=TBD (calibrate; est. 64), total_bs=TBD, lr=6e-5 (AdamW fixed; no linear scaling)
+- **bs / lr**: samples_per_gpu=112, total_bs=224, lr=6e-5 (AdamW fixed; no linear scaling; calibrated 2026-03-04: OOM between 128-160/GPU → bs=112, 73.9% VRAM)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_bisenetv2_adamw
 - **Results (val)**: TBD
-- **Notes**: Same BiSeNetV2 architecture as EXP-009 (SGD). AdamW replaces SGD. Calibrate BS before first run. 5k iters.
+- **Notes**: Same BiSeNetV2 architecture as EXP-009 (SGD). AdamW replaces SGD. 5k iters.
 
 ---
 

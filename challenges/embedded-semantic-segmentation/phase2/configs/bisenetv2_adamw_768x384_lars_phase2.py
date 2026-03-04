@@ -9,10 +9,9 @@ Do NOT override the SGD config (bisenetv2_768x384_lars_phase2.py).
 Batch size / LR (AdamW — LR fixed, no linear scaling):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Optimizer:   AdamW, lr=6e-5 (same default as all Phase 2 AdamW models)
-  Batch size:  Starting estimate: 64/GPU (total_bs=128).
-               Calibrate fwd+bwd before first run; SGD version used 128/GPU.
-               AdamW adds optimizer state (~20% more memory); conservative start.
-  NOTE: After calibration, update samples_per_gpu and total_bs comment.
+  Batch size:  CALIBRATED 2026-03-04: bs=112/GPU (total_bs=224), 73.9% VRAM.
+               OOM boundary between 128 (84.3%) and 160 (OOM); bs=128→39.99GB.
+               20% reduction from ~145 → 116 → bs=112 (round for DDP headroom).
 
 Phase 2 schedule:
   5k iters. Eval every 250 iters → 20 checkpoints.
@@ -147,8 +146,8 @@ model = dict(
     test_cfg=dict(mode='whole'))
 
 # ── Dataloader (batch_size overrides _base_) ──────────────────────────────────
-# Starting estimate: 64/GPU (total_bs=128). Calibrate before first run.
-train_dataloader = dict(batch_size=64)
+# CALIBRATED: 112/GPU (total_bs=224); OOM boundary 128-160/GPU (2026-03-04).
+train_dataloader = dict(batch_size=112)
 
 # ── Optimizer (AdamW — fixed LR, same as all Phase 2 AdamW models) ────────────
 optim_wrapper = dict(
