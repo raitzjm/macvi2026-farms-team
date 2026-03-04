@@ -19,7 +19,7 @@ Each entry follows this structure:
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
-| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
@@ -58,17 +58,17 @@ Each entry follows this structure:
 - **ID**: EXP-006
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED (stopped early at iter ~3250 — plateau)
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
-- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Iters**: ~3250/5000 (stopped early — plateau confirmed)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=56, total_bs=112, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t
-- **Results (val)**: TBD
-- **Notes**: Phase 2 migration. Cross-check at iter 1500 vs Phase 1 ref (89.81%).
+- **Results (val)**: best mIoU=89.40% @ iter 2000; plateau 89.33-89.36% from iter 2250 onwards
+- **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓). Plateau confirmed from iter 2000: 5 consecutive evals (iter 2250–3250) all below 89.40% with no improvement. Stopped early to save time. WandB images logging fixed (interval=5) — check this run for prediction overlays.
 
 ---
 
@@ -76,7 +76,7 @@ Each entry follows this structure:
 - **ID**: EXP-007
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: PLANNED
+- **Status**: IN PROGRESS
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
