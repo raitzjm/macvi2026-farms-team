@@ -1,20 +1,24 @@
 """
-UNet-s5-d16 (DeepLabv3 head) @ 768×384 — LaRS — Phase 2 full training  [added late to Phase 2]
+UNet-s5-d16 (FCN head, CE+Dice) @ 768×384 — LaRS — Phase 2 full training  [added late to Phase 2]
 mmsegmentation 1.2.2 + mmcv 2.1.0 + PyTorch 2.1.2+cu121
 Conda env: macvi2  |  /home/farms/miniforge3/envs/macvi2/
 
-Reference: mmseg 1.2.2 upstream unet-s5-d16_deeplabv3_4xb4-40k_drive-64x64.py
+Reference: mmseg 1.2.2 upstream unet-s5-d16_fcn_4xb4-ce-1.0-dice-3.0-40k_drive-64x64.py
   mmsegmentation-macvi (Phase 1 fork) also has: fcn_unet_s5-d16_4x4_512x1024_160k_lars.py
 
-Architecture: UNet 5-stage encoder-decoder + ASPPHead (DeepLabv3) main head
+Architecture: UNet 5-stage encoder-decoder + FCNHead (1-conv) main head
   + FCNHead auxiliary head (loss_weight=0.4).
-  Primary loss: CE + Dice (loss_weight 1.0 each) — more robust to class imbalance.
-  Auxiliary loss: CE only (standard auxiliary supervision).
+  FCNHead chosen over ASPPHead (DeepLabv3) to stay closest to original U-Net:
+    original U-Net uses a 1×1 conv output = FCNHead(num_convs=1).
+    ASPPHead adds dilated multi-scale pooling not present in original U-Net.
+  Primary loss: CE(1.0) + Dice(3.0) — standard from upstream fcn_ce-dice variant.
+    Dice weight=3.0 (not 1.0) matches the upstream mmseg convention for medical/seg tasks.
+  Auxiliary loss: CE only (loss_weight=0.4, standard).
   No pretrained backbone (UNet is trained from scratch).
 
 Batch size / LR (SGD — linear scaling rule):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
-  Reference:   unet-s5-d16_deeplabv3_4xb4-40k_drive-64x64.py
+  Reference:   unet-s5-d16_fcn_4xb4-ce-1.0-dice-3.0-40k_drive-64x64.py
                4 GPUs × 4/GPU = total_bs=16, lr=0.01 (SGD, PolyLR)
   Input size:  768×384 (LaRS) vs 64×64 (DRIVE) — much larger; OOM boundary unknown.
   Calibration: test fwd+bwd at bs=4, 6, 8 per GPU on A6000 48 GB.
@@ -103,19 +107,20 @@ model = dict(
         upsample_cfg=dict(type='InterpConv'),
         norm_eval=False),
     decode_head=dict(
-        type='ASPPHead',
+        type='FCNHead',
         in_channels=64,
         in_index=4,
-        channels=16,
-        dilations=(1, 12, 24, 36),
+        channels=64,
+        num_convs=1,
+        concat_input=False,
         dropout_ratio=0.1,
         num_classes=3,
         ignore_index=255,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=[
-            dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-            dict(type='DiceLoss', use_sigmoid=False, loss_weight=1.0),
+            dict(type='CrossEntropyLoss', loss_name='loss_ce', use_sigmoid=False, loss_weight=1.0),
+            dict(type='DiceLoss', loss_name='loss_dice', use_sigmoid=False, loss_weight=3.0),
         ]),
     auxiliary_head=dict(
         type='FCNHead',
