@@ -11,8 +11,10 @@ Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_
     bs=80:  17.8 GB | bs=120: 26.7 GB | bs=160: 35.5 GB | bs=200: 44.4 GB | bs=220: 48.9 GB (OOM boundary)
     OOM boundary ≈ 220/GPU. 20% pre-emptive reduction → 176. Rounded to 160 (clean, 74% utilization).
   samples_per_gpu = 160, total_bs = 320 (160 × 2 GPUs)
-  LR: 0.01 × (320 / 12) = 0.267 (linear scaling rule, SGD)
-  NOTE: warmup added for stability with large LR (not in upstream default).
+  LR: REVISED 2026-03-04: lr=0.133 (0.01×160/12, single-GPU scale).
+    First run used 0.267 (full 320/12) → 79–89% oscillations. Halved to 0.133.
+    Best val at 0.267 was at warmup midpoint (lr~0.134) → confirms 0.133 as correct peak.
+  NOTE: warmup extended to 1000 iters (was 500) for additional stability.
   Norm: SyncBN required for DDP (PIDNet uses BN)
   NOTE: No Phase 1 cross-check for PIDNet (new model in Phase 2).
 
@@ -144,32 +146,33 @@ model = dict(
 
 # ── Optimizer (SGD — architecture-specific, do not change) ────────────────────
 # Reference: upstream total_bs=12, lr=0.01 (linear scaling rule).
-# Estimated: total_bs=160 (80×2 GPUs) → lr = 0.01 × (160/12) = 0.133.
-# UPDATE after calibration: adjust lr proportionally if batch size changes.
+# Linear scaling to total_bs=320: 0.01×(320/12)=0.267 → caused large oscillations (79–89% on val).
+# REVISED (2026-03-04): halved to lr=0.133 (0.01×(160/12), single-GPU linear scale).
+# Best val at lr=0.267 was at iter 250 (warmup, lr~0.134) → confirms 0.133 is correct peak LR.
+# Warmup extended to 1000 iters for extra stability.
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(
         type='SGD',
-        lr=0.267,           # 0.01 × (320/12); CALIBRATED 2026-03-04
+        lr=0.133,           # 0.01 × (160/12); REVISED 2026-03-04 (0.267 caused oscillations)
         momentum=0.9,
         weight_decay=0.0005))
 
 # ── Schedule ──────────────────────────────────────────────────────────────────
-# 5k iters; warmup 500 iters.
-# Upstream used no warmup but with total_bs=12; at ~13× larger bs, warmup helps.
+# 5k iters; warmup 1000 iters (extended from 500 for stability with large-LR oscillation fix).
 iters = 5000
 param_scheduler = [
     dict(
         type='LinearLR',
         start_factor=1e-3,
         begin=0,
-        end=500,
+        end=1000,
         by_epoch=False),
     dict(
         type='PolyLR',
         eta_min=0.0,
         power=0.9,
-        begin=500,
+        begin=1000,
         end=iters,
         by_epoch=False),
 ]

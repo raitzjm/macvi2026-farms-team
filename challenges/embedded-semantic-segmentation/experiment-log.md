@@ -106,7 +106,10 @@ Each entry follows this structure:
 - **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD linear-scaled; calibrated 2026-03-04; OOM boundary ~220/GPU)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets
 - **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 baseline). Batch size to be calibrated.
+- **Notes**: New model in Phase 2 (no Phase 1 baseline). BS calibrated 2026-03-04: OOM boundary ~220/GPU → bs=160/GPU (74% util), lr=0.267.
+  Run 1: GenerateEdge IndexError — ReflectPad not updating img_shape. Fixed commit 2043c36. Failed run tm8mvsxr deleted.
+  Run 2: LR=0.267 caused severe oscillations (79%–89% on val, never stabilised over 1750 iters). Stopped. Failed run vwmbx1eu deleted.
+  Run 3 (final): lr=0.133 (halved; 0.01×160/12, single-GPU linear scale), warmup extended to 1000 iters. Restarted 2026-03-04 @ 07:18 UTC.
 
 ---
 
