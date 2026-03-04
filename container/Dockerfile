@@ -163,7 +163,8 @@ ENV PATH="/home/farms/miniforge3/envs/macvi/bin:$PATH"
 # Stock mmseg 1.2.2 includes all needed models as built-ins (no fork needed).
 # mmcv 2.1.0 has a prebuilt cu121+torch2.1 wheel — no source build.
 # DDP path uses mmengine runner; no distributed.py patch needed.
-# No setuptools<70 needed (mmcv 2.x wheel built differently).
+# setuptools<70 needed: torch 2.1.2 cpp_extension.py imports pkg_resources,
+# which was removed from setuptools 71+. Same reason as macvi env.
 # numpy<2 still needed: mmcv 2.1.0 compiled against NumPy 1.x ABI.
 # opencv-python<4.11 still needed: 4.11+ requires numpy>=2.
 # ftfy + regex: required by mmseg.utils.tokenizer (BEiT/CLIP code path).
@@ -192,7 +193,7 @@ RUN /home/farms/miniforge3/envs/macvi2/bin/pip install mmsegmentation==1.2.2
 # opencv-python<4.11: 4.11+ requires numpy>=2 (conflicts with above pin).
 # ftfy, regex: required by mmseg.utils.tokenizer (imported at package init).
 RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
-        "numpy<2" "opencv-python<4.11" ftfy regex
+        "setuptools<70" "numpy<2" "opencv-python<4.11" ftfy regex
 
 # --- WandB + ONNX tools ---
 RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
