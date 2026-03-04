@@ -24,7 +24,7 @@ Each entry follows this structure:
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
 | EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.62% | — | — | f94b3a5 |
-| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 85.42% | — | — | f0ad3e5 |
 | EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
 | EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
@@ -159,8 +159,8 @@ Each entry follows this structure:
 - **ID**: EXP-011
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2) [added late]
-- **Status**: PLANNED
-- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2-mmseg122 @ f0ad3e5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/unet_s5d16_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -168,8 +168,8 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=16, total_bs=32, lr=6e-5 (AdamW fixed; switched from SGD per user request 2026-03-04)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet_adamw
-- **Results (val)**: TBD
-- **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Optimizer changed to AdamW with lr=6e-5 (user request). Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. BS calibrated 2026-03-04: OOM@~bs=19 → bs=16/GPU (82% VRAM).
+- **Results (val)**: mIoU=85.42% best @ iter 2750; aAcc=92.94%, mAcc=92.18%; plateau after iter 2750
+- **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Lower mIoU than pretrained models (85.42% vs ~89%) expected — no ImageNet init. Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. BS calibrated: OOM@~bs=19 → bs=16/GPU (82% VRAM).
 
 ---
 
