@@ -9,10 +9,10 @@ Do NOT override the SGD config (pidnets_768x384_lars_phase2.py).
 Batch size / LR (AdamW — LR fixed, no linear scaling):
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   Optimizer:   AdamW, lr=6e-5 (same default as all Phase 2 AdamW models)
-  Batch size:  Starting estimate: 64/GPU (total_bs=128).
-               Calibrate fwd+bwd before first run; SGD version used 160/GPU.
-               AdamW adds optimizer state (~20% more memory); conservative start.
-  NOTE: After calibration, update samples_per_gpu and total_bs comment.
+  Batch size:  CALIBRATED 2026-03-05: bs=160/GPU (total_bs=320), ~69.6% VRAM single-GPU.
+               OOM boundary between 224 (97.4%, 46.28 GB) and 240 (OOM).
+               20% reduction from ~232 → 186. Rounded DOWN to bs=160 for DDP headroom
+               (matches SGD PIDNet-S bs — proven safe; DDP overhead ~5-7 GB pushes to ~38-42 GB).
   NOTE: PIDNet requires GenerateEdge in train pipeline (boundary supervision loss).
 
 Phase 2 schedule:
@@ -22,8 +22,6 @@ Phase 2 schedule:
 Run:
   source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
   bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh pidnets_adamw
-
-  !! Before first run: calibrate batch size fwd+bwd at bs=64, 96, 128/GPU !!
 """
 
 _base_ = [
@@ -77,9 +75,9 @@ pidnet_train_pipeline = [
 ]
 
 # ── Dataloader (batch_size overrides _base_) ──────────────────────────────────
-# Starting estimate: 64/GPU (total_bs=128). Calibrate before first run.
+# CALIBRATED: 160/GPU (total_bs=320); OOM boundary ~232/GPU (2026-03-05).
 train_dataloader = dict(
-    batch_size=64,
+    batch_size=160,
     dataset=dict(pipeline=pidnet_train_pipeline))
 
 # ── Model (PIDNet-S — same architecture as SGD version) ───────────────────────
