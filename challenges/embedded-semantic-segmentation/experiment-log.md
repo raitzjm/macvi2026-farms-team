@@ -19,7 +19,7 @@ Each entry follows this structure:
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
-| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% | — | — | c50e7a5 |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% (best so far; resuming to 5k) | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
@@ -27,7 +27,7 @@ Each entry follows this structure:
 | EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 85.42% | — | — | f0ad3e5 |
 | EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.18% | — | — | TBD |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 86.45% | — | — | TBD |
-| EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | — | — | TBD |
+| EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.10% | — | — | TBD |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -61,19 +61,19 @@ Each entry follows this structure:
 
 ## EXP-006
 - **ID**: EXP-006
-- **Date**: 2026-03-04 UTC
+- **Date**: 2026-03-04 UTC (resumed 2026-03-05; completed TBD)
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: COMPLETED (stopped early at iter ~3250 — plateau)
+- **Status**: IN PROGRESS (resuming from iter 2500 → 5000 for consistency)
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
-- **Iters**: ~3250/5000 (stopped early — plateau confirmed)
+- **Iters**: resuming 2500→5000 (was stopped at ~3250; last checkpoint at 2500)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=56, total_bs=112, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
-- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t
-- **Results (val)**: best mIoU=89.40% @ iter 2000; plateau 89.33-89.36% from iter 2250 onwards
-- **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓). Plateau confirmed from iter 2000: 5 consecutive evals (iter 2250–3250) all below 89.40% with no improvement. Stopped early to save time. WandB images logging fixed (interval=5) — check this run for prediction overlays.
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t (run ID: v0j5q1ik)
+- **Results (val)**: best mIoU=89.40% @ iter 2000; plateau 89.33-89.36% from iter 2250 onwards; final iter 5000 TBD
+- **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓). Plateau confirmed from iter 2000: 5 consecutive evals (iter 2250–3250) all below 89.40% with no improvement. Originally stopped early; resumed 2026-03-05 to run to full 5k iters for consistency with other Phase 2 models. WandB images logging fixed (interval=5).
 
 ---
 
@@ -217,9 +217,9 @@ Each entry follows this structure:
 
 ## EXP-014
 - **ID**: EXP-014
-- **Date**: 2026-03-05 UTC
+- **Date**: 2026-03-05 UTC (completed 2026-03-05 19:22 UTC)
 - **Phase**: Phase 2 — AdamW variant of SGD PIDNet-S (EXP-008)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED
 - **Branch/Commit**: exp/phase2-mmseg122 @ TBD
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
@@ -227,9 +227,12 @@ Each entry follows this structure:
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=160, total_bs=320, lr=6e-5 (AdamW fixed; no linear scaling; calibrated 2026-03-05: OOM boundary ~232/GPU → bs=160, ~69.6% VRAM single-GPU, matches SGD version)
-- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets_adamw
-- **Results (val)**: TBD
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets_adamw (run ID: 2l8jpdgk)
+- **Results (val)**: best mIoU=**89.10%** @ iter 4500 (aAcc=94.94%, mAcc=94.30%); final iter 5000: 89.00%; Val F1 TBD (see Phase 2 report)
 - **Notes**: Same PIDNet-S architecture as EXP-008 (SGD). AdamW replaces SGD. Requires GenerateEdge in train pipeline (same as SGD version). BS calibrated 2026-03-05: OOM between 224-240/GPU; selected bs=160 for DDP headroom (matches SGD).
+  Val mIoU trajectory (resumed from iter 4000 @ 89.07%): 4250→89.09%, 4500→89.10% (best), 4750→89.08%, 5000→89.00%.
+  Resumed run: WandB env var approach (WANDB_RUN_ID=2l8jpdgk WANDB_RESUME=must). Fast-forward with GenerateEdge took ~47 min (vs ~3 min for models without edge maps).
+  +0.18% vs EXP-008 SGD (89.92% best — but SGD EXP-008 is the full 5k run so this is a fair comparison: SGD slightly better for PIDNet). Checkpoint: best_mIoU_iter_4500.pth.
 
 ---
 

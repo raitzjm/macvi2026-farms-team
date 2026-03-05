@@ -60,7 +60,7 @@ test_pipeline = [
 # ── Dataloaders (batch_size overridden per model config) ──────────────────────
 train_dataloader = dict(
     batch_size=2,           # placeholder — overridden in model config
-    num_workers=4,
+    num_workers=8,
     persistent_workers=True,
     pin_memory=False,
     sampler=dict(type='InfiniteSampler', shuffle=True),

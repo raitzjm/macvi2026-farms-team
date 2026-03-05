@@ -106,7 +106,8 @@ cd "$REPO_ROOT"
     torchrun --standalone --nproc_per_node="$NUM_GPUS" \
         "$MMSEG_TRAIN" --launcher pytorch \
         "$CONFIGS/$CONFIG_FILE" \
-        --work-dir "$WORK_DIR"
+        --work-dir "$WORK_DIR" \
+        "${@:2}"
 
 EXIT_CODE=$?
 echo ""
