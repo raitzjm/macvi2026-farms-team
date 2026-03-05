@@ -19,7 +19,7 @@ Each entry follows this structure:
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
-| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.54% | — | — | c50e7a5 |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.60% | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
@@ -72,11 +72,12 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=56, total_bs=112, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t (run ID: v0j5q1ik)
-- **Results (val)**: best mIoU=**89.54%** @ iter 5000 (aAcc=95.17%, mAcc=94.56%); Val F1 TBD (see Phase 2 report)
+- **Results (val)**: best mIoU=**89.60%** @ iter 4250 (aAcc=95.22%, mAcc=94.56%); final iter 5000: 89.54%; Val F1 TBD (see Phase 2 report)
 - **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓).
   Originally stopped at iter ~3250 (apparent plateau at 89.40%); resumed 2026-03-05 to full 5k for consistency.
-  Resumed trajectory: 3000→89.40%, 3500→89.48% (new best), 5000→89.54% (new best) — still improving at end.
-  Early stop cost ~0.14% mIoU. Checkpoint: best_mIoU_iter_3500.pth → superseded by iter 5000 final (89.54%).
+  Full resumed trajectory: 2750→89.40%, 3000→89.40%, 3250→89.37%, 3500→89.48%, 3750→89.53%, 4000→89.58%, 4250→89.60% (best), 4500→89.58%, 4750→89.54%, 5000→89.54%.
+  Early stop at iter 3250 cost +0.20% mIoU. Model peaked at 4250 then gently declined.
+  Checkpoints: best_mIoU_iter_4250.pth (89.60%, use for submission) + iter_5000.pth (89.54%, fully decayed final state) — both kept.
   WandB note: new data points from resume not visible in UI (step counter backwards from 2500; silently dropped). Use .log files for full trajectory.
 
 ---
