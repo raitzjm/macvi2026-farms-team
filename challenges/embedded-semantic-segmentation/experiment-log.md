@@ -19,7 +19,7 @@ Each entry follows this structure:
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
-| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.40% (best so far; resuming to 5k) | — | — | c50e7a5 |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.54% | — | — | c50e7a5 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
@@ -61,19 +61,23 @@ Each entry follows this structure:
 
 ## EXP-006
 - **ID**: EXP-006
-- **Date**: 2026-03-04 UTC (resumed 2026-03-05; completed TBD)
+- **Date**: 2026-03-04 UTC (resumed + completed 2026-03-05 20:51 UTC)
 - **Phase**: Phase 2 — full training baselines (mmseg 1.2.2)
-- **Status**: IN PROGRESS (resuming from iter 2500 → 5000 for consistency)
+- **Status**: COMPLETED
 - **Branch/Commit**: exp/phase2-mmseg122 @ c50e7a5
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
-- **Iters**: resuming 2500→5000 (was stopped at ~3250; last checkpoint at 2500)
+- **Iters**: 5000 (resumed from iter_2500.pth; was stopped at ~3250)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=56, total_bs=112, lr=6e-5 (AdamW, poly, warmup 500 iters; pinned from Phase 1)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t (run ID: v0j5q1ik)
-- **Results (val)**: best mIoU=89.40% @ iter 2000; plateau 89.33-89.36% from iter 2250 onwards; final iter 5000 TBD
-- **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓). Plateau confirmed from iter 2000: 5 consecutive evals (iter 2250–3250) all below 89.40% with no improvement. Originally stopped early; resumed 2026-03-05 to run to full 5k iters for consistency with other Phase 2 models. WandB images logging fixed (interval=5).
+- **Results (val)**: best mIoU=**89.54%** @ iter 5000 (aAcc=95.17%, mAcc=94.56%); Val F1 TBD (see Phase 2 report)
+- **Notes**: Cross-check at iter 1500: mIoU=89.34% vs Phase 1 ref 89.81% (−0.47%, within ±1.0% ✓).
+  Originally stopped at iter ~3250 (apparent plateau at 89.40%); resumed 2026-03-05 to full 5k for consistency.
+  Resumed trajectory: 3000→89.40%, 3500→89.48% (new best), 5000→89.54% (new best) — still improving at end.
+  Early stop cost ~0.14% mIoU. Checkpoint: best_mIoU_iter_3500.pth → superseded by iter 5000 final (89.54%).
+  WandB note: new data points from resume not visible in UI (step counter backwards from 2500; silently dropped). Use .log files for full trajectory.
 
 ---
 
