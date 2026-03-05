@@ -28,7 +28,6 @@ then deleted (see step 6 below).
 2. **Export ONNX** from the best checkpoint using the export script pattern in
    `fun_experiments/{model}/export_onnx.py`:
    - Output shape: `1×1×384×768`, dtype int64 (argmaxed class map)
-   - ArgMax(keepdims=0) + Unsqueeze pattern (SNPE requirement)
    - Opset version: 13
    - Save as `outputs/{phase}/{model_name}/{model_name}.onnx`
 

@@ -146,7 +146,6 @@ Phases can be modified, reordered, added, or skipped as the project evolves.
 
 ## ONNX Export Requirements
 - Output: argmaxed class map, shape 1×1×384×768, dtype int64
-- Use ArgMax(keepdims=0) + Unsqueeze pattern (NOT keepdims=1) — SNPE requires this
 - Opset version: 13 (server uses SNPE which requires opset 13)
 - See fun_experiments/{model}/export_onnx.py for reference implementations
 

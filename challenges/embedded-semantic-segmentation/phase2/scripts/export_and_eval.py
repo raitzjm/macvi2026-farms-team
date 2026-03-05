@@ -72,6 +72,12 @@ MODELS = {
         ham_fix=True,
         align_corners=False,
     ),
+    'segnext_s': dict(
+        config=os.path.join(CONFIGS_DIR, 'segnext_s_768x384_lars_phase2.py'),
+        syncbn=False,
+        ham_fix=True,
+        align_corners=False,
+    ),
     'stdc2': dict(
         config=os.path.join(CONFIGS_DIR, 'stdc2_768x384_lars_phase2.py'),
         syncbn=True,
