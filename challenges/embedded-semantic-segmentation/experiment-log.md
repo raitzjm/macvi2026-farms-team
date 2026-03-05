@@ -168,8 +168,11 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=16, total_bs=32, lr=6e-5 (AdamW fixed; switched from SGD per user request 2026-03-04)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_unet_adamw
-- **Results (val)**: mIoU=85.42% best @ iter 2750; aAcc=92.94%, mAcc=92.18%; plateau after iter 2750
+- **Results (val)**: mIoU=85.42% best @ iter 2750; aAcc=92.94%, mAcc=92.18%; val mIoU still oscillating ±2% at end of run — NOT converged
 - **Notes**: New model in Phase 2 (no Phase 1 cross-check). UNet trains from scratch (no pretrained backbone). Lower mIoU than pretrained models (85.42% vs ~89%) expected — no ImageNet init. Loss: CE(1.0)+Dice(3.0) on main head, CE(0.4) on auxiliary. BS calibrated: OOM@~bs=19 → bs=16/GPU (82% VRAM).
+  **⚠ NOT USABLE FOR ANALYSIS**: The model is not converged. Training loss at iter 5000 was ~0.137 and still declining; val mIoU oscillated between 78–85% throughout (characteristic of scratch training). PolyLR schedule decayed to lr=0 at iter 5000, so resuming this run is not practical.
+  **Why not converged**: UNet-s5-d16 has no pretrained backbone — it must learn all features from scratch. 5000 iters (~62 epochs) is insufficient; scratch-trained CNNs typically need 150–200 epochs (~12–16k iters) to stabilize.
+  **Future work**: Retrain properly with either (a) a pretrained ResNet encoder (ResUNet via segmentation-models-pytorch) which would bring it to ~88–91% territory, or (b) fresh run with SGD + 15k iters on a faster server (H100). Do not use EXP-011 checkpoint for Phase 2 analysis.
 
 ---
 
