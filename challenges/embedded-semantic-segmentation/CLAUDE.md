@@ -167,6 +167,22 @@ After each training run completes, use the `/archive-experiment` skill.
 It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
 experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
 
+### Phase 2 committed checkpoints
+
+Best checkpoints for INT8-stable models are committed to Git LFS under
+`phase2/artifacts/{model}/best_mIoU_iter_NNNN.pth`.
+
+| Model | Checkpoint | Val mIoU | Val F1 | Q | INT8-stable? |
+|-------|-----------|----------|--------|---|--------------|
+| pidnets (EXP-008) | best_mIoU_iter_4750.pth | 93.25% | 76.17% | 71.03% | ✓ |
+| stdc2 (EXP-007) | best_mIoU_iter_2750.pth | 90.69% | 68.92% | 62.50% | ✓ |
+| bisenetv2 (EXP-009) | best_mIoU_iter_6000.pth | 91.09% | 69.06% | 62.91% | ✓ |
+
+Attention-based models (SegFormer, SegNeXt) are NOT committed — their INT8 performance
+degrades catastrophically under onnxruntime static quantization (SegNeXt: −67/−82% mIoU;
+SegFormer: −22% mIoU). Commit them only if/when INT8 robustness is achieved.
+See `eval_metrics.md` for full Phase 2 eval results.
+
 ## Current Status
 Phase 1 COMPLETE (branch: exp/phase1-baselines). All 4 models done. See experiment-log.md.
 Final mIoU: SegFormer 97.00%, STDC2 95.76%, SegNeXt-T 95.61%, BiSeNetV2 92.55%.

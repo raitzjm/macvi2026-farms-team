@@ -96,6 +96,34 @@ export MACVI_GH_TOKEN=<your_github_pat>
 ./container/scripts/run.sh --data-dir /path/to/datasets --ssh-dir ~/.ssh
 ```
 
+## Model Weights (Git LFS)
+
+Selected Phase 2 checkpoints are committed via Git LFS under
+`challenges/embedded-semantic-segmentation/phase2/artifacts/`.
+Only the best-checkpoint-per-model is committed; the full training outputs live
+locally and are not tracked.
+
+### Phase 2 — Committed checkpoints
+
+CNN-based models with BatchNorm are committed because they are INT8-stable on the
+challenge server (Qualcomm SNPE); attention-based models (SegFormer, SegNeXt) degrade
+significantly under INT8 and are omitted until a mitigation is found.
+
+| Model | EXP | Checkpoint file | Val mIoU\* | Val F1\* | Q\* |
+|-------|-----|-----------------|-----------|---------|-----|
+| PIDNet-S (SGD) | EXP-008 | `phase2/artifacts/pidnets/best_mIoU_iter_4750.pth` | 93.25% | 76.17% | 71.03% |
+| STDC2 (SGD) | EXP-007 | `phase2/artifacts/stdc2/best_mIoU_iter_2750.pth` | 90.69% | 68.92% | 62.50% |
+| BiSeNetV2 (SGD) | EXP-009 | `phase2/artifacts/bisenetv2/best_mIoU_iter_6000.pth` | 91.09% | 69.06% | 62.91% |
+
+\* FP32 ONNX eval, server-matching preprocessing (keep-ratio + center reflect-pad).
+Full results including INT8 impact: `challenges/embedded-semantic-segmentation/eval_metrics.md`
+
+To use a checkpoint, run the export script:
+```bash
+python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py \
+  --models pidnets   # or stdc2, bisenetv2
+```
+
 ## Workflow
 
 - All agents follow the rules in `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.

@@ -18,16 +18,16 @@ Each entry follows this structure:
 
 | ID | Model | Data | Res | Aug | Val F1 | Val mIoU | Quant F1 | FPS | Commit |
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
-| EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.72% | — | — | c50e7a5 |
-| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.60% | — | — | c50e7a5 |
-| EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.08% | — | — | c50e7a5 |
-| EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.92% | — | — | f27a5a1 |
-| EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.12% | — | — | aecd436 |
-| EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.62% | — | — | f94b3a5 |
-| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 85.42% | — | — | f0ad3e5 |
-| EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.18% | — | — | TBD |
-| EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 86.45% | — | — | TBD |
-| EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | TBD (see report) | 89.10% | — | — | TBD |
+| EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 77.51% | 89.72% | — | — | c50e7a5 |
+| EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 71.74% | 89.60% | — | — | c50e7a5 |
+| EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 68.92% | 89.08% | — | — | c50e7a5 |
+| EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | 76.17% | 89.92% | — | — | f27a5a1 |
+| EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.06% | 89.12% | — | — | aecd436 |
+| EXP-010 | SegNeXt-S | LaRS | 768×384 | reflect pad, keep_ratio | 72.33% | 89.62% | — | — | f94b3a5 |
+| EXP-011 | UNet-s5-d16 (FCNHead+CE+Dice, AdamW) | LaRS | 768×384 | reflect pad, keep_ratio | — (not converged) | 85.42% | — | — | f0ad3e5 |
+| EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.18% | — | — | ef35985 |
+| EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 86.45% | — | — | ef35985 |
+| EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.10% | — | — | ef35985 |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
