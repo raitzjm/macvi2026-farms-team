@@ -13,6 +13,7 @@ Cross-reference against `submissions.md` to calibrate local vs server gap.
 ## Phase 2 — FP32 ONNX (2026-03-05)
 
 Platform: NVIDIA RTX A6000, CUDA 12.1, ORT 1.24.2 (CPUExecutionProvider — FPS is CPU inference, not GPU)
+Note: FPS includes image preprocessing (PIL resize + numpy pad + normalize). Pure inference FPS would be higher.
 
 | Model | EXP | Checkpoint | mIoU | F1 | Q | Pr | Re | IoU-obs | IoU-wat | IoU-sky | FPS |
 |-------|-----|------------|------|----|---|----|----|---------|---------|---------|-----|
@@ -70,10 +71,13 @@ SegFormer and SegNeXt-S FP32 numbers look competitive but server INT8 may negate
 
 ## Summary Ranking (FP32 ONNX, local proxy)
 
+Sorted by descending FP32 Q-score. Note: this ranking does not account for INT8 stability —
+see the INT8 table above for deployment recommendation (CNN models preferred for SNPE INT8).
+
 | Rank | Model | Q | mIoU | F1 | FPS (CPU ORT) |
 |------|-------|---|------|----|---------------|
-| 1 | pidnets | 71.03% | 93.25% | 76.17% | 16.4 |
-| 2 | segformer_mit-b2 | 71.85% | 92.70% | 77.51% | 3.3 |
+| 1 | segformer_mit-b2 | 71.85% | 92.70% | 77.51% | 3.3 |
+| 2 | pidnets | 71.03% | 93.25% | 76.17% | 16.4 |
 | 3 | segnext_s | 66.83% | 92.40% | 72.33% | 4.4 |
 | 4 | segnext_t | 65.85% | 91.79% | 71.74% | 6.3 |
 | 5 | bisenetv2 | 62.91% | 91.09% | 69.06% | 12.1 |

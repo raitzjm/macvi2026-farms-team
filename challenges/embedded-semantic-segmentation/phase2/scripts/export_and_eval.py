@@ -148,10 +148,7 @@ class SegWrapperLogits(nn.Module):
 
 
 class SegWrapperArgmax(nn.Module):
-    """Exported to ONNX: backbone → decode_head → argmax → (1, 1, H, W) int64.
-
-    Uses ArgMax(keepdims=0) + Unsqueeze — required by SNPE (keepdims=1 unsupported).
-    """
+    """Exported to ONNX: backbone → decode_head → argmax → (1, 1, H, W) int64."""
     def __init__(self, model, align_corners):
         super().__init__()
         self.model = model

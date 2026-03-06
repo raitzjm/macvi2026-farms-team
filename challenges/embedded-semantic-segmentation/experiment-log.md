@@ -111,7 +111,7 @@ Each entry follows this structure:
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD linear-scaled; calibrated 2026-03-04; OOM boundary ~220/GPU)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD linear-scaled; calibrated 2026-03-04; OOM boundary ~220/GPU; initial 0.267 caused oscillations, halved to 0.133 for Run 3)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnets
 - **Results (val)**: best mIoU=**89.92%** @ iter 4750 (aAcc=95.40%, mAcc=94.72%); final iter 5000: 89.56%; Val F1 TBD (see Phase 2 report)
 - **Notes**: New model in Phase 2 (no Phase 1 cross-check). BS calibrated 2026-03-04 (OOM boundary ~220/GPU → bs=160/GPU, 74% util).
@@ -186,7 +186,7 @@ Each entry follows this structure:
 - **Date**: 2026-03-04 UTC
 - **Phase**: Phase 2 — AdamW variant of SGD STDC2 (EXP-007)
 - **Status**: COMPLETED
-- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Branch/Commit**: exp/phase2-mmseg122 @ ef35985
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/stdc2_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -204,7 +204,7 @@ Each entry follows this structure:
 - **Date**: 2026-03-04 UTC (completed 2026-03-05 02:37 UTC)
 - **Phase**: Phase 2 — AdamW variant of SGD BiSeNetV2 (EXP-009)
 - **Status**: COMPLETED
-- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Branch/Commit**: exp/phase2-mmseg122 @ ef35985
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/bisenetv2_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -225,7 +225,7 @@ Each entry follows this structure:
 - **Date**: 2026-03-05 UTC (completed 2026-03-05 19:22 UTC)
 - **Phase**: Phase 2 — AdamW variant of SGD PIDNet-S (EXP-008)
 - **Status**: COMPLETED
-- **Branch/Commit**: exp/phase2-mmseg122 @ TBD
+- **Branch/Commit**: exp/phase2-mmseg122 @ ef35985
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_adamw_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
