@@ -2,5 +2,7 @@
 challenges/embedded-semantic-segmentation/fun_experiments/**/*.onnx filter=lfs diff=lfs merge=lfs -text
 *.db filter=lfs diff=lfs merge=lfs -text
 *.npy filter=lfs diff=lfs merge=lfs -text
+*.pdf filter=lfs diff=lfs merge=lfs -text
 challenges/embedded-semantic-segmentation/phase1/**/*.onnx filter=lfs diff=lfs merge=lfs -text
 challenges/embedded-semantic-segmentation/phase1/**/*.pth filter=lfs diff=lfs merge=lfs -text
+challenges/common/lars-analysis/failure_analysis_embedded_768x384/figures/worst_cases_*.png filter=lfs diff=lfs merge=lfs -text
