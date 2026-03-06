@@ -33,25 +33,27 @@ single forward pass — no manual patch extraction required.
 ```
 lars-analysis/
 ├── README.md                    # this file
-├── setup.md                     # full environment / package install log
-├── GOTCHAS.md                   # failures, OOM recovery, methodology corrections
-├── embeddings.db                # SQLite, 4006 rows, BLOB embeddings (Git-LFS)
-├── tsne_results.npy             # precomputed t-SNE coordinates (Git-LFS)
-├── logs/
-│   ├── analysis.log             # nbconvert output from whole-image run
-│   └── spatial_ood.log          # real-time cell-level log from spatial run
+├── shared_data/                 # LFS-tracked shared artefacts (used by both analyses)
+│   ├── embeddings.db            # SQLite, 4006 rows, BLOB embeddings (Git-LFS)
+│   └── tsne_results.npy         # precomputed t-SNE coordinates (Git-LFS)
 ├── reports/
 │   ├── whole_image_ood_report.pdf
 │   └── spatial_ood_report.pdf
 ├── whole_image_ood/             # Analysis 1 — whole-image embeddings
 │   ├── whole_image_ood.ipynb    # interactive Plotly notebook
 │   ├── build_notebook.py        # programmatic notebook builder
-│   └── generate_report.py       # standalone PDF generator
+│   ├── generate_report.py       # standalone PDF generator
+│   ├── GOTCHAS.md               # failures, OOM recovery, methodology corrections
+│   ├── setup.md                 # full environment / package install log
+│   └── logs/
+│       └── analysis.log         # nbconvert output from whole-image run
 └── spatial_ood/                 # Analysis 2 — patch-level spatial OOD
     ├── spatial_ood.ipynb        # interactive notebook with heatmaps
     ├── generate_spatial_report.py
     ├── figures/                 # exported PNG figures
-    └── heatmaps/                # per-image similarity heatmaps (.npy)
+    ├── heatmaps/                # per-image similarity heatmaps (.npy)
+    └── logs/
+        └── spatial_ood.log      # real-time cell-level log from spatial run
 ```
 
 ---
@@ -145,12 +147,12 @@ A dedicated conda environment (`lars-analysis`) is required. Full install log in
 | `plotly`, `kaleido` | Interactive figures + static export |
 | `weasyprint` | HTML → PDF report generation |
 
-The environment is **not committed** to git. Rebuild it from `setup.md` if lost.
+The environment is **not committed** to git. Rebuild it from `whole_image_ood/setup.md` if lost.
 
 Git-LFS tracked files (large artifacts not re-runnable quickly):
 
-- `embeddings.db` — 81 MB SQLite, 4006 rows
-- `tsne_results.npy` — precomputed t-SNE coordinates
+- `shared_data/embeddings.db` — 81 MB SQLite, 4006 rows
+- `shared_data/tsne_results.npy` — precomputed t-SNE coordinates
 
 Spatial OOD large artifacts (`train_patches.dat`, `faiss_index.bin`,
 `train_patch_meta.npy`) are **gitignored** — regenerate from `spatial_ood.ipynb`.
@@ -184,7 +186,7 @@ python spatial_ood/generate_spatial_report.py
 
 ## Known Issues / Lessons Learned
 
-See `GOTCHAS.md` for the full log. Summary:
+See `whole_image_ood/GOTCHAS.md` for the full log. Summary:
 
 1. **Notebook SyntaxError** from f-strings in `nbformat` cell source — fixed by
    switching `build_notebook.py` to string concatenation.

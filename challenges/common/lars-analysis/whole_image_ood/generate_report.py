@@ -34,8 +34,8 @@ from PIL import Image
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--db",     default="../embeddings.db")
-    p.add_argument("--tsne",   default="../tsne_results.npy")
+    p.add_argument("--db",     default="../shared_data/embeddings.db")
+    p.add_argument("--tsne",   default="../shared_data/tsne_results.npy")
     p.add_argument("--images", default="/home/farms/data/lars_dataset/img_dir")
     p.add_argument("--out",    default="../reports/whole_image_ood_report.pdf")
     return p.parse_args()
