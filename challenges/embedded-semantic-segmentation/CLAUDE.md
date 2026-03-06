@@ -40,6 +40,10 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
   - Load via `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
     or inline: `export WANDB_API_KEY=$(tr -d '[:space:]' < ~/data/wandb_key.txt)`
 - **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
+- **Run naming**: `{phase}_{model_name}` — e.g. `phase1_stdc2`, `phase2_segformer_mit-b2`
+- **Failed runs**: if a training run fails and must be restarted, **delete the failed run
+  from WandB first** (`gh` or the WandB UI) before relaunching, so the project stays clean.
+  Use `wandb run delete <run-id>` or delete via the WandB web UI under the project page.
 - **WANDB_DIR env var**: MUST be set to a directory that is NOT on `PYTHONPATH`
   (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
   cache directory instead of the wandb package — silently breaking all imports. The run
@@ -130,6 +134,11 @@ Phase 2: Full training runs — migrate all models to a single unified mmseg ver
           Phase 2 eval frequency is independent (e.g. every 5k iters) — only one early
           checkpoint near iter 3k is needed for the cross-check.
           Batch size must match Phase 1 exactly — do not re-calibrate.
+          Models: SegFormer MiT-B2, SegNeXt-T, STDC2, PIDNet-S, BiSeNetV2 (original 5).
+          Added late to Phase 2: SegNeXt-S (EXP-010), UNet-s5-d16 (EXP-011).
+            SegNeXt-S: larger backbone than T (AdamW, LR=6e-5 fixed, calibrate BS).
+            UNet-s5-d16: DeepLabv3 head + CE+Dice loss, SGD (linear-scale LR), no pretrain.
+            Reference configs: segnext_s/unet_s5d16_768x384_lars_phase2.py in phase2/configs/.
 Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
 Phase 4: External data — conditional, only if distribution analysis shows gaps
 
@@ -137,7 +146,6 @@ Phases can be modified, reordered, added, or skipped as the project evolves.
 
 ## ONNX Export Requirements
 - Output: argmaxed class map, shape 1×1×384×768, dtype int64
-- Use ArgMax(keepdims=0) + Unsqueeze pattern (NOT keepdims=1) — SNPE requires this
 - Opset version: 13 (server uses SNPE which requires opset 13)
 - See fun_experiments/{model}/export_onnx.py for reference implementations
 
@@ -158,6 +166,22 @@ is gitignored — only curated artifacts are committed (see Phase 1 Artifact Arc
 After each training run completes, use the `/archive-experiment` skill.
 It handles ONNX export, pth vs ONNX precision validation, artifact commit, and
 experiment-log.md update. INT8 quantization evaluation is deferred to Phase 2.
+
+### Phase 2 committed checkpoints
+
+Best checkpoints for INT8-stable models are committed to Git LFS under
+`phase2/artifacts/{model}/best_mIoU_iter_NNNN.pth`.
+
+| Model | Checkpoint | Val mIoU | Val F1 | Q | INT8-stable? |
+|-------|-----------|----------|--------|---|--------------|
+| pidnets (EXP-008) | best_mIoU_iter_4750.pth | 93.25% | 76.17% | 71.03% | ✓ |
+| stdc2 (EXP-007) | best_mIoU_iter_2750.pth | 90.69% | 68.92% | 62.50% | ✓ |
+| bisenetv2 (EXP-009) | best_mIoU_iter_6000.pth | 91.09% | 69.06% | 62.91% | ✓ |
+
+Attention-based models (SegFormer, SegNeXt) are NOT committed — their INT8 performance
+degrades catastrophically under onnxruntime static quantization (SegNeXt: −67/−82% mIoU;
+SegFormer: −22% mIoU). Commit them only if/when INT8 robustness is achieved.
+See `eval_metrics.md` for full Phase 2 eval results.
 
 ## Current Status
 Phase 1 COMPLETE (branch: exp/phase1-baselines). All 4 models done. See experiment-log.md.

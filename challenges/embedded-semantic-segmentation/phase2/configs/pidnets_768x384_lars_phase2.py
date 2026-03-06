@@ -1,0 +1,195 @@
+"""
+PIDNet-S @ 768×384 — LaRS — Phase 2 full training
+mmsegmentation 1.2.2 + mmcv 2.1.0 + PyTorch 2.1.2+cu121
+Conda env: macvi2  |  /home/farms/miniforge3/envs/macvi2/
+
+Batch size / LR (SGD — linear scaling rule: new_lr = base_lr × (new_bs / ref_bs)):
+  Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
+  Reference:   pidnet-s_2xb6-120k_1024x1024-cityscapes.py:
+               2 GPUs × 6/GPU = total_bs=12, lr=0.01 (SGD)
+  Calibrated on 2026-03-04 with fwd+bwd pass (single A6000 48 GB):
+    bs=80:  17.8 GB | bs=120: 26.7 GB | bs=160: 35.5 GB | bs=200: 44.4 GB | bs=220: 48.9 GB (OOM boundary)
+    OOM boundary ≈ 220/GPU. 20% pre-emptive reduction → 176. Rounded to 160 (clean, 74% utilization).
+  samples_per_gpu = 160, total_bs = 320 (160 × 2 GPUs)
+  LR: REVISED 2026-03-04: lr=0.133 (0.01×160/12, single-GPU scale).
+    First run used 0.267 (full 320/12) → 79–89% oscillations. Halved to 0.133.
+    Best val at 0.267 was at warmup midpoint (lr~0.134) → confirms 0.133 as correct peak.
+  NOTE: warmup extended to 1000 iters (was 500) for additional stability.
+  Norm: SyncBN required for DDP (PIDNet uses BN)
+  NOTE: No Phase 1 cross-check for PIDNet (new model in Phase 2).
+
+  min_kept for OhemCrossEntropy scaled from upstream 1024×1024:
+    131072 × (384×768)/(1024×1024) ≈ 36864. Using 32768 (close, matches fun exp).
+
+Phase 2 schedule:
+  5k iters; equivalent to 5k × total_bs samples. Eval every 250 iters.
+  The upstream 120k iters at bs=12 = 1.44M samples. At bs=160, 5k iters = 800k samples.
+  Extend to 7k if not converged (monitor at 5k).
+
+  PIDNet requires GenerateEdge in the train pipeline (boundary supervision loss).
+
+Run:
+  source challenges/embedded-semantic-segmentation/phase2/scripts/setup_wandb.sh
+  bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh pidnets
+
+  Calibrated 2026-03-04: bs=160/GPU (total_bs=320), lr=0.267 (0.01×320/12).
+"""
+
+_base_ = [
+    './_base_/lars_dataset.py',
+    './_base_/runtime.py',
+]
+
+custom_imports = dict(
+    imports=[
+        'challenges.embedded-semantic-segmentation.phase2.datasets.lars_dataset',
+        'challenges.embedded-semantic-segmentation.phase2.pipelines',
+    ],
+    allow_failed_imports=False)
+
+# ── WandB run name override ────────────────────────────────────────────────────
+vis_backends = [
+    dict(type='LocalVisBackend'),
+    dict(
+        type='WandbVisBackend',
+        init_kwargs=dict(
+            entity='little_farms',
+            project='embedded_segmentation_macvi2026',
+            name='phase2_pidnets',
+        )),
+]
+visualizer = dict(
+    type='SegLocalVisualizer',
+    vis_backends=vis_backends,
+    alpha=0.8)
+
+# ── PIDNet train pipeline (adds GenerateEdge for boundary supervision) ─────────
+crop_size = (384, 768)
+img_scale = (768, 384)
+
+pidnet_train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(
+        type='RandomResize',
+        scale=img_scale,
+        ratio_range=(0.5, 2.0),
+        keep_ratio=False),
+    dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PhotoMetricDistortion'),
+    # FIX: reflect padding matches challenge server mirror-padding
+    dict(type='ReflectPad', size=crop_size, seg_pad_val=255),
+    # PIDNet-specific: generate edge map for boundary loss
+    dict(type='GenerateEdge', edge_width=4),
+    dict(type='PackSegInputs'),
+]
+
+# ── Dataloader ─────────────────────────────────────────────────────────────────
+# CALIBRATED 2026-03-04: bs=160/GPU → total_bs=320. OOM boundary ~220/GPU.
+train_dataloader = dict(
+    batch_size=160,
+    dataset=dict(pipeline=pidnet_train_pipeline))
+
+# ── Model (PIDNet-S — architecture-specific, do not change) ───────────────────
+checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth'  # noqa
+norm_cfg = dict(type='SyncBN', requires_grad=True)
+
+model = dict(
+    type='EncoderDecoder',
+    data_preprocessor=dict(
+        type='SegDataPreProcessor',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        bgr_to_rgb=True,
+        pad_val=0,
+        seg_pad_val=255,
+        size=(384, 768)),
+    backbone=dict(
+        type='PIDNet',
+        in_channels=3,
+        channels=32,
+        ppm_channels=96,
+        num_stem_blocks=2,
+        num_branch_blocks=3,
+        align_corners=False,
+        norm_cfg=norm_cfg,
+        act_cfg=dict(type='ReLU', inplace=True),
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint_file)),
+    decode_head=dict(
+        type='PIDHead',
+        in_channels=128,
+        channels=128,
+        num_classes=3,
+        norm_cfg=norm_cfg,
+        act_cfg=dict(type='ReLU', inplace=True),
+        align_corners=True,
+        loss_decode=[
+            dict(
+                type='CrossEntropyLoss',
+                use_sigmoid=False,
+                loss_weight=0.4),
+            dict(
+                type='OhemCrossEntropy',
+                thres=0.9,
+                min_kept=32768,     # scaled from 131072 @ 1024×1024 → 384×768
+                loss_weight=1.0),
+            dict(type='BoundaryLoss', loss_weight=20.0),
+            dict(
+                type='OhemCrossEntropy',
+                thres=0.9,
+                min_kept=32768,
+                loss_weight=1.0),
+        ]),
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
+
+# ── Optimizer (SGD — architecture-specific, do not change) ────────────────────
+# Reference: upstream total_bs=12, lr=0.01 (linear scaling rule).
+# Linear scaling to total_bs=320: 0.01×(320/12)=0.267 → caused large oscillations (79–89% on val).
+# REVISED (2026-03-04): halved to lr=0.133 (0.01×(160/12), single-GPU linear scale).
+# Best val at lr=0.267 was at iter 250 (warmup, lr~0.134) → confirms 0.133 is correct peak LR.
+# Warmup extended to 1000 iters for extra stability.
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(
+        type='SGD',
+        lr=0.133,           # 0.01 × (160/12); REVISED 2026-03-04 (0.267 caused oscillations)
+        momentum=0.9,
+        weight_decay=0.0005))
+
+# ── Schedule ──────────────────────────────────────────────────────────────────
+# 5k iters; warmup 1000 iters (extended from 500 for stability with large-LR oscillation fix).
+iters = 5000
+param_scheduler = [
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        begin=0,
+        end=1000,
+        by_epoch=False),
+    dict(
+        type='PolyLR',
+        eta_min=0.0,
+        power=0.9,
+        begin=1000,
+        end=iters,
+        by_epoch=False),
+]
+
+train_cfg = dict(
+    type='IterBasedTrainLoop',
+    max_iters=iters,
+    val_interval=250)
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
+
+# ── Hooks override ────────────────────────────────────────────────────────────
+default_hooks = dict(
+    checkpoint=dict(
+        type='CheckpointHook',
+        by_epoch=False,
+        interval=2500,          # save checkpoint every 2500 iters
+        save_best='mIoU',
+        rule='greater'),
+)
