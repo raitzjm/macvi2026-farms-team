@@ -96,6 +96,10 @@ MODELS = {
         config=os.path.join(CONFIGS_DIR, 'bisenetv2_768x384_lars_phase2.py'),
         syncbn=True, ham_fix=False, align_corners=False,
     ),
+    'segnext_t_uperhead': dict(
+        config=os.path.join(CONFIGS_DIR, 'segnext_t_uperhead_768x384_lars_phase2.py'),
+        syncbn=True, ham_fix=False, align_corners=False,
+    ),
 }
 
 NUM_CLASSES = 3

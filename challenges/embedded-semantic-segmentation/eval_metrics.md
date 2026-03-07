@@ -18,6 +18,7 @@ Note: FPS includes image preprocessing (PIL resize + numpy pad + normalize). Pur
 | Model | EXP | Checkpoint | mIoU | F1 | Q | Pr | Re | IoU-obs | IoU-wat | IoU-sky | FPS |
 |-------|-----|------------|------|----|---|----|----|---------|---------|---------|-----|
 | segformer_mit-b2 | EXP-005 | best_mIoU_iter_2000 | 92.70% | 77.51% | 71.85% | 84.90% | 71.31% | 90.40% | 98.17% | 89.52% | 3.3 |
+| segnext_t_uperhead | EXP-015 | best_mIoU_iter_4250 | 92.48% | 80.21% | 74.18% | 83.94% | 76.80% | 89.88% | 97.80% | 89.76% | 3.7 |
 | segnext_s | EXP-010 | best_mIoU_iter_4750 | 92.40% | 72.33% | 66.83% | 83.35% | 63.88% | 89.48% | 97.77% | 89.94% | 4.4 |
 | segnext_t | EXP-006 | best_mIoU_iter_4250 | 91.79% | 71.74% | 65.85% | 82.58% | 63.42% | 88.59% | 97.72% | 89.05% | 6.3 |
 | bisenetv2 | EXP-009 | best_mIoU_iter_6000 | 91.09% | 69.06% | 62.91% | 83.70% | 58.78% | 86.45% | 97.30% | 89.53% | 12.1 |
@@ -32,6 +33,7 @@ PyTorch upper bound (logits + bilinear upsample, GPU):
 | Model | PT mIoU | PT F1 | PT Q | ΔmIoU vs ONNX | ΔF1 vs ONNX |
 |-------|---------|-------|------|---------------|-------------|
 | segformer_mit-b2 | 92.78% | 77.47% | 71.87% | -0.08% | +0.04% |
+| segnext_t_uperhead | 92.57% | 80.49% | 74.50% | -0.09% | -0.28% |
 | segnext_s | 92.46% | 72.38% | 66.92% | -0.07% | -0.05% |
 | segnext_t | 91.84% | 71.81% | 65.95% | -0.06% | -0.07% |
 | bisenetv2 | 91.14% | 69.15% | 63.02% | -0.05% | -0.09% |
@@ -53,6 +55,7 @@ flag the quantization sensitivity issue for the submission decision.
 | Model | INT8 mIoU | INT8 F1 | INT8 Q | ΔmIoU | ΔF1 | INT8 FPS | INT8-stable? |
 |-------|-----------|---------|--------|-------|-----|----------|--------------|
 | segformer_mit-b2 | 70.92% | 50.19% | 35.60% | -21.78% | -27.32% | 3.2 | ✗ (sensitive) |
+| segnext_t_uperhead | 14.32% | 90.58% | 12.97% | -78.16% | +10.37% | 3.9 | ✗ (catastrophic) |
 | segnext_s | 10.70% | 92.47% | 9.89% | -81.70% | +20.14% | 4.6 | ✗ (catastrophic) |
 | segnext_t | 24.91% | 1.92% | 0.48% | -66.88% | -69.82% | 5.8 | ✗ (catastrophic) |
 | bisenetv2 | 91.17% | 70.44% | 64.22% | +0.08% | +1.38% | 9.8 | ✓ |
@@ -76,12 +79,13 @@ see the INT8 table above for deployment recommendation (CNN models preferred for
 
 | Rank | Model | Q | mIoU | F1 | FPS (CPU ORT) |
 |------|-------|---|------|----|---------------|
-| 1 | segformer_mit-b2 | 71.85% | 92.70% | 77.51% | 3.3 |
-| 2 | pidnets | 71.03% | 93.25% | 76.17% | 16.4 |
-| 3 | segnext_s | 66.83% | 92.40% | 72.33% | 4.4 |
-| 4 | segnext_t | 65.85% | 91.79% | 71.74% | 6.3 |
-| 5 | bisenetv2 | 62.91% | 91.09% | 69.06% | 12.1 |
-| 6 | stdc2 | 62.50% | 90.69% | 68.92% | 10.2 |
+| 1 | segnext_t_uperhead | 74.18% | 92.48% | 80.21% | 3.7 |
+| 2 | segformer_mit-b2 | 71.85% | 92.70% | 77.51% | 3.3 |
+| 3 | pidnets | 71.03% | 93.25% | 76.17% | 16.4 |
+| 4 | segnext_s | 66.83% | 92.40% | 72.33% | 4.4 |
+| 5 | segnext_t | 65.85% | 91.79% | 71.74% | 6.3 |
+| 6 | bisenetv2 | 62.91% | 91.09% | 69.06% | 12.1 |
+| 7 | stdc2 | 62.50% | 90.69% | 68.92% | 10.2 |
 
 Note: FPS above is CPU ORT (CPUExecutionProvider); challenge server is Qualcomm SNPE on
 RVC4, measured at 67.6 FPS for PIDNet-S SGD (Sub #16537). All models must achieve ≥30 FPS

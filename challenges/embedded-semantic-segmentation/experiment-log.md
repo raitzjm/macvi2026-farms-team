@@ -20,6 +20,7 @@ Each entry follows this structure:
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 77.51% | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 71.74% | 89.60% | — | — | c50e7a5 |
+| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio | 80.21% (ONNX FP32) | 92.48% | — (INT8 catastrophic −78%) | — | TBD |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 68.92% | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | 76.17% | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.06% | 89.12% | — | — | aecd436 |
@@ -238,6 +239,36 @@ Each entry follows this structure:
   Val mIoU trajectory (resumed from iter 4000 @ 89.07%): 4250→89.09%, 4500→89.10% (best), 4750→89.08%, 5000→89.00%.
   Resumed run: WandB env var approach (WANDB_RUN_ID=2l8jpdgk WANDB_RESUME=must). Fast-forward with GenerateEdge took ~47 min (vs ~3 min for models without edge maps).
   +0.18% vs EXP-008 SGD (89.92% best — but SGD EXP-008 is the full 5k run so this is a fair comparison: SGD slightly better for PIDNet). Checkpoint: best_mIoU_iter_4500.pth.
+
+---
+
+## EXP-015
+- **ID**: EXP-015
+- **Date**: 2026-03-07 UTC (completed 2026-03-07 19:13 UTC)
+- **Phase**: Phase 2 — architecture experiment: MSCAN-T + UPerHead + BoundaryLoss (Issue #18)
+- **Status**: COMPLETED
+- **Branch/Commit**: feat/segnext-t-uperhead-boundary @ 48f8422
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=48, total_bs=96, lr=6e-5 (AdamW fixed; calibrated 2026-03-07: OOM boundary ~54/GPU → bs=48, 88.9% VRAM)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t_uperhead (run ID: 1ocxh4pq)
+- **Results (val — export_and_eval.py, keep-ratio + centered reflect-pad)**:
+  - PyTorch: mIoU=**92.57%**, F1=**80.49%**, Q=**74.50%** | Pr=84.64%, Re=76.72% | IoU obs/wat/sky: 90.05% / 97.82% / 89.82%
+  - ONNX (FP32): mIoU=**92.48%**, F1=**80.21%**, Q=**74.18%** | PyTorch→ONNX: ΔmIoU=-0.09%, ΔF1=-0.28%
+  - INT8 (ORT static): mIoU=**14.32%**, F1=90.58% | ΔmIoU=-78.16% — **CATASTROPHIC**
+  - Best checkpoint: best_mIoU_iter_4250.pth (training val mIoU=89.60% under training evaluator)
+  - Final iter 5000 training val mIoU: 89.51%
+- **Notes**: Architecture experiment: replaces LightHamHead (GN + NMF, INT8-sensitive) with UPerHead (BN + PPM).
+  Adds auxiliary MSCANBoundaryHead (stride-4 feature → BoundaryLoss) for boundary supervision.
+  FP32 result: +0.69% mIoU vs EXP-006 SegNeXt-T (92.48% vs 91.79%); +8.47% F1 (80.21% vs 71.74%).
+  This is the highest FP32 F1 seen on MSCAN-T. However, INT8 remains catastrophic (−78.16% mIoU) —
+  the ORT INT8 sensitivity comes from the MSCAN backbone (large-kernel depthwise attention), not just the HAM decoder.
+  Replacing the head with UPerHead did NOT fix INT8 stability.
+  **Checkpoint not committed to LFS** (not INT8-stable; CLAUDE.md policy: commit only INT8-stable models).
+  WandB: run was deleted/restarted (original run qvgi6mby deleted; new run 1ocxh4pq); 380+ media files.
 
 ---
 
