@@ -25,6 +25,7 @@ Batch size / LR (SGD — linear scaling rule same as EXP-008):
     OOM boundary (probe) ≈ 130-140/GPU. Conservative DDP estimate: ~105/GPU.
     Issue #19 predicted 'roughly half of PIDNet-S (160/GPU)' → 80/GPU.
     Using BS=80 (DDP safety margin ≈ 76% of estimated DDP OOM ~105/GPU).
+    Actual DDP training memory (iter 1, 2 GPUs): 36159 MiB ≈ 35.3 GB (73.5% of 48 GB) ✓
   samples_per_gpu = 80, total_bs = 160 (80 × 2 GPUs)
   LR: 0.01 × (80/12) = 0.0667 (same half-of-linear-scale formula as EXP-008).
     EXP-008: 0.01 × (160/12) = 0.133 at bs=160/GPU. At bs=80/GPU: 0.01 × (80/12) = 0.0667.
