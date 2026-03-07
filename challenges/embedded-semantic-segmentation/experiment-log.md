@@ -21,7 +21,7 @@ Each entry follows this structure:
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 77.51% | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 71.74% | 89.60% | — | — | c50e7a5 |
 | EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio | 80.21% (ONNX FP32) | 92.48% | — (INT8 catastrophic −78%) | — | fde8bfb |
-| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio | 72.82% (ONNX FP32) | 92.33% | 68.57% (INT8 stable ✓) | — | TBD |
+| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio | 72.82% (ONNX FP32) | 92.33% | 68.57% (INT8 stable ✓) | — | 91d4489 |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 68.92% | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | 76.17% | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.06% | 89.12% | — | — | aecd436 |
@@ -278,7 +278,7 @@ Each entry follows this structure:
 - **Date**: 2026-03-07 UTC
 - **Phase**: Phase 2 — scale-up experiment: PIDNet-M (Issue #19)
 - **Status**: COMPLETED
-- **Branch/Commit**: feat/pidnetm-phase2 @ TBD
+- **Branch/Commit**: feat/pidnetm-phase2 @ 91d4489
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnetm_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
