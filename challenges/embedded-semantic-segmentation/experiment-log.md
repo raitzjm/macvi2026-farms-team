@@ -21,7 +21,7 @@ Each entry follows this structure:
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 77.51% | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 71.74% | 89.60% | — | — | c50e7a5 |
 | EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio | 80.21% (ONNX FP32) | 92.48% | — (INT8 catastrophic −78%) | — | fde8bfb |
-| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | TBD | TBD | TBD |
+| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio | 72.82% (ONNX FP32) | 92.33% | 68.57% (INT8 stable ✓) | — | TBD |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 68.92% | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | 76.17% | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.06% | 89.12% | — | — | aecd436 |
@@ -277,17 +277,26 @@ Each entry follows this structure:
 - **ID**: EXP-016
 - **Date**: 2026-03-07 UTC
 - **Phase**: Phase 2 — scale-up experiment: PIDNet-M (Issue #19)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED
 - **Branch/Commit**: feat/pidnetm-phase2 @ TBD
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnetm_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
 - **Iters**: 5000 (eval every 250; save best mIoU)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=80, total_bs=160, lr=0.0667 (SGD linear-scaled; calibrated 2026-03-07 probe: OOM boundary ~130-140/GPU; conservative bs=80 = ~76% of estimated DDP OOM)
+- **bs / lr**: samples_per_gpu=80, total_bs=160, lr=0.0667 (SGD linear-scaled; calibrated 2026-03-07 probe: OOM boundary ~130-140/GPU; conservative bs=80; actual DDP mem: 35.3 GB)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnetm
-- **Results (val)**: TBD
-- **Notes**: PIDNet-M scale-up from EXP-008 (PIDNet-S). Only channel width change: channels=64 (was 32), decode_head in_channels=256 (was 128). Pretrained: ImageNet-1K PIDNet-M. Same SGD + BoundaryLoss pipeline as EXP-008 (GenerateEdge in train pipeline). LR formula: 0.01×(80/12)=0.0667, same half-of-linear-scale as EXP-008 (0.01×160/12=0.133).
+- **Results (val — export_and_eval.py, keep-ratio + centered reflect-pad)**:
+  - PyTorch: mIoU=**92.39%**, F1=**73.09%**, Q=**67.53%** | Pr=86.39%, Re=63.34% | IoU obs/wat/sky: 89.54% / 97.66% / 89.97%
+  - ONNX (FP32): mIoU=**92.33%**, F1=**72.82%**, Q=**67.23%** | PyTorch→ONNX: ΔmIoU=-0.06%, ΔF1=-0.28%
+  - INT8 (ORT static): mIoU=**92.37%**, F1=74.24%, Q=**68.57%** | ΔmIoU=+0.04% — **INT8-STABLE ✓**
+  - Best checkpoint: best_mIoU_iter_3250.pth (training val mIoU=89.56%)
+  - Final iter 5000 training val mIoU: 89.37%
+- **Notes**: PIDNet-M scale-up from EXP-008 (PIDNet-S). Only channel width change: channels=64 (was 32), decode_head in_channels=256 (was 128). Pretrained: ImageNet-1K PIDNet-M. Same SGD + BoundaryLoss pipeline as EXP-008 (GenerateEdge in train pipeline).
+  Val mIoU trajectory: 250→88.81%, 500→75.49% (warmup dip), 750→87.30%, 1000→88.15%, 1250→88.49%, 1500→88.52%, 1750→88.65%, 2000→88.51%, 2250→87.87%, 2500→89.29%, 2750→89.16%, 3000→89.26%, 3250→**89.56%** (best), 3500→89.14%, 3750→89.28%, 4000→89.39%, 4250→89.29%, 4500→89.36%, 4750→89.41%, 5000→89.37%.
+  INT8 stability confirmed — BN+ReLU architecture as expected. Checkpoint committed to LFS.
+  **FP32 Q=67.23% is below PIDNet-S EXP-008 (71.03%)** — PIDNet-M underperforms despite 4× channels. Likely causes: (1) SGD at lr=0.0667 may be slightly suboptimal; (2) 5000 iters may be insufficient for the larger model to fully converge (peaked at iter 3250, then SGD oscillations); (3) pure scale-up without architectural improvements doesn't guarantee better results at the same iteration budget.
+  For device FPS: ORT FPS=7.8 vs PIDNet-S 16.4. Extrapolating from PIDNet-S device FPS (67.6): estimate ~31-36 FPS for PIDNet-M on RVC4 — borderline for 30 FPS threshold.
 
 ---
 

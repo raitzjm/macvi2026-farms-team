@@ -175,6 +175,7 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 | Model | Checkpoint | Val mIoU | Val F1 | Q | INT8-stable? |
 |-------|-----------|----------|--------|---|--------------|
 | pidnets (EXP-008) | best_mIoU_iter_4750.pth | 93.25% | 76.17% | 71.03% | ✓ |
+| pidnetm (EXP-016) | best_mIoU_iter_3250.pth | 92.33% | 72.82% | 67.23% | ✓ |
 | stdc2 (EXP-007) | best_mIoU_iter_2750.pth | 90.69% | 68.92% | 62.50% | ✓ |
 | bisenetv2 (EXP-009) | best_mIoU_iter_6000.pth | 91.09% | 69.06% | 62.91% | ✓ |
 
