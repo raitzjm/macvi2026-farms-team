@@ -20,7 +20,8 @@ Each entry follows this structure:
 |----|-------|------|-----|-----|--------|----------|----------|-----|--------|
 | EXP-005 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 77.51% | 89.72% | — | — | c50e7a5 |
 | EXP-006 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 71.74% | 89.60% | — | — | c50e7a5 |
-| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio | 80.21% (ONNX FP32) | 92.48% | — (INT8 catastrophic −78%) | — | TBD |
+| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio | 80.21% (ONNX FP32) | 92.48% | — (INT8 catastrophic −78%) | — | fde8bfb |
+| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio | TBD | TBD | TBD | TBD | TBD |
 | EXP-007 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 68.92% | 89.08% | — | — | c50e7a5 |
 | EXP-008 | PIDNet-S | LaRS | 768×384 | reflect pad, keep_ratio | 76.17% | 89.92% | — | — | f27a5a1 |
 | EXP-009 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.06% | 89.12% | — | — | aecd436 |
@@ -269,6 +270,24 @@ Each entry follows this structure:
   Replacing the head with UPerHead did NOT fix INT8 stability.
   **Checkpoint not committed to LFS** (not INT8-stable; CLAUDE.md policy: commit only INT8-stable models).
   WandB: run was deleted/restarted (original run qvgi6mby deleted; new run 1ocxh4pq); 380+ media files.
+
+---
+
+## EXP-016
+- **ID**: EXP-016
+- **Date**: 2026-03-07 UTC
+- **Phase**: Phase 2 — scale-up experiment: PIDNet-M (Issue #19)
+- **Status**: IN PROGRESS
+- **Branch/Commit**: feat/pidnetm-phase2 @ TBD
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnetm_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=80, total_bs=160, lr=0.0667 (SGD linear-scaled; calibrated 2026-03-07 probe: OOM boundary ~130-140/GPU; conservative bs=80 = ~76% of estimated DDP OOM)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_pidnetm
+- **Results (val)**: TBD
+- **Notes**: PIDNet-M scale-up from EXP-008 (PIDNet-S). Only channel width change: channels=64 (was 32), decode_head in_channels=256 (was 128). Pretrained: ImageNet-1K PIDNet-M. Same SGD + BoundaryLoss pipeline as EXP-008 (GenerateEdge in train pipeline). LR formula: 0.01×(80/12)=0.0667, same half-of-linear-scale as EXP-008 (0.01×160/12=0.133).
 
 ---
 

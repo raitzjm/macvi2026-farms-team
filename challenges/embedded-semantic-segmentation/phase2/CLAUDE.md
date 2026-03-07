@@ -33,7 +33,8 @@ phase2/
 │   ├── stdc2_adamw_768x384_lars_phase2.py        (5k iters, AdamW) [additional AdamW variant]
 │   ├── bisenetv2_adamw_768x384_lars_phase2.py    (5k iters, AdamW) [additional AdamW variant]
 │   ├── pidnets_adamw_768x384_lars_phase2.py      (5k iters, AdamW) [additional AdamW variant]
-│   └── segnext_t_uperhead_768x384_lars_phase2.py (5k iters, AdamW) [EXP-015: MSCAN-T+UPerHead+BoundaryLoss]
+│   ├── segnext_t_uperhead_768x384_lars_phase2.py (5k iters, AdamW) [EXP-015: MSCAN-T+UPerHead+BoundaryLoss]
+│   └── pidnetm_768x384_lars_phase2.py            (5k iters, SGD)  [EXP-016: PIDNet-M scale-up]
 └── scripts/
     ├── run_phase2.sh       ← DDP launcher (torchrun, 2 GPUs, macvi2 env)
     ├── setup_wandb.sh      ← load WANDB_API_KEY from ~/data/wandb_key.txt
