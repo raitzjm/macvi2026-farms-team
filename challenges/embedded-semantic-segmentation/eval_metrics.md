@@ -86,3 +86,5 @@ see the INT8 table above for deployment recommendation (CNN models preferred for
 Note: FPS above is CPU ORT (CPUExecutionProvider); challenge server is Qualcomm SNPE on
 RVC4, measured at 67.6 FPS for PIDNet-S SGD (Sub #16537). All models must achieve ≥30 FPS
 on device. FPS constraint likely rules out SegFormer (3.3 CPU FPS suggests very low on device).
+
+| segnext_t_uperhead | EXP-015 | 90.96% | 73.78% | 67.11% | ? | ? |

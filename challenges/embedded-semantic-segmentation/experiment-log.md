@@ -28,7 +28,7 @@ Each entry follows this structure:
 | EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.18% | — | — | ef35985 |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 86.45% | — | — | ef35985 |
 | EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.10% | — | — | ef35985 |
-| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio + GenerateEdge | IN PROGRESS | — | — | — | feat/segnext-t-uperhead-boundary |
+| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio + GenerateEdge | 73.78% | 90.96% | — | — | feat/segnext-t-uperhead-boundary |
 | EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio + GenerateEdge | IN PROGRESS | — | — | — | feat/pidnetm |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
@@ -319,7 +319,7 @@ Each entry follows this structure:
 - **ID**: EXP-015
 - **Date**: 2026-03-07 (started)
 - **Phase**: Phase 2 — architecture experiment (Issue #18)
-- **Status**: IN PROGRESS
+- **Status**: COMPLETED
 - **Branch/Commit**: feat/segnext-t-uperhead-boundary
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)

@@ -96,6 +96,14 @@ MODELS = {
         config=os.path.join(CONFIGS_DIR, 'bisenetv2_768x384_lars_phase2.py'),
         syncbn=True, ham_fix=False, align_corners=False,
     ),
+    'segnext_t_uperhead': dict(
+        config=os.path.join(CONFIGS_DIR, 'segnext_t_uperhead_768x384_lars_phase2.py'),
+        syncbn=True, ham_fix=False, align_corners=False,   # UPerHead: SyncBN, no HAM warm-up
+    ),
+    'pidnetm': dict(
+        config=os.path.join(CONFIGS_DIR, 'pidnetm_768x384_lars_phase2.py'),
+        syncbn=True, ham_fix=False, align_corners=True,    # PIDNet-M: SyncBN, PIDHead align_corners=True
+    ),
 }
 
 NUM_CLASSES = 3
