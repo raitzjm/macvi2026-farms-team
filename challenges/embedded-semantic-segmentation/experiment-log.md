@@ -28,6 +28,8 @@ Each entry follows this structure:
 | EXP-012 | STDC2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.18% | — | — | ef35985 |
 | EXP-013 | BiSeNetV2 AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 86.45% | — | — | ef35985 |
 | EXP-014 | PIDNet-S AdamW | LaRS | 768×384 | reflect pad, keep_ratio | — (not evaluated) | 89.10% | — | — | ef35985 |
+| EXP-015 | MSCAN-T + UPerHead + BoundaryLoss | LaRS | 768×384 | reflect pad, keep_ratio + GenerateEdge | IN PROGRESS | — | — | — | feat/segnext-t-uperhead-boundary |
+| EXP-016 | PIDNet-M | LaRS | 768×384 | reflect pad, keep_ratio + GenerateEdge | IN PROGRESS | — | — | — | feat/pidnetm |
 | EXP-001 | STDC2 | LaRS | 768×384 | reflect pad, keep_ratio | 69.30% | 90.78% | — | — | 67529e2 |
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
@@ -310,3 +312,27 @@ Each entry follows this structure:
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase1_segformer_mit-b2
 - **Results (val)**: F1=73.64% (PyTorch), ONNX delta=0.00%; mIoU=92.02% (best iter 1000)
 - **Notes**: Converged early at iter 1000; plateau from 1000→1500. Highest F1 of Phase 1 but above 30 FPS limit (accuracy upper-bound reference). Logits ONNX committed to LFS. See phase1_report.md for convergence analysis.
+
+---
+
+## EXP-015
+- **ID**: EXP-015
+- **Date**: 2026-03-07 (started)
+- **Phase**: Phase 2 — architecture experiment (Issue #18)
+- **Status**: IN PROGRESS
+- **Branch/Commit**: feat/segnext-t-uperhead-boundary
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250 iters; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=48, total_bs=96, lr=6e-5 (AdamW, fixed — no linear scaling)
+  BS calibrated 2026-03-07: OOM boundary ~54/GPU; 85% target → rounded UP to 48 (88.9% of OOM).
+  UPerHead (4 feat maps + PPM + BoundaryHead) heavier than HAM; boundary was ~75 in Phase 1.
+  SyncBN in decode heads (UPerHead + BoundaryHead); BN in MSCAN backbone.
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_segnext_t_uperhead
+- **Results (val)**: see phase report (F1 via export_and_eval.py post-training)
+- **Notes**: Replaces LightHamHead (GN+NMF) with UPerHead (SyncBN+PPM) + MSCANBoundaryHead.
+  Goal: INT8 stability (BN throughout) + improved F1 (BoundaryLoss). Reference: EXP-006 Q=65.85%.
+  MSCANBoundaryHead: custom aux head in pipelines.py; takes stride-4 MSCAN feature (32ch, in_index=0).
+  Scheduler: LinearLR (500 iters) + PolyLR (power=1.0) — same as EXP-006. 5k total iters.
