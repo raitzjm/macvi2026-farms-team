@@ -177,10 +177,13 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 | pidnets (EXP-008) | best_mIoU_iter_4750.pth | 93.25% | 76.17% | 71.03% | ✓ |
 | stdc2 (EXP-007) | best_mIoU_iter_2750.pth | 90.69% | 68.92% | 62.50% | ✓ |
 | bisenetv2 (EXP-009) | best_mIoU_iter_6000.pth | 91.09% | 69.06% | 62.91% | ✓ |
+| segnext_t_uperhead (EXP-015) | best_mIoU_iter_NNNN.pth | TBD | TBD | TBD | TBD |
+| pidnetm (EXP-016) | best_mIoU_iter_NNNN.pth | TBD | TBD | TBD | ✓ expected |
 
-Attention-based models (SegFormer, SegNeXt) are NOT committed — their INT8 performance
-degrades catastrophically under onnxruntime static quantization (SegNeXt: −67/−82% mIoU;
-SegFormer: −22% mIoU). Commit them only if/when INT8 robustness is achieved.
+Only the single best checkpoint (.pth) per experiment is committed to LFS — no intermediate
+checkpoints, no ONNX files (regenerated on demand via export_and_eval.py).
+EXP-015 uses UPerHead (BN throughout) as a direct replacement for the INT8-failing
+LightHamHead; .pth is committed regardless of final INT8 result to enable reanalysis.
 See `eval_metrics.md` for full Phase 2 eval results.
 
 ## Current Status
