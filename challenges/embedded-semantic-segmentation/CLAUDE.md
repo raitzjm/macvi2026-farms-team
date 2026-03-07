@@ -181,6 +181,12 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 Attention-based models (SegFormer, SegNeXt) are NOT committed — their INT8 performance
 degrades catastrophically under onnxruntime static quantization (SegNeXt: −67/−82% mIoU;
 SegFormer: −22% mIoU). Commit them only if/when INT8 robustness is achieved.
+
+EXP-015 (MSCAN-T + UPerHead + BoundaryLoss): NOT committed. INT8 still catastrophic (−78% mIoU).
+Replacing LightHamHead with UPerHead improves FP32 F1 by +8.5% (80.21% vs 71.74%) but does NOT
+fix INT8 sensitivity — the root cause is the MSCAN backbone's large-kernel depthwise attention,
+not the decoder. FP32 Q=74.18% (best of all models). Checkpoint: best_mIoU_iter_4250.pth.
+
 See `eval_metrics.md` for full Phase 2 eval results.
 
 ## Current Status
