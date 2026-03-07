@@ -247,7 +247,7 @@ Each entry follows this structure:
 - **Date**: 2026-03-07 UTC (completed 2026-03-07 19:13 UTC)
 - **Phase**: Phase 2 — architecture experiment: MSCAN-T + UPerHead + BoundaryLoss (Issue #18)
 - **Status**: COMPLETED
-- **Branch/Commit**: feat/segnext-t-uperhead-boundary @ TBD
+- **Branch/Commit**: feat/segnext-t-uperhead-boundary @ 48f8422
 - **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
 - **Dataset**: LaRS (train: 2605, val: 198)
 - **Resolution**: 768×384
@@ -263,8 +263,7 @@ Each entry follows this structure:
   - Final iter 5000 training val mIoU: 89.51%
 - **Notes**: Architecture experiment: replaces LightHamHead (GN + NMF, INT8-sensitive) with UPerHead (BN + PPM).
   Adds auxiliary MSCANBoundaryHead (stride-4 feature → BoundaryLoss) for boundary supervision.
-  FP32 result: +0.73% mIoU vs EXP-006 SegNeXt-T (92.48% vs 91.79%); +0.69% F1 (80.21% vs 71.74% — wait, +8.47% F1 actually).
-  Wait: EXP-006 (SegNeXt-T original): F1=71.74%. EXP-015 (MSCAN-T+UPerHead): F1=80.21%. Δ=+8.47% F1.
+  FP32 result: +0.69% mIoU vs EXP-006 SegNeXt-T (92.48% vs 91.79%); +8.47% F1 (80.21% vs 71.74%).
   This is the highest FP32 F1 seen on MSCAN-T. However, INT8 remains catastrophic (−78.16% mIoU) —
   the ORT INT8 sensitivity comes from the MSCAN backbone (large-kernel depthwise attention), not just the HAM decoder.
   Replacing the head with UPerHead did NOT fix INT8 stability.
