@@ -6,7 +6,7 @@ Codebase for the FARMS team competing in the [MaCVi 2026](https://macvi.org/work
 
 | Track | Folder | Status |
 |-------|--------|--------|
-| Embedded Semantic Segmentation | `challenges/embedded-semantic-segmentation/` | Setup |
+| Embedded Semantic Segmentation | `challenges/embedded-semantic-segmentation/` | Phase 2 (active) |
 
 ### Embedded Semantic Segmentation
 3-class maritime segmentation (sky / water / obstacle) on the [LaRS dataset](https://larss.science.si/).
@@ -20,16 +20,23 @@ macvi2026-farms-team/
 ├── CLAUDE.md                          # Global rules and practices for AI agents
 ├── README.md                          # This file
 ├── .gitignore
+├── .claude/skills/                    # Agent skills (setup-wandb, launch-training, etc.)
 ├── container/
-│   ├── Dockerfile                     # CUDA 12.1 base; ML env is conda macvi (Python 3.11)
+│   ├── Dockerfile                     # CUDA 12.1 base; ML envs: macvi (Phase 1), macvi2 (Phase 2)
 │   └── scripts/
 │       ├── build.sh                   # Build the container image
 │       └── run.sh                     # Run the container
 ├── challenges/
+│   ├── common/lars-analysis/          # LaRS dataset analysis scripts
 │   └── embedded-semantic-segmentation/
 │       ├── CLAUDE.md                  # Challenge-specific context for agents
 │       ├── experiment-log.md          # Training experiment log (append-only)
-│       └── mmsegmentation-macvi/      # Fork of lojzezust/mmsegmentation-macvi
+│       ├── eval_metrics.md            # Phase 2 evaluation results
+│       ├── submissions.md             # Challenge submission tracker
+│       ├── reference_baselines.md     # Published baselines from challenge website
+│       ├── mmsegmentation-macvi/      # Fork of lojzezust/mmsegmentation-macvi (Phase 1)
+│       ├── phase1/                    # Phase 1 configs, scripts, report, artifacts
+│       └── phase2/                    # Phase 2 configs, scripts, datasets, artifacts
 └── docs/
 ```
 
@@ -105,18 +112,11 @@ locally and are not tracked.
 
 ### Phase 2 — Committed checkpoints
 
-CNN-based models with BatchNorm are committed because they are INT8-stable on the
-challenge server (Qualcomm SNPE); attention-based models (SegFormer, SegNeXt) degrade
-significantly under INT8 and are omitted until a mitigation is found.
+Best checkpoints for INT8-stable models are committed via Git LFS under
+`challenges/embedded-semantic-segmentation/phase2/artifacts/`.
 
-| Model | EXP | Checkpoint file | Val mIoU\* | Val F1\* | Q\* |
-|-------|-----|-----------------|-----------|---------|-----|
-| PIDNet-S (SGD) | EXP-008 | `phase2/artifacts/pidnets/best_mIoU_iter_4750.pth` | 93.25% | 76.17% | 71.03% |
-| STDC2 (SGD) | EXP-007 | `phase2/artifacts/stdc2/best_mIoU_iter_2750.pth` | 90.69% | 68.92% | 62.50% |
-| BiSeNetV2 (SGD) | EXP-009 | `phase2/artifacts/bisenetv2/best_mIoU_iter_6000.pth` | 91.09% | 69.06% | 62.91% |
-
-\* FP32 ONNX eval, server-matching preprocessing (keep-ratio + center reflect-pad).
-Full results including INT8 impact: `challenges/embedded-semantic-segmentation/eval_metrics.md`
+See [`eval_metrics.md`](challenges/embedded-semantic-segmentation/eval_metrics.md) for the
+full results table including INT8 impact analysis.
 
 To use a checkpoint, run the export script:
 ```bash
@@ -126,6 +126,7 @@ python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.
 
 ## Workflow
 
+- ML conda environments: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2, mmseg 1.2.2)
 - All agents follow the rules in `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
 - Experiments are logged in `challenges/embedded-semantic-segmentation/experiment-log.md`.
 - Tasks are tracked via [GitHub Issues](https://github.com/raitzjm/macvi2026-farms-team/issues).
