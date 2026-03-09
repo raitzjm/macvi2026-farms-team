@@ -65,30 +65,13 @@ bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh <mod
 
 The run script rebuilds the LaRS symlink tree if not present.
 
-## mmseg 1.x vs 0.30.0 Config API Differences
-| Component | mmseg 0.30.0 (Phase 1) | mmseg 1.x (Phase 2) |
-|---|---|---|
-| Runner | `runner = dict(type='IterBasedRunner')` | `train_cfg = dict(type='IterBasedTrainLoop')` |
-| Optimizer | `optimizer = dict(...)` + `optimizer_config` | `optim_wrapper = dict(type='OptimWrapper', optimizer=...)` |
-| LR schedule | `lr_config = dict(policy='poly', ...)` | `param_scheduler = [dict(type='PolyLR', ...)]` |
-| Data loaders | `data = dict(samples_per_gpu=N, train={})` | `train_dataloader = dict(batch_size=N, ...)` |
-| Normalize | `dict(type='Normalize', ...)` in pipeline | `data_preprocessor` inside model dict |
-| Logging | `log_config = dict(hooks=[WandbLoggerHook])` | `vis_backends = [WandbVisBackend]` + `visualizer` |
-| Evaluation | `evaluation = dict(interval=N, metric='mIoU')` | `train_cfg.val_interval` + `val_evaluator` |
-| Pipeline end | `DefaultFormatBundle` + `Collect` | `PackSegInputs` |
+For mmseg 0.30.0 vs 1.x config API migration reference, see `phase1/phase1_report.md` section 13.
 
 ## Preprocessing (CRITICAL — same as Phase 1)
 Train pipeline: `RandomResize (keep_ratio=False)` → `RandomCrop` → `ReflectPad`
 Test pipeline:  `Resize (keep_ratio=True)` → `ReflectPad` → `PackSegInputs`
 - Normalization is in `data_preprocessor` (NOT in pipeline — mmseg 1.x change)
 - `ReflectPad` registered via `@TRANSFORMS.register_module()` from `mmseg.registry`
-
-## PIDNet Batch Size Calibration — DONE (2026-03-04)
-Calibrated with single-GPU fwd+bwd at 768×384 (A6000 48 GB):
-  bs=80→17.8 GB, bs=120→26.7 GB, bs=160→35.5 GB, bs=200→44.4 GB, bs=220→48.9 GB (OOM boundary)
-OOM boundary ≈ 220/GPU. 20% reduction → 176. Rounded to **bs=160** (74% utilization).
-LR = 0.01 × (320/12) = **0.267** (linear scaling, SGD).
-Config updated. Issue #14 notified.
 
 ## WandB Prediction Image Logging
 Phase 2 uses `WandbVisBackend` + `SegVisualizationHook` for prediction overlay images.
@@ -117,30 +100,6 @@ Update configs + issue after calibration.
 
 ## AdamW Variants of SGD Models (additional Phase 2 experiments)
 Same architecture as corresponding SGD runs; separate config files (do NOT override SGD configs).
+All AdamW variants: 5k iters, LR=6e-5, LinearLR (start_factor=1e-6, 500 iters) + PolyLR (power=1.0).
+Configs: `stdc2_adamw`, `bisenetv2_adamw`, `pidnets_adamw`. Calibrate BS before each run.
 
-| Model | Config suffix | samples_per_gpu | total_bs | LR | WandB run |
-|---|---|---|---|---|---|
-| STDC2 AdamW | stdc2_adamw | 64 (est; calibrate) | 128 | 6e-5 | phase2_stdc2_adamw |
-| BiSeNetV2 AdamW | bisenetv2_adamw | 64 (est; calibrate) | 128 | 6e-5 | phase2_bisenetv2_adamw |
-| PIDNet-S AdamW | pidnets_adamw | 64 (est; calibrate) | 128 | 6e-5 | phase2_pidnets_adamw |
-
-All AdamW variants: 5k iters, LinearLR (start_factor=1e-6, 500 iters) + PolyLR (power=1.0).
-Calibrate BS before each run. Update table after calibration.
-
-## Phase 2 Cross-check vs Phase 1
-At iter 1500, record mIoU and compare to Phase 1 reference:
-| Model | Phase 1 mIoU@1500 (training metric) | Acceptable Phase 2 delta |
-|---|---|---|
-| SegFormer | 97.00% (converged at 1000) | ±1.0% |
-| SegNeXt-T | 95.61% | ±1.0% |
-| STDC2 | 95.51% | ±1.0% |
-| BiSeNetV2 | skip — Phase 1 unstable | N/A |
-| PIDNet-S | N/A (new model) | N/A |
-
-If 2/3 stable models match within ±1%, migration is confirmed lossless.
-
-## Output Directory Convention
-```
-challenges/embedded-semantic-segmentation/outputs/phase2/{model_name}/
-```
-Set as `--work-dir` via run_phase2.sh. Gitignored — curated artifacts only.

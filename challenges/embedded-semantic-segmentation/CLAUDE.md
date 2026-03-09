@@ -48,23 +48,7 @@ Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
   (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
   cache directory instead of the wandb package — silently breaking all imports. The run
   scripts set this correctly; check if adding new scripts.
-- **Hook config** (mmcv 1.7.2 `WandbLoggerHook` — logs scalars only, no images):
-  ```python
-  log_config = dict(
-      interval=50,
-      hooks=[
-          dict(type='TextLoggerHook'),
-          dict(type='WandbLoggerHook',
-               init_kwargs=dict(
-                   project='embedded_segmentation_macvi2026',
-                   entity='little_farms',
-                   name='<run_name>',
-               )),
-      ])
-  ```
-- **Image logging**: mmcv 1.7.2 `WandbLoggerHook` does NOT support image logging (scalars
-  only). Upgrade to mmseg 1.x / mmengine in Phase 2 for `WandbVisBackend` +
-  `SegVisualizationHook` which logs prediction overlays natively.
+- For Phase 1 hook config and Phase 2 WandbVisBackend setup, use the `/setup-wandb` skill.
 
 ## Preprocessing Requirements (CRITICAL — must match challenge server exactly)
 
@@ -117,30 +101,12 @@ becomes the pinned batch size — reuse the exact same value in Phase 2 for the 
 check to remain valid. Do not change it between phases.
 
 ## Experiment Phases
-Phase 1: Short validation runs (~1.5k iters, ~1.25h per model) — validate correct preprocessing
-          and confirm architecture rankings. Models: STDC2, BiSeNetV2, SegNeXt-T, SegFormer MiT-B2.
-          Purpose: establish a reference baseline before the mmseg migration in Phase 2,
-          so Phase 2 translated configs can be cross-checked for consistency at the ~1.5k iter mark.
-          1.5k iters chosen for 2-GPU DDP: 1500 × total_bs ≈ 3000 × (total_bs/2) — same training
-          data as the original 1-GPU 3k plan, but half the wall-clock time (~1.25h/model, ~5h total).
-          Eval every 250 iters → 6 evaluation points. Phase 2 is the real baseline; Phase 1 is a sanity check.
-          See issue #9 for full details, batch size reference values, and smoke test workflow.
-          Once Phase 1 is complete, methodology and rationale will be captured in
-          `phase1/phase1_report.md` — that becomes the permanent team reference.
-Phase 2: Full training runs — migrate all models to a single unified mmseg version
-          (target: 1.2.2) for consistency. All serious experiments from here onward
-          use this unified stack. New models may be introduced here.
-          Consistency check: compare val mIoU at the ~3k iter mark against Phase 1 logs.
-          Phase 2 eval frequency is independent (e.g. every 5k iters) — only one early
-          checkpoint near iter 3k is needed for the cross-check.
-          Batch size must match Phase 1 exactly — do not re-calibrate.
-          Models: SegFormer MiT-B2, SegNeXt-T, STDC2, PIDNet-S, BiSeNetV2 (original 5).
-          Added late to Phase 2: SegNeXt-S (EXP-010), UNet-s5-d16 (EXP-011).
-            SegNeXt-S: larger backbone than T (AdamW, LR=6e-5 fixed, calibrate BS).
-            UNet-s5-d16: DeepLabv3 head + CE+Dice loss, SGD (linear-scale LR), no pretrain.
-            Reference configs: segnext_s/unet_s5d16_768x384_lars_phase2.py in phase2/configs/.
-Phase 3: Training tricks — 4-class training, loss tuning, BoundaryLoss, architecture experiments
-Phase 4: External data — conditional, only if distribution analysis shows gaps
+Phase 1: COMPLETE. Short validation runs (1.5k iters, 4 models). Preprocessing validated,
+          rankings confirmed. Full methodology and results in `phase1/phase1_report.md`.
+Phase 2: ACTIVE. Full training on mmseg 1.2.2 (unified stack). See `phase2/CLAUDE.md` for
+          model list, batch sizes, configs, and training details.
+Phase 3: Training tricks (4-class training, loss tuning, architecture experiments).
+Phase 4: External data (conditional, only if distribution analysis shows gaps).
 
 Phases can be modified, reordered, added, or skipped as the project evolves.
 
@@ -198,29 +164,8 @@ Final mIoU: SegFormer 97.00%, STDC2 95.76%, SegNeXt-T 95.61%, BiSeNetV2 92.55%.
 Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
 See issue #9 for task tracking and run decisions.
 
-## Published Baselines (from challenge website)
-Three variants per model:
-- orig: trained AND evaluated at original 2048×1024 resolution
-- orig (768×384): same weights, inference-only at 768×384 (no retraining)
-- quantized: INT8 quantized via Qualcomm SNPE, runs on device (Luxonis RVC4) at 768×384
-
-The challenge platform does quantization — we submit ONNX, they quantize.
-FPS requirement: ≥30 FPS. Models below threshold cannot win (shown for reference).
-
-| Model                   | orig F1 | orig (768×384) F1 | Δ res  | quantized F1 | FPS  | ≥30 FPS? |
-|-------------------------|---------|-------------------|--------|--------------|------|----------|
-| FCN (ResNet-50)         | 57.9    | 52.8              | -5.2   | 54.0         | 19.7 | ✗        |
-| FCN (ResNet-101)        | 63.4    | 52.7              | -10.6  | 53.8         | 16.8 | ✗        |
-| DeepLabv3+ (ResNet-101) | 64.0    | 58.0              | -6.0   | 57.4         | 16.6 | ✗        |
-| BiSeNetv1 (ResNet-50)   | 42.8    | 45.1              | +2.3   | 45.6         | 28.7 | ✗        |
-| BiSeNetv2               | 54.7    | 42.9              | -11.8  | 46.0         | 44.6 | ✓        |
-| STDC1                   | 61.8    | 48.5              | -13.3  | 47.9         | 45.8 | ✓        |
-| STDC2                   | 64.3    | 50.8              | -13.5  | 49.9         | 38.3 | ✓        |
-| SegFormer (MiT-B2)      | 70.0    | 61.8              | -8.2   | 58.0         | 15.0 | ✗        |
-
-Key observation: STDC1 and STDC2 suffer the largest resolution penalty (-13 F1) because they
-were not trained at the target resolution. Training natively at 768×384 should recover much
-of this gap and is our primary advantage over these published baselines.
+## Published Baselines
+See `reference_baselines.md` for the full table of challenge-published baseline results.
 
 ## Key References
 - Challenge: macvi.org/workshop/cvpr/challenges/usv_seg_emb
