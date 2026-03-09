@@ -125,3 +125,12 @@ PyTorch upper bound (Phase 2.5):
 |-------|---------|-------|------|---------------|-------------|
 | stdc2 | 91.82% | 70.29% | 64.54% | -0.01% | -0.04% |
 | pidnets | TBD | TBD | TBD | — | — |
+
+## Phase 2.5 — INT8 ONNX (onnxruntime static quantization, QUInt8, 50-image calibration)
+
+| Model | INT8 mIoU | INT8 F1 | INT8 Q | ΔmIoU | ΔF1 | ΔQ | INT8 FPS | INT8-stable? |
+|-------|-----------|---------|--------|-------|-----|----|----------|--------------|
+| stdc2 | 91.76% | 70.20% | 64.42% | −0.05% | −0.05% | −0.08% | 11.5 | ✓ |
+| pidnets | TBD | TBD | TBD | — | — | — | TBD | TBD |
+
+STDC2 INT8 delta (−0.08% Q) is negligible — pipeline fixes do not affect INT8 stability.
