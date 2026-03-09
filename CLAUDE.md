@@ -22,7 +22,7 @@ If the hook blocks a commit:
 4. NEVER use `--no-verify` to bypass this check
 
 ## Logging (CRITICAL)
-- The experiment log (experiment-log.md) is for training experiments ONLY
+- The experiment log (`challenges/embedded-semantic-segmentation/experiment-log.md`) is for training experiments ONLY
 - Before starting a training run, append a timestamped entry describing the
   experiment setup
 - After completing a training run, update the entry with results and status

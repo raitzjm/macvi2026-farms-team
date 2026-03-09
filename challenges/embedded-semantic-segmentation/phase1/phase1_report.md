@@ -549,3 +549,20 @@ Progression: 95.95 → 96.65 → 96.79 → **97.00** → 96.98 → 96.98
 | STDC2 | Converged; slight decline after peak | 2k–3k | None |
 | SegNeXt-T | Nearly converged; slow improvement | 3k–5k | None |
 | BiSeNetV2 | Far from converged; unstable | 3k–5k minimum | Longer warmup (300 iters) or lower LR |
+
+---
+
+## 13. mmseg 1.x vs 0.30.0 Config API Differences
+
+Reference table for translating Phase 1 (mmseg 0.30.0) configs to Phase 2 (mmseg 1.2.2).
+
+| Component | mmseg 0.30.0 (Phase 1) | mmseg 1.x (Phase 2) |
+|---|---|---|
+| Runner | `runner = dict(type='IterBasedRunner')` | `train_cfg = dict(type='IterBasedTrainLoop')` |
+| Optimizer | `optimizer = dict(...)` + `optimizer_config` | `optim_wrapper = dict(type='OptimWrapper', optimizer=...)` |
+| LR schedule | `lr_config = dict(policy='poly', ...)` | `param_scheduler = [dict(type='PolyLR', ...)]` |
+| Data loaders | `data = dict(samples_per_gpu=N, train={})` | `train_dataloader = dict(batch_size=N, ...)` |
+| Normalize | `dict(type='Normalize', ...)` in pipeline | `data_preprocessor` inside model dict |
+| Logging | `log_config = dict(hooks=[WandbLoggerHook])` | `vis_backends = [WandbVisBackend]` + `visualizer` |
+| Evaluation | `evaluation = dict(interval=N, metric='mIoU')` | `train_cfg.val_interval` + `val_evaluator` |
+| Pipeline end | `DefaultFormatBundle` + `Collect` | `PackSegInputs` |
