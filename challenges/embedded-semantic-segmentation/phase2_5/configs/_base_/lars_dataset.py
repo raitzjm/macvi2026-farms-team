@@ -56,7 +56,12 @@ train_pipeline = [
     # Reflect padding matches challenge server mirror-padding; center=False
     # (default) — bottom-right only for training.
     dict(type='ReflectPad', size=crop_size, seg_pad_val=255),
-    dict(type='PackSegInputs'),
+    # Fix 2: include img_padding_size in meta_keys so mmengine can de-pad
+    # predictions before metric computation (default meta_keys omits it).
+    dict(type='PackSegInputs',
+         meta_keys=('img_path', 'seg_map_path', 'ori_shape', 'img_shape',
+                    'pad_shape', 'scale_factor', 'flip', 'flip_direction',
+                    'reduce_zero_label', 'img_padding_size')),
 ]
 
 # Fix 3 (test): center=True — split padding evenly on both sides, matching the
@@ -67,7 +72,11 @@ test_pipeline = [
     # Fix 3: centred reflect-pad to exact crop_size after AR-preserving resize.
     dict(type='ReflectPad', size=crop_size, center=True),
     dict(type='LoadAnnotations'),
-    dict(type='PackSegInputs'),
+    # Fix 2: include img_padding_size in meta_keys for correct val de-padding.
+    dict(type='PackSegInputs',
+         meta_keys=('img_path', 'seg_map_path', 'ori_shape', 'img_shape',
+                    'pad_shape', 'scale_factor', 'flip', 'flip_direction',
+                    'reduce_zero_label', 'img_padding_size')),
 ]
 
 # ── Dataloaders (batch_size overridden per model config) ──────────────────────

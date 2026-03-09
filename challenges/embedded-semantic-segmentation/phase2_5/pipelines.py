@@ -32,6 +32,7 @@ import cv2
 import numpy as np
 import torch
 import mmcv
+from mmengine.dist import master_only
 from mmseg.registry import MODELS, TRANSFORMS, VISUALIZERS
 from mmseg.visualization import SegLocalVisualizer
 
@@ -173,9 +174,11 @@ class MacViSegVisualizer(SegLocalVisualizer):
         super().__init__(name=name, **kwargs)
         self.ignore_color = ignore_color or self.DEFAULT_IGNORE_COLOR
 
+    @master_only
     def add_datasample(self, name, image, data_sample=None,
                        draw_gt=True, draw_pred=True, show=False,
-                       wait_time=0, out_file=None, step=0):
+                       wait_time=0, out_file=None, step=0,
+                       with_labels=True):
         """Visualize with ignore-area overlay on the predicted segmentation."""
         if (data_sample is not None and draw_pred
                 and hasattr(data_sample, 'gt_sem_seg')
@@ -200,11 +203,13 @@ class MacViSegVisualizer(SegLocalVisualizer):
                 data_sample.pred_sem_seg.data = new_pred.unsqueeze(0)
 
                 try:
-                    super().add_datasample(
-                        name, image, data_sample,
+                    # Call the unwrapped parent to avoid double @master_only wrapping.
+                    SegLocalVisualizer.add_datasample.__wrapped__(
+                        self, name, image, data_sample,
                         draw_gt=draw_gt, draw_pred=draw_pred,
                         show=show, wait_time=wait_time,
-                        out_file=out_file, step=step)
+                        out_file=out_file, step=step,
+                        with_labels=with_labels)
                 finally:
                     # Restore originals unconditionally
                     self.dataset_meta['palette'] = orig_palette
@@ -212,8 +217,9 @@ class MacViSegVisualizer(SegLocalVisualizer):
                     data_sample.pred_sem_seg.data = orig_pred_data
                 return
 
-        super().add_datasample(
-            name, image, data_sample,
+        SegLocalVisualizer.add_datasample.__wrapped__(
+            self, name, image, data_sample,
             draw_gt=draw_gt, draw_pred=draw_pred,
             show=show, wait_time=wait_time,
-            out_file=out_file, step=step)
+            out_file=out_file, step=step,
+            with_labels=with_labels)

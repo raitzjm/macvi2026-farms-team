@@ -85,7 +85,12 @@ pidnet_train_pipeline = [
     dict(type='ReflectPad', size=crop_size, seg_pad_val=255),
     # PIDNet-specific: generate edge map for boundary loss
     dict(type='GenerateEdge', edge_width=4),
-    dict(type='PackSegInputs'),
+    # Fix 2: include img_padding_size in meta_keys so mmengine can de-pad
+    # predictions before metric computation (default meta_keys omits it).
+    dict(type='PackSegInputs',
+         meta_keys=('img_path', 'seg_map_path', 'ori_shape', 'img_shape',
+                    'pad_shape', 'scale_factor', 'flip', 'flip_direction',
+                    'reduce_zero_label', 'img_padding_size')),
 ]
 
 # ── Dataloader ─────────────────────────────────────────────────────────────────
