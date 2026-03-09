@@ -84,7 +84,7 @@ When installing new system or Python dependencies:
 ## Container Scripts
 - `container/scripts/build.sh` — builds the image; Docker by default, `--podman` to use Podman
 - `container/scripts/run.sh`   — runs the container; Docker by default, `--podman` to use Podman
-  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gitconfig`
+  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gemini-dir`, `--gitconfig`
 
 ## Updating Practices
 When the user asks to change a workflow, convention, or practice:
