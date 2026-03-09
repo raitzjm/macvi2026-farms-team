@@ -60,10 +60,10 @@ flag the quantization sensitivity issue for the submission decision.
 | segnext_t_uperhead | 14.32% | 90.58% | 12.97% | -78.16% | +10.37% | 3.9 | ✗ (catastrophic) |
 | segnext_s | 10.70% | 92.47% | 9.89% | -81.70% | +20.14% | 4.6 | ✗ (catastrophic) |
 | segnext_t | 24.91% | 1.92% | 0.48% | -66.88% | -69.82% | 5.8 | ✗ (catastrophic) |
-| bisenetv2 | 91.17% | 70.44% | 64.22% | +0.08% | +1.38% | 9.8 | ✓ |
-| stdc2 | 90.82% | 69.31% | 62.95% | +0.13% | +0.39% | 11.4 | ✓ |
 | pidnets | 93.43% | 75.66% | 70.69% | +0.18% | -0.51% | 15.1 | ✓ |
 | pidnetm | 92.37% | 74.24% | 68.57% | +0.04% | +1.42% | 7.9 | ✓ |
+| bisenetv2 | 91.17% | 70.44% | 64.22% | +0.08% | +1.38% | 9.8 | ✓ |
+| stdc2 | 90.82% | 69.31% | 62.95% | +0.13% | +0.39% | 11.4 | ✓ |
 
 **Key insight:** CNN backbones with BatchNorm (PIDNet, STDC2, BiSeNetV2) are highly
 INT8-stable (±0.5% mIoU). Transformer/attention models (SegFormer, SegNeXt) degrade
