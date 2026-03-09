@@ -185,7 +185,7 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 SegNeXt checkpoints (EXP-006, EXP-010, EXP-015) are committed to LFS at the owner's
 explicit request for future reference, despite INT8 catastrophic failure (MSCAN backbone
 large-kernel depthwise attention is the root cause — not fixable by head replacement alone).
-Do not submit SegNeXt ONNXes to the challenge server without resolving INT8 stability first.
+Do not commit SegNeXt ONNXes to LFS unless explicitly requested.
 
 EXP-015 (MSCAN-T + UPerHead + BoundaryLoss): FP32 Q=74.18% (best of all models, highest F1 at 80.21%).
 Replacing LightHamHead with UPerHead improves FP32 F1 by +8.5% but does NOT fix INT8 sensitivity.
