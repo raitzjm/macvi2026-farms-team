@@ -178,15 +178,17 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 | pidnetm (EXP-016) | best_mIoU_iter_3250.pth | 92.33% | 72.82% | 67.23% | ✓ |
 | stdc2 (EXP-007) | best_mIoU_iter_2750.pth | 90.69% | 68.92% | 62.50% | ✓ |
 | bisenetv2 (EXP-009) | best_mIoU_iter_6000.pth | 91.09% | 69.06% | 62.91% | ✓ |
+| segnext_t_uperhead (EXP-015) | best_mIoU_iter_4250.pth | 92.48% | 80.21% | 74.18% | ✗ (−78%) |
+| segnext_s (EXP-010) | best_mIoU_iter_4750.pth | 92.40% | 72.33% | 66.83% | ✗ (−82%) |
+| segnext_t (EXP-006) | best_mIoU_iter_4250.pth | 91.79% | 71.74% | 65.85% | ✗ (−67%) |
 
-Attention-based models (SegFormer, SegNeXt) are NOT committed — their INT8 performance
-degrades catastrophically under onnxruntime static quantization (SegNeXt: −67/−82% mIoU;
-SegFormer: −22% mIoU). Commit them only if/when INT8 robustness is achieved.
+SegNeXt checkpoints (EXP-006, EXP-010, EXP-015) are committed to LFS at the owner's
+explicit request for future reference, despite INT8 catastrophic failure (MSCAN backbone
+large-kernel depthwise attention is the root cause — not fixable by head replacement alone).
+Do not submit SegNeXt ONNXes to the challenge server without resolving INT8 stability first.
 
-EXP-015 (MSCAN-T + UPerHead + BoundaryLoss): NOT committed. INT8 still catastrophic (−78% mIoU).
-Replacing LightHamHead with UPerHead improves FP32 F1 by +8.5% (80.21% vs 71.74%) but does NOT
-fix INT8 sensitivity — the root cause is the MSCAN backbone's large-kernel depthwise attention,
-not the decoder. FP32 Q=74.18% (best of all models). Checkpoint: best_mIoU_iter_4250.pth.
+EXP-015 (MSCAN-T + UPerHead + BoundaryLoss): FP32 Q=74.18% (best of all models, highest F1 at 80.21%).
+Replacing LightHamHead with UPerHead improves FP32 F1 by +8.5% but does NOT fix INT8 sensitivity.
 
 See `eval_metrics.md` for full Phase 2 eval results.
 
