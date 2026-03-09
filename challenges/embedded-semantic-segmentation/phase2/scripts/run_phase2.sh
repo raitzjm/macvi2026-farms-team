@@ -6,9 +6,10 @@
 #   bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh <model>
 #
 # <model> is one of:
-#   SGD:   stdc2 | pidnets | bisenetv2
+#   SGD:   stdc2 | pidnets | bisenetv2 | pidnetm
 #   AdamW: segformer_mit-b2 | segnext_t | segnext_s | unet
 #          stdc2_adamw | bisenetv2_adamw | pidnets_adamw
+#          segnext_t_uperhead
 #
 # The script:
 #   1. Rebuilds the LaRS symlink tree if not present

@@ -92,6 +92,10 @@ MODELS = {
         config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase2.py'),
         syncbn=True, ham_fix=False, align_corners=True,
     ),
+    'pidnetm': dict(
+        config=os.path.join(CONFIGS_DIR, 'pidnetm_768x384_lars_phase2.py'),
+        syncbn=True, ham_fix=False, align_corners=True,
+    ),
     'bisenetv2': dict(
         config=os.path.join(CONFIGS_DIR, 'bisenetv2_768x384_lars_phase2.py'),
         syncbn=True, ham_fix=False, align_corners=False,

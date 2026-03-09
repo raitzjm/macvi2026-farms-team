@@ -33,7 +33,8 @@ phase2/
 │   ├── stdc2_adamw_768x384_lars_phase2.py        (5k iters, AdamW) [additional AdamW variant]
 │   ├── bisenetv2_adamw_768x384_lars_phase2.py    (5k iters, AdamW) [additional AdamW variant]
 │   ├── pidnets_adamw_768x384_lars_phase2.py      (5k iters, AdamW) [additional AdamW variant]
-│   └── segnext_t_uperhead_768x384_lars_phase2.py (5k iters, AdamW) [EXP-015: MSCAN-T+UPerHead+BoundaryLoss]
+│   ├── segnext_t_uperhead_768x384_lars_phase2.py (5k iters, AdamW) [EXP-015: MSCAN-T+UPerHead+BoundaryLoss]
+│   └── pidnetm_768x384_lars_phase2.py            (5k iters, SGD)  [EXP-016: PIDNet-M scale-up]
 └── scripts/
     ├── run_phase2.sh       ← DDP launcher (torchrun, 2 GPUs, macvi2 env)
     ├── setup_wandb.sh      ← load WANDB_API_KEY from ~/data/wandb_key.txt
@@ -108,6 +109,7 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 |---|---|---|---|---|---|
 | SegNeXt-S | 40 | 80 | 6e-5 | AdamW | OOM@56 → 40/GPU (20% reduction from ~50 boundary); CALIBRATED 2026-03-04 |
 | UNet-s5-d16 | 16 | 32 | 6e-5 (fixed; AdamW) | AdamW | Trains from scratch; CALIBRATED 2026-03-04: OOM@~19 → bs=16 (82%); bs=18→44.4GB |
+| PIDNet-M | 80 | 160 | 0.0667 (SGD, 0.01×80/12) | SGD | PIDNet-M OOM-probe: 120→46GB,140→OOM; conservative bs=80 (73.5% VRAM); actual DDP training mem: 35.3 GB ✓; CALIBRATED 2026-03-07 |
 
 Ref for SegNeXt-S: upstream mscan-s_1xb16-adamw-160k_ade20k (same backbone, larger dims).
 Ref for UNet: switched to AdamW (user request 2026-03-04). Starting estimate bs=4/GPU; calibrate before first run.
