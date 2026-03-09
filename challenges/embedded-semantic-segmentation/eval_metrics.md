@@ -94,3 +94,34 @@ see the INT8 table above for deployment recommendation (CNN models preferred for
 Note: FPS above is CPU ORT (CPUExecutionProvider); challenge server is Qualcomm SNPE on
 RVC4, measured at 67.6 FPS for PIDNet-S SGD (Sub #16537). All models must achieve ≥30 FPS
 on device. FPS constraint likely rules out SegFormer (3.3 CPU FPS suggests very low on device).
+
+---
+
+## Phase 2.5 — FP32 ONNX (2026-03-09)
+
+Pipeline fixes vs Phase 2: (1) keep_ratio=True in train RandomResize, (2) img_padding_size
+written to results for correct val de-padding, (3) centred reflect-pad in val pipeline,
+(4) MacViSegVisualizer ignore-area overlay in WandB.
+Script: `phase2_5/scripts/export_and_eval.py`
+Platform: NVIDIA RTX A6000, CUDA 12.1, ORT 1.24.2
+
+| Model | EXP | Checkpoint | mIoU | F1 | Q | Pr | Re | IoU-obs | IoU-wat | IoU-sky | FPS |
+|-------|-----|------------|------|----|---|----|----|---------|---------|---------|-----|
+| stdc2 | EXP-017 | best_mIoU_iter_3000 | 91.81% | 70.25% | 64.49% | 86.44% | 59.16% | 87.42% | 97.25% | 90.76% | 10.7* |
+| pidnets | EXP-018 | TBD | TBD | TBD | TBD | — | — | — | — | — | TBD |
+
+*STDC2 FPS measured while PIDNet-S training was running in parallel — slight underestimate.
+
+Phase 2 vs Phase 2.5 delta (ONNX):
+
+| Model | Phase 2 Q | Phase 2.5 Q | ΔQ | Phase 2 mIoU | Phase 2.5 mIoU | ΔmIoU | Phase 2 F1 | Phase 2.5 F1 | ΔF1 |
+|-------|-----------|-------------|-----|-------------|----------------|-------|------------|--------------|-----|
+| stdc2 | 62.50% | 64.49% | +1.99% | 90.69% | 91.81% | +1.12% | 68.92% | 70.25% | +1.33% |
+| pidnets | 71.03% | TBD | — | 93.25% | TBD | — | 76.17% | TBD | — |
+
+PyTorch upper bound (Phase 2.5):
+
+| Model | PT mIoU | PT F1 | PT Q | ΔmIoU vs ONNX | ΔF1 vs ONNX |
+|-------|---------|-------|------|---------------|-------------|
+| stdc2 | 91.82% | 70.29% | 64.54% | -0.01% | -0.04% |
+| pidnets | TBD | TBD | TBD | — | — |

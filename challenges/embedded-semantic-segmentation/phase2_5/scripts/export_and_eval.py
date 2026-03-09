@@ -1,5 +1,5 @@
 """
-Phase 2 ONNX export and evaluation script (mmseg 1.2.2 API).
+Phase 2.5 ONNX export and evaluation script (mmseg 1.2.2 API).
 
 Preprocessing matches challenge server (minus quantization on RVC4):
   keep-ratio bilinear resize → center reflect-pad to 384×768 → ImageNet normalize
@@ -46,9 +46,9 @@ from scipy import ndimage
 # ── Paths ──────────────────────────────────────────────────────────────────────
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 CHALLENGE_DIR = os.path.join(REPO_ROOT, 'challenges', 'embedded-semantic-segmentation')
-PHASE2_DIR = os.path.join(CHALLENGE_DIR, 'phase2')
+PHASE2_DIR = os.path.join(CHALLENGE_DIR, 'phase2_5')
 CONFIGS_DIR = os.path.join(PHASE2_DIR, 'configs')
-OUTPUTS_DIR = os.path.join(CHALLENGE_DIR, 'outputs', 'phase2')
+OUTPUTS_DIR = os.path.join(CHALLENGE_DIR, 'outputs', 'phase2_5')
 
 VAL_IMG_DIR  = '/home/farms/lars_linked/val/images'
 VAL_SEG_DIR  = '/home/farms/lars_linked/val/semantic_masks'
@@ -72,37 +72,13 @@ def _best_ckpt(model_name):
 
 
 MODELS = {
-    'segformer_mit-b2': dict(
-        config=os.path.join(CONFIGS_DIR, 'segformer_mit-b2_768x384_lars_phase2.py'),
-        syncbn=False, ham_fix=False, align_corners=False,
-    ),
-    'segnext_t': dict(
-        config=os.path.join(CONFIGS_DIR, 'segnext_t_768x384_lars_phase2.py'),
-        syncbn=False, ham_fix=True, align_corners=False,
-    ),
-    'segnext_s': dict(
-        config=os.path.join(CONFIGS_DIR, 'segnext_s_768x384_lars_phase2.py'),
-        syncbn=False, ham_fix=True, align_corners=False,
-    ),
     'stdc2': dict(
-        config=os.path.join(CONFIGS_DIR, 'stdc2_768x384_lars_phase2.py'),
+        config=os.path.join(CONFIGS_DIR, 'stdc2_768x384_lars_phase2_5.py'),
         syncbn=True, ham_fix=False, align_corners=True,
     ),
     'pidnets': dict(
-        config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase2.py'),
+        config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase2_5.py'),
         syncbn=True, ham_fix=False, align_corners=True,
-    ),
-    'pidnetm': dict(
-        config=os.path.join(CONFIGS_DIR, 'pidnetm_768x384_lars_phase2.py'),
-        syncbn=True, ham_fix=False, align_corners=True,
-    ),
-    'bisenetv2': dict(
-        config=os.path.join(CONFIGS_DIR, 'bisenetv2_768x384_lars_phase2.py'),
-        syncbn=True, ham_fix=False, align_corners=False,
-    ),
-    'segnext_t_uperhead': dict(
-        config=os.path.join(CONFIGS_DIR, 'segnext_t_uperhead_768x384_lars_phase2.py'),
-        syncbn=True, ham_fix=False, align_corners=False,
     ),
 }
 
