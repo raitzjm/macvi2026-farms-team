@@ -300,6 +300,52 @@ Each entry follows this structure:
 
 ---
 
+## EXP-017
+- **ID**: EXP-017
+- **Date**: 2026-03-09 UTC
+- **Phase**: Phase 2.5 — pipeline-fix verification (Issue #28)
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2.5-pipeline-fixes
+- **Config**: challenges/embedded-semantic-segmentation/phase2_5/configs/stdc2_768x384_lars_phase2_5.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 3000 (eval every 250; save best mIoU; best at iter 3000)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD poly, warmup 300 iters; identical to Phase 2 EXP-007)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_5_stdc2
+- **Results (val)**: F1=70.25% (ONNX), Q=64.49%, mIoU=91.81%; PyTorch F1=70.29%, mIoU=91.82%; see eval_metrics.md Phase 2.5 section
+- **Notes**: Phase 2.5 re-train of STDC2 with pipeline fixes: (1) keep_ratio=True in train RandomResize,
+  (2) img_padding_size written to results for correct val de-padding, (3) centred reflect-pad in val pipeline,
+  (4) MacViSegVisualizer shows ignore areas on predicted images in WandB.
+  All model/optimizer/scheduler settings identical to EXP-007. Controlled comparison only.
+  Phase 2 vs Phase 2.5 ONNX: ΔQ=+1.99%, ΔmIoU=+1.12%, ΔF1=+1.33% (see issue #28 for full analysis).
+  FPS note: 10.7 img/s measured with some CPU load from concurrent PIDNet-S training — slight underestimate.
+
+---
+
+## EXP-018
+- **ID**: EXP-018
+- **Date**: 2026-03-09 UTC
+- **Phase**: Phase 2.5 — pipeline-fix verification (Issue #28)
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase2.5-pipeline-fixes
+- **Config**: challenges/embedded-semantic-segmentation/phase2_5/configs/pidnets_768x384_lars_phase2_5.py
+- **Dataset**: LaRS (train: 2605, val: 198)
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 250; save best mIoU; best at iter 4750)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD poly, warmup 1000 iters; identical to Phase 2 EXP-008)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase2_5_pidnets
+- **Results (val)**: F1=71.94% (ONNX), Q=64.73%, mIoU=89.98%; PyTorch F1=71.92%, mIoU=90.04%; best training val mIoU=95.44% @ iter 4750; see eval_metrics.md Phase 2.5 section
+- **Notes**: Phase 2.5 re-train of PIDNet-S with pipeline fixes: (1) keep_ratio=True in train RandomResize
+  (applied in the PIDNet-specific pidnet_train_pipeline which includes GenerateEdge),
+  (2) img_padding_size written to results for correct val de-padding, (3) centred reflect-pad in val pipeline,
+  (4) MacViSegVisualizer shows ignore areas on predicted images in WandB.
+  All model/optimizer/scheduler settings identical to EXP-008. Controlled comparison only.
+  Phase 2 vs Phase 2.5 ONNX: ΔQ=−6.30%, ΔmIoU=−3.27%, ΔF1=−4.23% — pipeline fixes hurt PIDNet-S (see issue #28).
+
+---
+
 ## EXP-001
 - **ID**: EXP-001
 - **Date**: 2026-03-03 06:30 UTC
