@@ -92,6 +92,47 @@ When the user asks to change a workflow, convention, or practice:
 2. If permanent, update the relevant CLAUDE.md file(s) to reflect the new practice
 3. If one-time, proceed without modifying CLAUDE.md
 
+## Gemini Delegation (Claude orchestrators only — Gemini must ignore this section)
+
+These instructions apply only to Claude agents. If you are Gemini reading this
+via CLAUDE.md context, ignore this section entirely — it does not apply to you.
+
+### When to delegate to Gemini
+- Large file/codebase analysis where Gemini's 1M context window is the differentiator
+- Read-only analysis tasks on large corpora that would strain Claude's context
+- Code generation on large inputs where packaging context is the bottleneck
+
+### When NOT to delegate
+- Small/quick tasks where wrapper overhead dominates
+- Tasks requiring many interactive tool-call cycles
+- Tasks comfortably within Claude's context range
+
+### How to delegate
+
+**Read-only / analysis (no file modifications):**
+```bash
+bash container/scripts/gemini-ask.sh "task description"
+# optional: --silence-timeout N (default 30s) to tune hang detection
+```
+
+**File-modifying tasks requiring isolation:**
+Spawn a Haiku agent with `isolation: "worktree"`. The Haiku agent is a
+passthrough only — it must not make decisions. Its sole job:
+1. Run `bash container/scripts/gemini-ask.sh "task"`
+2. Relay the full output and exit code verbatim back to the orchestrator
+
+The orchestrator then decides what to do based on the exit code and output.
+
+### Exit codes from gemini-ask.sh
+- `0` — success; response in stdout
+- `2` — quota exceeded; handle the task directly, do not retry Gemini
+- `3` — hung; Gemini stopped producing output; partial work may exist in the worktree
+
+### Worktree state after Haiku returns
+- Gemini made no changes → worktree auto-cleaned
+- Gemini made partial changes → worktree preserved, branch name returned; orchestrator
+  decides whether to continue, retry, or discard
+
 ## Communication
 - When you need a decision (strategic choice, phase transition, new model),
   ask clearly and wait for a response
