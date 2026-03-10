@@ -78,6 +78,7 @@ All training and experimentation is done inside the container.
 | `--data-dir DIR` | — | Dataset root; mounted read-only at `/home/farms/data/` |
 | `--ssh-dir DIR` | — | SSH directory; mounted read-only at `/home/farms/.ssh/` |
 | `--claude-dir DIR` | — | Claude Code config and memory directory |
+| `--gemini-dir DIR` | — | Gemini CLI config directory; mounted at `/home/farms/.gemini/` |
 | `--gitconfig FILE` | — | Git user config (name, email) |
 
 The container mounts the repository at `/home/farms/macvi2026-farms-team/`.
@@ -94,6 +95,7 @@ for manually running training scripts.
 | `--claude-dir` | Mounts `~/.claude` into the container | Claude Code stores its settings, credentials, and persistent memory here. Without it, Claude Code cannot authenticate or retain context across sessions. |
 | `--ssh-dir` | Mounts `~/.ssh` read-only | Needed for git operations over SSH (push, pull, clone). Without it, git remotes must use HTTPS with a token. |
 | `--gitconfig` | Mounts `~/.gitconfig` read-only | Provides git author name and email so commits are attributed correctly. Already has a sensible default (`~/.gitconfig`). |
+| `--gemini-dir` | Mounts `~/.gemini` into the container | Required for Gemini CLI authentication and to persist Gemini config across sessions. |
 | `MACVI_GH_TOKEN` | Passed as `GH_TOKEN` env var | GitHub CLI (`gh`) uses this to manage issues, PRs, and comments. Required for any agent GitHub interaction. |
 
 Set the token before running:
@@ -101,6 +103,40 @@ Set the token before running:
 ```bash
 export MACVI_GH_TOKEN=<your_github_pat>
 ./container/scripts/run.sh --data-dir /path/to/datasets --ssh-dir ~/.ssh
+```
+
+### Gemini CLI integration
+
+Gemini CLI is installed in the container and can be used as a sub-agent from Claude
+Code via `container/scripts/gemini-ask.sh`.
+
+**When to use it:** delegate tasks where Gemini's strengths help — large-context
+document summarisation, second-opinion analysis, or offloading work when Claude
+hits a context limit.
+
+**Usage (from inside the container):**
+
+```bash
+/home/farms/macvi2026-farms-team/container/scripts/gemini-ask.sh "Your task prompt here"
+
+# Extend the silence timeout for long-running tasks
+/home/farms/macvi2026-farms-team/container/scripts/gemini-ask.sh \
+  --silence-timeout 600 "Your task prompt here"
+```
+
+Exit codes: `0` success, `2` quota/rate-limit exceeded, `3` hung (process killed), `1` other error.
+
+**Context loading:** `.gemini/settings.json` configures Gemini CLI to automatically
+load `GEMINI.md` and `CLAUDE.md` files from the project tree at session start,
+so project rules and context are always in scope without passing them in every prompt.
+
+To authenticate Gemini CLI, mount your host `~/.gemini` directory:
+
+```bash
+./container/scripts/run.sh \
+  --data-dir /path/to/datasets \
+  --ssh-dir ~/.ssh \
+  --gemini-dir ~/.gemini
 ```
 
 ## Model Weights (Git LFS)
