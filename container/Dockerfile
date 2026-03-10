@@ -75,7 +75,15 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 	&& sudo apt install gh -y
 
 #Install local packages
+
+#Claude Code
 RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# Gemini CLI
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash  && \
+        /bin/bash -c "source $HOME/.nvm/nvm.sh && \
+        nvm install --lts && \
+        npm install -g @google/gemini-cli"
 
 
 # =============================================================================
