@@ -81,10 +81,10 @@ Total: TP=4683, FP=5464, FN=3550
 
 Boat/ship recall is catastrophically low at 26.5% — compared to 57.5% for PIDNet-S,
 this is a regression of more than 30 percentage points on the largest and most safety-
-critical obstacle class. Boat/ship instances (TP+FN=864) dominate the recall picture;
-STDC2 misses 635 of them versus 2363 missed by PIDNet-S, but with far fewer TPs (229 vs
-3191), suggesting a systematic failure mode for vessel-scale detections. This alone is
-likely the primary driver of STDC2's lower Q.
+critical obstacle class. Note: raw TP/FN counts are not directly comparable across
+analyses because category_id mapping is inconsistent between submissions (see note below);
+recall percentages are the valid cross-model comparison. This recall collapse is the
+primary driver of STDC2's lower Q.
 
 Animal recall (22.7%) is comparable to PIDNet-S (22.5%) — both models effectively fail
 on this rare class.
