@@ -101,6 +101,7 @@ via CLAUDE.md context, ignore this section entirely — it does not apply to you
 - Large file/codebase analysis where Gemini's 1M context window is the differentiator
 - Read-only analysis tasks on large corpora that would strain Claude's context
 - Code generation on large inputs where packaging context is the bottleneck
+- Research tasks (web search, documentation lookup, literature review)
 
 ### When NOT to delegate
 - Small/quick tasks where wrapper overhead dominates

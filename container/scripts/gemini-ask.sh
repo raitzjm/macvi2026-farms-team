@@ -53,18 +53,40 @@ gemini --yolo \
     > "$TMPEVENTS" 2>&1 &
 GEMINI_PID=$!
 
-# Hang detection: kill if file size stops growing for SILENCE_TIMEOUT seconds
+# Hang detection: two-phase approach to avoid false positives from buffering.
+#
+# stream-json output is bursty: gemini emits init/user events in one burst
+# (~t=6s), then is silent for several seconds while the API processes the
+# request, then emits assistant/result events in a second burst. Counting
+# silence from the very first output causes false positives during that
+# inter-burst gap.
+#
+# Phase 1 (STARTUP_GRACE seconds): skip silence counting entirely.
+#   Covers API connection latency + init event + model generation startup.
+# Phase 2 (after grace): count silence normally. Silence here means Gemini
+#   produced some output (e.g. tool calls) then stopped — a genuine hang.
+STARTUP_GRACE=20  # seconds before silence counting begins
 LAST_SIZE=-1
 SILENT_COUNT=0
 STATUS=0
+ELAPSED=0
 HALF_TIMEOUT=$((SILENCE_TIMEOUT / 2))
 while kill -0 "$GEMINI_PID" 2>/dev/null; do
     sleep 1
+    ELAPSED=$((ELAPSED + 1))
     CURRENT_SIZE=$(stat -c%s "$TMPEVENTS" 2>/dev/null || echo 0)
+
+    # Phase 1: grace period — keep LAST_SIZE current so counter starts fresh
+    if [[ "$ELAPSED" -lt "$STARTUP_GRACE" ]]; then
+        LAST_SIZE=$CURRENT_SIZE
+        continue
+    fi
+
+    # Phase 2: silence detection
     if [[ "$CURRENT_SIZE" -eq "$LAST_SIZE" && "$CURRENT_SIZE" -gt 0 ]]; then
         SILENT_COUNT=$((SILENT_COUNT + 1))
         if [[ "$SILENT_COUNT" -eq "$HALF_TIMEOUT" ]]; then
-            echo "[gemini-ask] warning: no output for ${SILENT_COUNT}s (timeout at ${SILENCE_TIMEOUT}s)" >&2
+            echo "[gemini-ask] warning: no new output for ${SILENT_COUNT}s (timeout at ${SILENCE_TIMEOUT}s)" >&2
         fi
         if [[ "$SILENT_COUNT" -ge "$SILENCE_TIMEOUT" ]]; then
             echo "[gemini-ask] killing Gemini after ${SILENT_COUNT}s of silence" >&2
