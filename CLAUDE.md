@@ -98,15 +98,17 @@ These instructions apply only to Claude agents. If you are Gemini reading this
 via CLAUDE.md context, ignore this section entirely — it does not apply to you.
 
 ### When to delegate to Gemini
-- Large file/codebase analysis where Gemini's 1M context window is the differentiator
-- Read-only analysis tasks on large corpora that would strain Claude's context
-- Code generation on large inputs where packaging context is the bottleneck
-- Research tasks (web search, documentation lookup, literature review)
 
-### When NOT to delegate
-- Small/quick tasks where wrapper overhead dominates
-- Tasks requiring many interactive tool-call cycles
-- Tasks comfortably within Claude's context range
+**Default to Gemini for:**
+- Any web research or documentation lookup (always prefer Gemini over WebSearch/WebFetch)
+- Reading/analyzing more than ~10 files or ~1000 lines of unfamiliar code
+- Summarizing or reviewing large outputs (logs, eval results, datasets)
+- Tasks where you would otherwise need to load many files into your own context
+
+**Handle directly when:**
+- The task needs tight tool-call loops (file edits, running commands, iterating on errors)
+- The task involves writing or modifying files (use worktree isolation if delegating)
+- The full context is already in scope and delegation overhead isn't worth it
 
 ### How to delegate
 
