@@ -8,7 +8,7 @@ Preprocessing matches challenge server (minus quantization on RVC4):
 Pipeline per model (default):
   1. Load PyTorch checkpoint, run inference at training dtype (logits+bilinear) → mIoU + F1
      (upper bound reference; not exported — supports fp32/fp16/bf16/mixed precision)
-  2. Export argmax ONNX at training dtype (fp32/fp16/bf16) → outputs/phase2/{model}/{model}_argmax.onnx
+  2. Export argmax ONNX at training dtype (fp32/fp16/bf16) → outputs/phase2_5/{model}/{model}_argmax.onnx
   3. Sanity-check: pixel agreement between PyTorch argmax and ONNX argmax on dummy input
   4. Run argmax ONNX on val set → mIoU + F1 + FPS  (server-matching)
 
@@ -21,11 +21,11 @@ With --eval-only: skip steps 1-3, run step 4 from existing argmax ONNX.
 With --eval-only --quant: run step 4 + step 6 (INT8 ONNX must already exist).
 
 Usage (from repo root, macvi2 env active):
-    python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py
-    python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py --models stdc2
-    python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py --quant
-    python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py --eval-only
-    python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py --eval-only --quant --models pidnets segnext_t
+    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py
+    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --models stdc2
+    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --quant
+    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --eval-only
+    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --eval-only --quant --models pidnets segnext_t
 """
 
 import argparse
