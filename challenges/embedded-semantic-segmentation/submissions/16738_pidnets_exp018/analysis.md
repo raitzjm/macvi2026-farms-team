@@ -3,6 +3,27 @@
 **Date:** 2026-03-10
 **Model:** PIDNet-S (EXP-018, Phase 2.5)
 **FPS:** TBD (not present in summary.json)
+**PR:** [Phase 2.5 pipeline fix verification (PR #30)](https://github.com/raitzjm/macvi2026-farms-team/pull/30)
+
+## Phase 2.5 Pipeline Changes
+
+EXP-018 is a controlled re-train of PIDNet-S with 4 pipeline fixes vs Phase 2. **Model,
+optimizer, scheduler, and loss settings are identical to EXP-008.** No loss weights, focal
+loss parameters, or augmentation strategies were changed.
+
+Pipeline fixes applied:
+
+1. `keep_ratio=True` in train `RandomResize` (was `False` in Phase 2)
+2. `img_padding_size` written to results by `ReflectPad` + included in `PackSegInputs.meta_keys` for correct val de-padding
+3. `ReflectPad center=True` in val/test pipeline for centred mirror-pad matching server
+4. `MacViSegVisualizer` overlays ignore areas (GT==255) as grey in WandB prediction images
+
+**Known root cause of regression (from PR #30):** Fix 1 (`keep_ratio=True`) interacts
+adversely with PIDNet's `GenerateEdge` / `BoundaryLoss`. With `keep_ratio=True`, training
+images are padded with reflect-padding before edge maps are generated. This causes spurious
+edge targets to be created at padded boundaries — the model learns to predict obstacle at
+image borders, inflating FPs across all scene types. The local FP32 benchmark already
+showed a −6.30% Q regression vs Phase 2 (64.73% vs 71.03%) on the validation set.
 
 ## Server Metrics
 
@@ -37,10 +58,11 @@ does not come close to compensating for the precision loss.
 Total: TP=4884, FP=8633, FN=3349
 
 > **FP explosion warning.** EXP-018 fires 8633 false alarms vs. 4028 for EXP-008 —
-> a +114% increase. The model is dramatically more trigger-happy, indicating a
-> significant shift in the decision boundary, likely caused by a Phase 2.5 configuration
-> change (e.g. altered loss weights, small-object focus, or augmentation strategy)
-> that traded precision for recall at a severe net cost to Q.
+> a +114% increase. The root cause is the `keep_ratio=True` + `GenerateEdge`/`BoundaryLoss`
+> interaction (PR #30): padded image regions produce spurious edge targets during training,
+> causing the model to hallucinate obstacle detections at image boundaries. These hallucinations
+> can form connected components at any size, which explains why the FP explosion spans tiny,
+> medium, and large buckets — not just texture noise.
 
 ### FP breakdown by obstacle area
 
@@ -139,11 +161,11 @@ beyond the instance-level effects. WE metrics have deteriorated as well, suggest
 the water/obstacle boundary quality is worse.
 
 The pattern — higher recall, much worse precision, mIoU regression, FP explosion —
-is consistent with a training configuration that encourages the model to predict
-obstacle more aggressively (e.g. upweighted obstacle loss, focal loss parameters
-favouring recall, aggressive small-object augmentation). The configuration change
-produced the intended recall increase but caused an unacceptable false alarm rate
-across all scene types and sizes.
+is consistent with the known root cause from PR #30: `keep_ratio=True` introduces
+reflect-padded regions that feed spurious edge targets into `GenerateEdge`/`BoundaryLoss`,
+biasing the model toward aggressive obstacle prediction at boundaries. The modest recall
+gain (+431 TPs) is a side effect of this boundary over-prediction occasionally overlapping
+real obstacles, but the FP cost is severe across all scene types and sizes.
 
 ## Key Findings
 
@@ -179,11 +201,10 @@ across all scene types and sizes.
 
 | Priority | Action | Expected gain | Notes |
 |----------|--------|---------------|-------|
-| High | Revert to EXP-008 config as baseline; isolate the EXP-018 delta | Identify root cause of FP explosion | Compare configs diff |
-| High | Post-process: discard obstacle CC components <100 px | Eliminate ~4200 tiny FPs; target Pr >50% | Apply to any candidate model |
-| High | Tune confidence threshold / loss weights to recover Precision ≥50% | Q recovery toward EXP-008 level | Do not accept Pr <40% in any submission |
-| Medium | Investigate ORCA source FP pattern separately | Fix open-water hallucination | ORCA Pr=9.5% is unacceptable |
-| Medium | If EXP-018 change was focal loss / class-weight tuning, try intermediate values | Balance Pr/Re trade-off | Target Pr≈Re for max F1 |
+| High | Fix `GenerateEdge`/`BoundaryLoss` to mask out or ignore padded regions during training so spurious boundary targets are not penalised | Eliminate the root cause of FP explosion; recover Pr toward EXP-008 | PR #30 identified the mechanism; Phase 3 should implement the fix |
+| High | Produce a spatial heatmap of FPs (aggregate across test frames) to empirically confirm FPs are concentrated at image boundaries | Verify the PR #30 hypothesis against server test data | If FPs are not boundary-concentrated, revisit root cause |
+| High | Post-process: discard obstacle CC components <100 px | Eliminate ~4200 tiny FPs; partial mitigation while root cause is addressed | Apply to any candidate model |
+| Medium | Investigate ORCA source FP pattern separately (ORCA Pr=9.5%) | Fix open-water hallucination | Open-water scenes may amplify boundary FPs due to large featureless regions near padding |
 | Medium | Improve small obstacle recall via resolution increase or auxiliary head | +5–10 pp recall without Pr sacrifice | Phase 3 action |
 | Low | Animal recall (9.1%) — targeted augmentation or copy-paste | Niche improvement | Low frequency class |
 
