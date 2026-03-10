@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-SILENCE_TIMEOUT=30
+SILENCE_TIMEOUT=300
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -65,7 +65,7 @@ GEMINI_PID=$!
 #   Covers API connection latency + init event + model generation startup.
 # Phase 2 (after grace): count silence normally. Silence here means Gemini
 #   produced some output (e.g. tool calls) then stopped — a genuine hang.
-STARTUP_GRACE=20  # seconds before silence counting begins
+STARTUP_GRACE=60  # seconds before silence counting begins
 LAST_SIZE=-1
 SILENT_COUNT=0
 STATUS=0
