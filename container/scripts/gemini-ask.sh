@@ -57,12 +57,17 @@ GEMINI_PID=$!
 LAST_SIZE=-1
 SILENT_COUNT=0
 STATUS=0
+HALF_TIMEOUT=$((SILENCE_TIMEOUT / 2))
 while kill -0 "$GEMINI_PID" 2>/dev/null; do
     sleep 1
     CURRENT_SIZE=$(stat -c%s "$TMPEVENTS" 2>/dev/null || echo 0)
     if [[ "$CURRENT_SIZE" -eq "$LAST_SIZE" && "$CURRENT_SIZE" -gt 0 ]]; then
         SILENT_COUNT=$((SILENT_COUNT + 1))
+        if [[ "$SILENT_COUNT" -eq "$HALF_TIMEOUT" ]]; then
+            echo "[gemini-ask] warning: no output for ${SILENT_COUNT}s (timeout at ${SILENCE_TIMEOUT}s)" >&2
+        fi
         if [[ "$SILENT_COUNT" -ge "$SILENCE_TIMEOUT" ]]; then
+            echo "[gemini-ask] killing Gemini after ${SILENT_COUNT}s of silence" >&2
             kill "$GEMINI_PID" 2>/dev/null
             STATUS=3
             break
