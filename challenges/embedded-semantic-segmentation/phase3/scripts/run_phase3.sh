@@ -87,6 +87,9 @@ echo "========================================================"
 cd "$REPO_ROOT"
 
 "$CONDA_RUN" run --no-capture-output -n macvi2 \
+    env PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+        WANDB_API_KEY="$WANDB_API_KEY" \
+        WANDB_DIR="$WANDB_DIR" \
     torchrun --standalone --nproc_per_node="$NUM_GPUS" \
         "$MMSEG_TRAIN" --launcher pytorch \
         "$CONFIGS/$CONFIG_FILE" \
