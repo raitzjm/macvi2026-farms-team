@@ -57,7 +57,7 @@ ONNX_PATHS = {
     "pidnets_p2":            ONNX_EXPORTS / "phase2"   / "pidnets"           / "pidnets_argmax.onnx",
     "pidnets_p25":           ONNX_EXPORTS / "phase2_5" / "phase2_5" / "pidnets" / "pidnets_argmax.onnx",
     "segnext_t_p2":          ONNX_EXPORTS / "phase2"   / "segnext_t"         / "segnext_t_argmax.onnx",
-    "segnext_t_uperhead_p2": ONNX_EXPORTS / "phase2"   / "segnext_t_uperhead" / "segnext_t_uperhead_argmax.onnx",
+    "segnext_t_uperhead_p2": ANALYSIS_DIR / "onnx_exports" / "segnext_t_uperhead" / "segnext_t_uperhead_argmax.onnx",
     "segnext_s_p2":          ONNX_EXPORTS / "phase2"   / "segnext_s"         / "segnext_s_argmax.onnx",
     "stdc2_p2":              ONNX_EXPORTS / "phase2"   / "stdc2"             / "stdc2_argmax.onnx",
     "stdc2_p25":             ONNX_EXPORTS / "phase2_5" / "phase2_5" / "stdc2"  / "stdc2_argmax.onnx",

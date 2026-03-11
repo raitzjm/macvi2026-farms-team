@@ -9,7 +9,8 @@ Run with macvi2 conda env active (mmseg 1.2.2, PyTorch 2.1.2+cu121):
         python challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/export_onnx.py
 
 Output:
-    /home/farms/data/onnx_exports/phase2/segnext_t_uperhead/segnext_t_uperhead_argmax.onnx
+    <this_dir>/onnx_exports/segnext_t_uperhead/segnext_t_uperhead_argmax.onnx
+    (written to a writable path inside the repo since /home/farms/data/ is read-only)
 """
 
 import os
@@ -28,7 +29,7 @@ PHASE2_DIR   = CHALLENGE / "phase2"
 ARTIFACT_DIR = PHASE2_DIR / "artifacts" / "segnext_t_uperhead"
 CONFIG_PATH  = PHASE2_DIR / "configs" / "segnext_t_uperhead_768x384_lars_phase2.py"
 CKPT_PATH    = ARTIFACT_DIR / "best_mIoU_iter_4250.pth"
-OUT_ONNX     = Path("/home/farms/data/onnx_exports/phase2/segnext_t_uperhead/segnext_t_uperhead_argmax.onnx")
+OUT_ONNX     = Path(__file__).resolve().parent / "onnx_exports" / "segnext_t_uperhead" / "segnext_t_uperhead_argmax.onnx"
 
 MODEL_H, MODEL_W = 384, 768
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
