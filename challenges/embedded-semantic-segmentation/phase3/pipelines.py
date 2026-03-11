@@ -28,7 +28,9 @@ Image paths are resolved from images.txt in the harmonized dataset dir
 
 import os
 import random
-import sqlite3
+# sqlite3 is imported lazily inside CopyPasteObstacles._load_candidates()
+# to avoid a libstdc++ version conflict when torchrun spawns worker processes
+# before the conda LD_LIBRARY_PATH is fully resolved.
 
 import cv2
 import numpy as np
@@ -197,6 +199,7 @@ class CopyPasteObstacles:
 
     def _load_candidates(self):
         """Load all candidates from DB into memory on first call."""
+        import sqlite3  # lazy import — avoids libstdc++ conflict at module load time
         conn = sqlite3.connect(self.db_path)
         rows = conn.execute(
             'SELECT dataset, filename, x1, y1, x2, y2, area_native, size_tier '
