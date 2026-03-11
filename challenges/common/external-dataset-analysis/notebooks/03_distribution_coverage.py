@@ -70,7 +70,10 @@ for ds, paths in dedup_kept.items():
 # RADIO-H Model Loading
 # ──────────────────────────────────────────────
 MODEL_NAME = 'nvidia/C-RADIOv3-H'
-COMMIT_EVERY = 50
+COMMIT_EVERY = 200
+BATCH_SIZE = 8        # images per GPU forward pass (same-resolution batch)
+MAX_LONG_SIDE = 896   # cap large images (MULTIAQUA is 2208px — too slow at full res)
+
 
 def load_radio():
     from transformers import AutoModel
@@ -80,42 +83,46 @@ def load_radio():
     model = model.to(DEVICE).eval()
     log.info(f"Model loaded in {time.time()-t0:.1f}s")
 
-    # Warmup
+    # Warmup at capped resolution
     with torch.no_grad(), torch.autocast(DEVICE, dtype=torch.bfloat16):
-        probe = torch.zeros(1, 3, 512, 512, device=DEVICE)
+        probe = torch.zeros(BATCH_SIZE, 3, 512, 512, device=DEVICE)
         _ = model(probe)
     del probe
     torch.cuda.empty_cache()
     return model
 
 
-def extract_embedding(model, img_pil):
-    """Extract RADIO-H CLS-token (summary) embedding from a PIL image."""
+def prep_image(model, img_pil):
+    """Resize + RADIO resolution snap + normalize. Returns (H, W, tensor_CHW_float)."""
     H, W = img_pil.height, img_pil.width
+    # Cap long side to MAX_LONG_SIDE to keep RADIO fast
+    long = max(H, W)
+    if long > MAX_LONG_SIDE:
+        scale = MAX_LONG_SIDE / long
+        H2, W2 = int(H * scale), int(W * scale)
+        img_pil = img_pil.resize((W2, H2), Image.BICUBIC)
+        H, W = H2, W2
     th, tw = model.get_nearest_supported_resolution(H, W)
     img_resized = img_pil.resize((tw, th), Image.BICUBIC)
+    return th, tw, np.array(img_resized).astype(np.float32) / 255.0
 
-    img_t = torch.from_numpy(
-        np.array(img_resized).astype(np.float32) / 255.0
-    ).permute(2, 0, 1).unsqueeze(0).to(DEVICE)
 
-    # Normalize
-    mean = torch.tensor(model.preferred_mean).view(1, 3, 1, 1).to(DEVICE)
-    std  = torch.tensor(model.preferred_std).view(1, 3, 1, 1).to(DEVICE)
-    img_t = (img_t - mean) / std
-
+def extract_batch(model, imgs_np):
+    """imgs_np: list of (H, W, 3) float32 arrays — all same shape.
+    Returns numpy array (N, embed_dim)."""
+    batch_t = torch.stack([
+        torch.from_numpy(a).permute(2, 0, 1) for a in imgs_np
+    ]).to(DEVICE)
+    batch_t = model.input_conditioner(batch_t)
     with torch.no_grad(), torch.autocast(DEVICE, dtype=torch.bfloat16):
-        output = model(img_t)
-
-    if isinstance(output, (list, tuple)) and len(output) >= 2:
-        summary_t = output[0]
-    elif hasattr(output, 'summary'):
+        output = model(batch_t)
+    if hasattr(output, 'summary'):
         summary_t = output.summary
+    elif isinstance(output, (list, tuple)):
+        summary_t = output[0]
     else:
-        spatial_t = output if not isinstance(output, (list, tuple)) else output[0]
-        summary_t = spatial_t.mean(dim=1) if spatial_t.ndim == 3 else spatial_t
-
-    return summary_t.squeeze(0).float().cpu().numpy()
+        summary_t = output
+    return summary_t.float().cpu().numpy()  # (N, 3840)
 
 
 # ──────────────────────────────────────────────
@@ -174,25 +181,50 @@ if EXISTING_COUNT < total_tasks:
     log.info(f"  {len(done_keys)} already done, {total_tasks - len(done_keys)} remaining")
 
     pending = [(fp, ds) for fp, ds in all_tasks if (fp, ds) not in done_keys]
-    batch_data = []
+    db_batch = []
     errors = 0
+    img_buffer = []   # list of (fp, ds, arr_HWC)
+    prev_shape = None
+
+    def flush_gpu_batch():
+        """Run GPU inference on img_buffer (all same shape), return results."""
+        if not img_buffer:
+            return []
+        arrs = [a for _, _, a in img_buffer]
+        try:
+            embs = extract_batch(radio_model, arrs)
+            return [(img_buffer[k][0], img_buffer[k][1], blob(embs[k])) for k in range(len(img_buffer))]
+        except Exception as e:
+            log.warning(f"  Batch GPU error (shape={arrs[0].shape}): {e}")
+            return []
 
     t0 = time.time()
     for i, (fp, ds) in enumerate(pending):
         try:
             img_pil = Image.open(fp).convert('RGB')
-            emb = extract_embedding(radio_model, img_pil)
-            batch_data.append((fp, ds, blob(emb)))
+            th, tw, arr = prep_image(radio_model, img_pil)
+            curr_shape = (th, tw)
 
-            if len(batch_data) >= COMMIT_EVERY:
-                conn.executemany('INSERT OR IGNORE INTO embeddings (filename, dataset, embedding) VALUES (?,?,?)', batch_data)
-                conn.commit()
-                batch_data = []
+            # Flush if resolution changes or buffer full
+            if (prev_shape is not None and curr_shape != prev_shape) or len(img_buffer) >= BATCH_SIZE:
+                results = flush_gpu_batch()
+                db_batch.extend(results)
+                errors += len(img_buffer) - len(results)
+                img_buffer = []
+
+            img_buffer.append((fp, ds, arr))
+            prev_shape = curr_shape
 
         except Exception as e:
             errors += 1
             if errors <= 20:
-                log.warning(f"  ERROR {fp}: {e}")
+                log.warning(f"  LOAD ERROR {fp}: {e}")
+
+        # Commit DB periodically
+        if len(db_batch) >= COMMIT_EVERY:
+            conn.executemany('INSERT OR IGNORE INTO embeddings (filename, dataset, embedding) VALUES (?,?,?)', db_batch)
+            conn.commit()
+            db_batch = []
 
         if i % 500 == 0:
             elapsed = time.time() - t0
@@ -200,8 +232,13 @@ if EXISTING_COUNT < total_tasks:
             eta = (len(pending) - i - 1) / max(rate, 0.01)
             log.info(f"  [{i+1}/{len(pending)}] rate={rate:.1f} img/s  ETA={eta/60:.1f} min  errors={errors}")
 
-    if batch_data:
-        conn.executemany('INSERT OR IGNORE INTO embeddings (filename, dataset, embedding) VALUES (?,?,?)', batch_data)
+    # Flush remaining buffer
+    results = flush_gpu_batch()
+    db_batch.extend(results)
+    errors += len(img_buffer) - len(results)
+
+    if db_batch:
+        conn.executemany('INSERT OR IGNORE INTO embeddings (filename, dataset, embedding) VALUES (?,?,?)', db_batch)
         conn.commit()
 
     conn.close()

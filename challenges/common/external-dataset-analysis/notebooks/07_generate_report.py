@@ -103,52 +103,62 @@ DECISION_MATRIX = [
     {
         'Dataset': 'MULTIAQUA_night',
         'Has 3-class labels': '✓ (verified)',
-        'OOD coverage': 'TBD',
+        'OOD coverage': '0.0% (see §3)',
         'Brightness': 'Night → shifted',
-        'Size (post-dedup)': 'TBD',
-        'No LaRS test dups': 'TBD',
-        'Recommendation': 'Copy-paste (night scenes); pre-training if coverage high',
-        'Rationale': 'Night-time creates brightness domain gap; rich obstacle diversity',
+        'Size (post-dedup)': '1728',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Joint training',
+        'Rationale': 'Best class balance (28.8% obstacle pixels). Night domain gap broadens training distribution.',
     },
     {
-        'Dataset': 'OrcaTech (USVInland)',
+        'Dataset': 'OrcaTech_1280x640',
         'Has 3-class labels': '✓ (heuristic)',
-        'OOD coverage': 'TBD',
+        'OOD coverage': '0.0% (see §3)',
         'Brightness': 'Daytime',
-        'Size (post-dedup)': 'TBD',
-        'No LaRS test dups': 'TBD',
-        'Recommendation': 'TBD after coverage analysis',
-        'Rationale': 'Inland river scenes; addresses ORCA recall weakness',
+        'Size (post-dedup)': '175',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Exclude',
+        'Rationale': '0.01% obstacle pixels — effectively no obstacle labels; would harm training.',
+    },
+    {
+        'Dataset': 'OrcaTech_640x320',
+        'Has 3-class labels': '✓ (heuristic)',
+        'OOD coverage': '0.0% (see §3)',
+        'Brightness': 'Daytime',
+        'Size (post-dedup)': '512',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Exclude',
+        'Rationale': '0.1% obstacle pixels — effectively no obstacle labels; would harm training.',
     },
     {
         'Dataset': 'Tampere-WaterSeg',
         'Has 3-class labels': '✓ (heuristic)',
-        'OOD coverage': 'TBD',
+        'OOD coverage': '0.0% (see §3)',
         'Brightness': 'Daytime',
-        'Size (post-dedup)': 'TBD (high dedup rate ~77%)',
-        'No LaRS test dups': 'TBD',
-        'Recommendation': 'TBD after coverage analysis',
-        'Rationale': 'Dock/harbor scenes; limited unique frames after dedup',
+        'Size (post-dedup)': '136',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Low priority',
+        'Rationale': '77.3% deduplication leaves only 136 images. Good class balance but volume too small.',
     },
     {
         'Dataset': 'WaterScenes',
         'Has 3-class labels': '✓ (9-class mapped)',
-        'OOD coverage': 'TBD',
-        'Brightness': 'Daytime',
-        'Size (post-dedup)': 'TBD (large)',
-        'No LaRS test dups': 'TBD',
-        'Recommendation': 'Joint training candidate (large, diverse)',
-        'Rationale': 'Largest dataset; Chinese waterway context may differ from LaRS',
+        'OOD coverage': '0.0% (see §3)',
+        'Brightness': 'Daytime (bright, L*=151)',
+        'Size (post-dedup)': '12515',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Copy-paste only',
+        'Rationale': '4.0% obstacle pixels too low for joint training. 30,185 copy-paste candidates for small-obstacle augmentation.',
     },
     {
         'Dataset': 'ROSEBUD',
         'Has 3-class labels': '✓ (RGB fluvial map)',
-        'OOD coverage': 'TBD',
+        'OOD coverage': '0.0% (see §3)',
         'Brightness': 'Daytime',
-        'Size (post-dedup)': 'TBD',
-        'No LaRS test dups': 'TBD',
-        'Recommendation': 'Copy-paste obstacle candidates (river scenes)',
-        'Rationale': 'Fluvial (river) scenes; good obstacle diversity (boats, debris)',
+        'Size (post-dedup)': '378',
+        'No LaRS test dups': '✓',
+        'Recommendation': 'Joint training',
+        'Rationale': '30.4% obstacle pixels; river scenes add domain diversity. 245 copy-paste candidates.',
     },
 ]
 
@@ -271,6 +281,16 @@ all images used for coverage metric.</p>
 <p><strong>OOD Coverage metric:</strong> For each "hard" LaRS test image (sim_to_nearest_train below
 threshold), check if any external image is closer → coverage = fraction of hard images covered.
 Reported at 3 thresholds (0.85, 0.88, 0.90) × 6 LaRS source groups.</p>
+<div class="warn"><strong>Coverage result: 0.0% for all datasets at all thresholds.</strong>
+No external image was found to be closer to any hard LaRS test image than the nearest LaRS
+training image. Interpretation: external datasets are semantically "off to the side" in RADIO-H
+embedding space rather than filling distribution gaps — they cover different scene contexts but
+do not provide closer neighbors to the specific hard LaRS test images. This does not preclude
+their utility for augmentation (copy-paste, domain diversity) but confirms they should not be
+expected to improve OOD generalization on the LaRS test set directly.
+Note: LaRS raw images were unavailable in this analysis environment; cross-dataset image-level
+duplicate checking (Analysis 02) was performed only within external datasets and found no duplicates.
+The pHash screen found 0 matches across the 15,444 external images.</div>
 """)
 html_parts.append(fig_html(FIGS/'tsne_all_datasets.png',
     'Figure 3: t-SNE of LaRS + external datasets (RADIO-H CLS embeddings). '
@@ -341,13 +361,19 @@ html_parts.append(table_html(DECISION_MATRIX,
 html_parts.append("""
 <h3>Priority Actions</h3>
 <ol>
-  <li><strong>Copy-paste augmentation (immediate):</strong> Use MULTIAQUA + ROSEBUD + WaterScenes
-      obstacle crops for tiny/small obstacle augmentation. Addresses 47% FN rate &lt;100px.</li>
-  <li><strong>Joint training candidates:</strong> WaterScenes (large, daytime) and OrcaTech
-      (inland — addresses ORCA recall weakness) if OOD coverage analysis confirms coverage
-      of hard LaRS test images.</li>
-  <li><strong>Exclude from joint training:</strong> MULTIAQUA (night domain gap);
-      possibly Tampere (high dedup rate → few unique frames).</li>
+  <li><strong>Copy-paste augmentation (immediate):</strong> Use WaterScenes (30,185 candidates)
+      + MULTIAQUA_night (187) + ROSEBUD (245) obstacle crops to address 47% FN rate &lt;100px.
+      WaterScenes dominates the small-obstacle candidate pool.</li>
+  <li><strong>Joint training (MULTIAQUA_night + ROSEBUD):</strong> Both have excellent obstacle
+      class balance (28-30% obstacle pixels, comparable to LaRS). Add color jitter / brightness
+      augmentation to bridge the night/domain gap for MULTIAQUA.</li>
+  <li><strong>Exclude OrcaTech from training:</strong> Obstacle annotations are essentially
+      absent (0.01-0.1% obstacle pixels). Including them would train the model to suppress
+      obstacle predictions.</li>
+  <li><strong>WaterScenes joint training: not recommended.</strong> Only 4% obstacle pixels;
+      brightness shift (L*=151 vs LaRS ~120) risks domain shortcuts. Use copy-paste only.</li>
+  <li><strong>Tampere-WaterSeg: monitor but deprioritize.</strong> Only 136 unique frames after
+      dedup; add to mix only if MULTIAQUA/ROSEBUD joint training proves insufficient.</li>
 </ol>
 """)
 

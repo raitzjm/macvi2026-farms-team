@@ -1,0 +1,7 @@
+dataset,n_original,n_valid,n_deduplicated,n_removed,pct_removed
+MULTIAQUA_night,3098,3098,1728,1370,44.2
+OrcaTech_1280x640,182,182,175,7,3.8
+OrcaTech_640x320,518,518,512,6,1.2
+Tampere-WaterSeg,600,600,136,464,77.3
+ROSEBUD,549,549,378,171,31.1
+WaterScenes,54120,54120,12515,41605,76.9

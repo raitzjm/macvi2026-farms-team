@@ -1,0 +1,7 @@
+dataset,n_images_deduplicated,pct_obstacle,pct_water,pct_sky,pct_ignore
+MULTIAQUA_night,1728,28.82,43.93,26.25,1.0
+OrcaTech_1280x640,175,0.01,56.93,43.06,0.0
+OrcaTech_640x320,512,0.1,49.78,50.12,0.0
+Tampere-WaterSeg,136,30.5,42.08,27.42,0.0
+WaterScenes,12515,3.99,53.04,42.97,0.0
+ROSEBUD,378,30.35,46.21,23.31,0.13
