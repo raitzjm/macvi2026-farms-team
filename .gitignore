@@ -86,9 +86,8 @@ challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
 # Explicitly track the spatial OOD log despite *.log rule
 !challenges/common/lars-analysis/spatial_ood/logs/spatial_ood.log
 
-# Explicitly track the failure analysis inference logs despite *.log rule
+# Explicitly track the failure analysis inference log despite *.log rule
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384/logs/inference.log
-!challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/logs/inference.log
 
 # Claude Code local settings (credentials mounted, not committed)
 .claude/settings.local.json
