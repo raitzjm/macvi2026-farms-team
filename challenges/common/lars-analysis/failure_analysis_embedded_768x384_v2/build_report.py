@@ -537,8 +537,20 @@ def build_html(df: pd.DataFrame, suspects: pd.DataFrame,
     ref_sort = "segformer_p2_obstacle_iou" if "segformer_p2_obstacle_iou" in df.columns else f"{models[0]}_obstacle_iou"
     worst30  = df.nsmallest(30, ref_sort)
 
+    SHORT_LABELS = {
+        "segformer_p2":          "SF-B2<br/>P2",
+        "pidnets_p2":            "PID-S<br/>P2",
+        "pidnets_p25":           "PID-S<br/>P2.5",
+        "segnext_t_p2":          "NxT<br/>P2",
+        "segnext_t_uperhead_p2": "NxT-UPH<br/>P2",
+        "segnext_s_p2":          "NxS<br/>P2",
+        "stdc2_p2":              "STDC2<br/>P2",
+        "stdc2_p25":             "STDC2<br/>P2.5",
+        "bisenetv2_p2":          "BSv2<br/>P2",
+    }
+
     def table_cols_header():
-        return "".join(f"<th>{MODEL_LABELS[m]}<br/>obs IoU</th>" for m in models)
+        return "".join(f"<th>{SHORT_LABELS.get(m, m)}<br/>obs IoU</th>" for m in models)
 
     def table_cols_row(r):
         return "".join(f"<td>{getattr(r, m+'_obstacle_iou', float('nan')):.3f}</td>" for m in models)
@@ -598,6 +610,9 @@ def build_html(df: pd.DataFrame, suspects: pd.DataFrame,
   th   {{ background: #e8eaf6; padding: 5px 8px; border: 1px solid #bbb; }}
   td   {{ padding: 4px 8px; border: 1px solid #ddd; }}
   tr:nth-child(even) td {{ background: #f5f5f5; }}
+  .wide-table {{ font-size: 7pt; }}
+  .wide-table th {{ padding: 3px 5px; }}
+  .wide-table td {{ padding: 2px 5px; }}
   .note {{ background: #e8f5e9; border-left: 4px solid #4caf50; padding: 10px 14px;
            margin: 12px 0; font-size: 10pt; }}
   .warn {{ background: #fff3e0; border-left: 4px solid #ff9800; padding: 10px 14px;
@@ -638,17 +653,17 @@ bilinear resize → center reflect-pad to 384×768).</p>
 <p>All models were trained on the LaRS dataset (2605 train / 198 val images) at 768×384 resolution
 using mmsegmentation 1.2.2 with Phase 2 server-matching preprocessing (keep-ratio + reflect-pad).
 Phase 2.5 re-ran two models with the corrected preprocessing pipeline to verify the impact of the fix.</p>
-<table>
-  <tr><th>Model</th><th>Exp</th><th>Phase</th><th>Iters</th><th>Optimizer</th><th>LR</th><th>Batch size</th><th>Val F1</th><th>Val mIoU</th><th>Q-score</th><th>INT8-stable?</th><th>Notes</th></tr>
-  <tr><td><b>SegFormer MiT-B2</b></td><td>EXP-005</td><td>P2</td><td>3 000</td><td>AdamW</td><td>6e-5</td><td>72</td><td>77.51%</td><td>89.72%</td><td>71.85%</td><td>✗</td><td>Upper-bound reference; exceeds 30 FPS limit</td></tr>
-  <tr><td><b>SegNeXt-T + UPerHead + BoundaryLoss</b></td><td>EXP-015</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>80.21%</td><td>92.48%</td><td>74.18%</td><td>✗ (−78%)</td><td>Highest FP32 F1; see §2.1</td></tr>
-  <tr><td><b>PIDNet-S</b></td><td>EXP-008</td><td>P2</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>76.17%</td><td>93.25%</td><td>71.03%</td><td>✓</td><td>Best INT8-stable model</td></tr>
-  <tr><td><b>SegNeXt-S</b></td><td>EXP-010</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>80</td><td>72.33%</td><td>92.40%</td><td>66.83%</td><td>✗ (−82%)</td><td>Larger MSCAN-S backbone</td></tr>
-  <tr><td><b>SegNeXt-T</b></td><td>EXP-006</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>71.74%</td><td>91.79%</td><td>65.85%</td><td>✗ (−67%)</td><td>Standard LightHamHead</td></tr>
+<table class="wide-table">
+  <tr><th>Model</th><th>Exp</th><th>Ph</th><th>Iters</th><th>Opt</th><th>LR</th><th>BS</th><th>Val F1</th><th>mIoU</th><th>Q-score</th><th>INT8?</th><th>Notes</th></tr>
+  <tr><td><b>SegFormer MiT-B2</b></td><td>EXP-005</td><td>P2</td><td>3 000</td><td>AdamW</td><td>6e-5</td><td>72</td><td>77.51%</td><td>89.72%</td><td>71.85%</td><td>✗</td><td>Upper-bound ref; &gt;30 FPS</td></tr>
+  <tr><td><b>SegNeXt-T + UPerHead + BL</b></td><td>EXP-015</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>80.21%</td><td>92.48%</td><td>74.18%</td><td>✗ (−78%)</td><td>Best FP32 F1; see §2.1</td></tr>
+  <tr><td><b>PIDNet-S</b></td><td>EXP-008</td><td>P2</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>76.17%</td><td>93.25%</td><td>71.03%</td><td>✓</td><td>Best INT8-stable</td></tr>
+  <tr><td><b>SegNeXt-S</b></td><td>EXP-010</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>80</td><td>72.33%</td><td>92.40%</td><td>66.83%</td><td>✗ (−82%)</td><td>MSCAN-S backbone</td></tr>
+  <tr><td><b>SegNeXt-T</b></td><td>EXP-006</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>71.74%</td><td>91.79%</td><td>65.85%</td><td>✗ (−67%)</td><td>LightHamHead</td></tr>
   <tr><td><b>BiSeNetV2</b></td><td>EXP-009</td><td>P2</td><td>6 000</td><td>SGD</td><td>0.80</td><td>256</td><td>69.06%</td><td>91.09%</td><td>62.91%</td><td>✓</td><td></td></tr>
-  <tr><td><b>STDC2</b></td><td>EXP-007</td><td>P2</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>68.92%</td><td>90.69%</td><td>62.50%</td><td>✓</td><td>Phase 2 baseline</td></tr>
-  <tr><td><b>STDC2</b></td><td>EXP-017</td><td>P2.5</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>—</td><td>—</td><td>+1.99% vs P2</td><td>✓</td><td>Pipeline fix verification</td></tr>
-  <tr><td><b>PIDNet-S</b></td><td>EXP-018</td><td>P2.5</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>—</td><td>—</td><td>−6.30% vs P2</td><td>✓</td><td>Pipeline fix — Q regression</td></tr>
+  <tr><td><b>STDC2</b></td><td>EXP-007</td><td>P2</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>68.92%</td><td>90.69%</td><td>62.50%</td><td>✓</td><td>P2 baseline</td></tr>
+  <tr><td><b>STDC2</b></td><td>EXP-017</td><td>P2.5</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>—</td><td>—</td><td>+1.99% vs P2</td><td>✓</td><td>Pipeline fix</td></tr>
+  <tr><td><b>PIDNet-S</b></td><td>EXP-018</td><td>P2.5</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>—</td><td>—</td><td>−6.30% vs P2</td><td>✓</td><td>Pipeline fix — regression</td></tr>
 </table>
 <p><em>Q-score = challenge server quality score (FP32 ONNX submission). Val F1/mIoU are from the
 mmseg evaluator / post-export ONNX eval. Phase 2.5 F1/mIoU not separately recorded; only
@@ -756,7 +771,7 @@ high IoU across all models. Obstacle IoU shows the highest variance and most mod
 Sequences consistently low across all models indicate systematically hard environments.</p>
 
 <h2>10. Per-Image Metric Table (worst 30 by SegFormer P2 obstacle IoU)</h2>
-<table>
+<table class="wide-table">
   <tr><th>Image</th><th>Sequence</th>{table_cols_header()}</tr>
   {table_rows_html}
 </table>
