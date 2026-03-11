@@ -56,7 +56,7 @@ def fig_html(path, caption='', width='100%'):
     </figure>'''
 
 
-def table_html(rows, headers=None, caption=''):
+def table_html(rows, headers=None, caption='', css_class=''):
     if not rows:
         return '<p><em>No data available.</em></p>'
     if headers is None:
@@ -67,7 +67,8 @@ def table_html(rows, headers=None, caption=''):
         td = ''.join(f'<td>{row.get(h, "")}</td>' for h in headers)
         tbody += f'<tr>{td}</tr>'
     cap = f'<caption style="font-weight:bold; margin-bottom:0.5em;">{caption}</caption>' if caption else ''
-    return f'<table>{cap}<thead><tr>{th}</tr></thead><tbody>{tbody}</tbody></table>'
+    cls = f' class="{css_class}"' if css_class else ''
+    return f'<table{cls}>{cap}<thead><tr>{th}</tr></thead><tbody>{tbody}</tbody></table>'
 
 
 # ─────────────────────────────────────────────────────────
@@ -190,7 +191,10 @@ h2   { font-size: 14pt; color: #283593; border-bottom: 1px solid #7986cb; paddin
 h3   { font-size: 11pt; color: #3949ab; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 9pt; }
 th    { background: #3949ab; color: white; padding: 6px 8px; text-align: left; }
-td    { border: 1px solid #ccc; padding: 5px 8px; vertical-align: top; }
+td    { border: 1px solid #ccc; padding: 5px 8px; vertical-align: top;
+        overflow-wrap: anywhere; }
+.wide-table { font-size: 7.5pt; }
+.wide-table th, .wide-table td { padding: 4px 5px; }
 tr:nth-child(even) td { background: #f5f5f5; }
 code  { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; font-size: 9pt; }
 .callout { background: #e8eaf6; border-left: 4px solid #3949ab; padding: 0.7em 1em; margin: 1em 0;
@@ -268,7 +272,11 @@ if dup_pairs:
     html_parts.append(fig_html(FIGS/'duplicate_pairs_grid.png',
         'Figure 2: Confirmed duplicate image pairs (LaRS vs external)'))
 else:
-    html_parts.append('<div class="ok"><strong>No confirmed duplicates found</strong> between LaRS and any external dataset.</div>')
+    html_parts.append("""<div class="warn"><strong>LaRS–external duplicate check not performed.</strong>
+LaRS raw images were unavailable in this analysis environment. The pHash screen ran only within
+the 15,444 external images and found 0 near-duplicate pairs between them. A LaRS-to-external
+image-level duplicate check must be run before using any external dataset for training to rule
+out test-set leakage.</div>""")
 
 # ── §3 Distribution Coverage ──
 html_parts.append('<h2>§3. Distribution Coverage</h2>')
@@ -298,7 +306,9 @@ html_parts.append(fig_html(FIGS/'tsne_all_datasets.png',
 
 if coverage_rows:
     html_parts.append(table_html(coverage_rows,
-        caption='OOD Coverage table: fraction of hard LaRS test images better covered by external dataset'))
+        headers=['threshold', 'dataset', 'n_hard_test', 'coverage_pct'],
+        caption='OOD Coverage table (all values = 0.0%: no external image is closer to any hard LaRS test image than the nearest LaRS train image)',
+        css_class='wide-table'))
     html_parts.append(fig_html(FIGS/'coverage_table.png', 'Figure 4: OOD coverage summary'))
 
 # ── §4 Obstacle Profile & Copy-Paste ──
@@ -355,8 +365,13 @@ html_parts.append("""
 """)
 html_parts.append(table_html(DECISION_MATRIX,
     headers=['Dataset', 'Has 3-class labels', 'OOD coverage', 'Brightness',
-             'Size (post-dedup)', 'No LaRS test dups', 'Recommendation', 'Rationale'],
-    caption='Full decision matrix'))
+             'Size (post-dedup)', 'No LaRS test dups', 'Recommendation'],
+    caption='Full decision matrix', css_class='wide-table'))
+# Rationale as separate notes
+html_parts.append('<table class="wide-table"><thead><tr><th>Dataset</th><th>Rationale</th></tr></thead><tbody>')
+for dm in DECISION_MATRIX:
+    html_parts.append(f'<tr><td>{dm["Dataset"]}</td><td>{dm["Rationale"]}</td></tr>')
+html_parts.append('</tbody></table>')
 
 html_parts.append("""
 <h3>Priority Actions</h3>
@@ -375,6 +390,39 @@ html_parts.append("""
   <li><strong>Tampere-WaterSeg: monitor but deprioritize.</strong> Only 136 unique frames after
       dedup; add to mix only if MULTIAQUA/ROSEBUD joint training proves insufficient.</li>
 </ol>
+
+<h3>Joint Training Strategy</h3>
+<p><strong>Approach: Joint training with LaRS simultaneously</strong> (not pre-training + fine-tune).
+With MULTIAQUA (1,728 imgs) + ROSEBUD (378 imgs) ≈ 2,106 images vs LaRS 2,605, the scale is close
+to 1:1 — ideal for co-training. Pre-training on a disjoint domain then fine-tuning on LaRS risks
+catastrophic forgetting. Joint training forces the network to learn domain-invariant obstacle features.</p>
+
+<p><strong>Recommended sampling ratio: 7 : 4 : 1 (LaRS : MULTIAQUA_night : ROSEBUD)</strong><br>
+This mirrors natural dataset sizes. LaRS (~58%) anchors the target distribution; MULTIAQUA (~33%)
+provides consistent regularization; ROSEBUD (~8%) injects fluvial diversity without overfitting
+its small pool.</p>
+
+<table class="wide-table">
+<thead><tr><th>Dataset</th><th>Critical augmentations before mixing</th></tr></thead>
+<tbody>
+<tr><td>MULTIAQUA_night</td><td>Aggressive brightness/gamma/color jitter — prevents model learning
+  "darkness" as a shortcut feature. Darkness must not be a cue for obstacle class.</td></tr>
+<tr><td>ROSEBUD</td><td>Random resize, random crop, horizontal flip — normalizes riverbank spatial
+  structure so shores are not memorized as absolute coordinates.</td></tr>
+<tr><td>All datasets</td><td>Small-obstacle copy-paste from WaterScenes candidates during training
+  — directly targets 47% FN rate &lt;100px.</td></tr>
+</tbody>
+</table>
+
+<div class="warn"><strong>Data leakage risk:</strong> LaRS raw images were unavailable so a
+LaRS-to-external image-level duplicate check was not performed (see §2). Before using MULTIAQUA
+or ROSEBUD for training, verify no overlap with the LaRS test set. If images from those datasets
+appear in LaRS test, training on them constitutes direct data leakage.</div>
+
+<p><strong>WaterScenes pre-training:</strong> Not recommended as-is. The 4% obstacle pixels
+would bias the model to suppress obstacle predictions. Only safe if obstacle loss is explicitly
+masked or heavy copy-paste augmentation is applied during pre-training. Recommended use: copy-paste
+candidate pool only.</p>
 """)
 
 # ── §8 Appendix ──
