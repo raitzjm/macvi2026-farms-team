@@ -7,10 +7,22 @@ Run: /home/farms/miniforge3/envs/macvi/bin/python -u notebooks/00b_dedup_checkpo
 """
 import json, sys, csv, time, logging
 from pathlib import Path
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import numpy as np
 from PIL import Image
 import imagehash
+
+N_WORKERS = 14  # leave 2 cores free
+
+
+def _hash_one(path_str):
+    """Worker: open image, compute pHash, return (path_str, hash_flat_bytes) or (path_str, None)."""
+    try:
+        h = imagehash.phash(Image.open(path_str).convert('RGB'), hash_size=8)
+        return path_str, h.hash.flatten().tobytes()
+    except Exception as e:
+        return path_str, None
 
 REPO   = Path('/home/farms/macvi2026-farms-team/challenges/common/external-dataset-analysis')
 DATA   = Path('/home/farms/data/datasets')
@@ -34,7 +46,7 @@ log.info("=== Analysis 00b: Deduplication with checkpointing ===")
 
 
 def dedup_dataset(name, img_paths, hash_thr=10):
-    """pHash dedup; returns (kept_paths_str, stats_dict)."""
+    """pHash dedup with multiprocessing + numpy vectorized greedy dedup."""
     # Fast-path: load checkpoint if exists
     ckpt = CKPT_DIR / f'{name}.json'
     if ckpt.exists():
@@ -42,31 +54,55 @@ def dedup_dataset(name, img_paths, hash_thr=10):
         log.info(f"  [{name}] CHECKPOINT found — skipping ({data['stats']['n_deduplicated']} kept)")
         return data['kept_paths'], data['stats']
 
-    log.info(f"  [{name}] computing pHash for {len(img_paths)} images...")
+    img_paths_str = [str(p) for p in img_paths]
+    n = len(img_paths_str)
+    workers = min(N_WORKERS, n, 14)
+    log.info(f"  [{name}] computing pHash for {n} images (workers={workers})...")
     t0 = time.time()
-    hashes = []
-    valid_paths = []
-    for i, p in enumerate(img_paths):
-        try:
-            h = imagehash.phash(Image.open(p).convert('RGB'), hash_size=8)
-            hashes.append(h)
-            valid_paths.append(str(p))
-        except Exception as e:
-            log.warning(f"    skip {p}: {e}")
-        if (i + 1) % 5000 == 0:
-            log.info(f"    [{name}] {i+1}/{len(img_paths)} hashed...")
 
-    log.info(f"  [{name}] hashed {len(valid_paths)} images in {time.time()-t0:.1f}s")
+    # Parallel hash computation — preserve original order
+    hash_bytes = [None] * n
+    path_to_idx = {p: i for i, p in enumerate(img_paths_str)}
 
-    # Greedy dedup
-    kept_indices = []
-    kept_hashes = []
-    for i, h in enumerate(hashes):
-        if not any((h - kh) <= hash_thr for kh in kept_hashes):
-            kept_indices.append(i)
-            kept_hashes.append(h)
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_hash_one, p): i for i, p in enumerate(img_paths_str)}
+        done = 0
+        for fut in as_completed(futures):
+            idx = futures[fut]
+            path_str, hb = fut.result()
+            if hb is not None:
+                hash_bytes[idx] = hb
+            done += 1
+            if done % 5000 == 0:
+                log.info(f"    [{name}] {done}/{n} hashed...")
 
-    kept_paths = [valid_paths[i] for i in kept_indices]
+    valid_indices = [i for i, hb in enumerate(hash_bytes) if hb is not None]
+    valid_paths = [img_paths_str[i] for i in valid_indices]
+    # Stack hash bits into numpy array for vectorized Hamming
+    hash_mat = np.stack([
+        np.frombuffer(hash_bytes[i], dtype=np.bool_) for i in valid_indices
+    ])  # shape (n_valid, 64)
+    log.info(f"  [{name}] hashed {len(valid_paths)}/{n} images in {time.time()-t0:.1f}s")
+
+    # Vectorized greedy dedup
+    t1 = time.time()
+    kept_indices_local = []
+    kept_rows = []  # list of 1-D bool arrays
+
+    for i in range(len(valid_paths)):
+        h = hash_mat[i]
+        if kept_rows:
+            kept_arr = np.stack(kept_rows)            # shape (k, 64)
+            dists = (kept_arr != h[np.newaxis, :]).sum(axis=1)
+            if dists.min() <= hash_thr:
+                continue
+        kept_indices_local.append(i)
+        kept_rows.append(h)
+        if len(kept_indices_local) % 2000 == 0:
+            log.info(f"    [{name}] greedy: {i+1}/{len(valid_paths)} checked, {len(kept_indices_local)} kept")
+
+    log.info(f"  [{name}] greedy dedup done in {time.time()-t1:.1f}s")
+    kept_paths = [valid_paths[i] for i in kept_indices_local]
     stats = {
         'dataset': name,
         'n_original': len(img_paths),

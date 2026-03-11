@@ -46,12 +46,12 @@ fn_areas_normalized = []
 if segments_json.exists():
     with open(segments_json) as f:
         segs = json.load(f)
-    # segments.json format: list of {image, label, pred, area, ...}
-    # FN = label=obstacle(0), pred=not-obstacle
-    for seg in segs:
-        if seg.get('label', -1) == 0 and seg.get('pred', -1) != 0:
-            area = seg.get('area', 0)
-            fn_areas_normalized.append(area)
+    # segments.json format: {"frames": [{image_name, segment_data: [{type, category_id, area, ...}]}]}
+    # FN = missed obstacle segments (type='FN')
+    for fr in segs.get('frames', []):
+        for seg in fr.get('segment_data', []):
+            if seg.get('type') == 'FN':
+                fn_areas_normalized.append(seg.get('area', 0))
     log.info(f"Loaded {len(fn_areas_normalized)} FN obstacle segments from segments.json")
 else:
     log.warning(f"segments.json not found: {segments_json}")
