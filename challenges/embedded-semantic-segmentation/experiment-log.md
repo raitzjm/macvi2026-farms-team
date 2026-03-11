@@ -415,3 +415,39 @@ Each entry follows this structure:
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase1_segformer_mit-b2
 - **Results (val)**: F1=73.64% (PyTorch), ONNX delta=0.00%; mIoU=92.02% (best iter 1000)
 - **Notes**: Converged early at iter 1000; plateau from 1000→1500. Highest F1 of Phase 1 but above 30 FPS limit (accuracy upper-bound reference). Logits ONNX committed to LFS. See phase1_report.md for convergence analysis.
+
+---
+
+## EXP-019
+- **ID**: EXP-019
+- **Date**: 2026-03-11 19:00 UTC
+- **Phase**: Phase 3 — augmentation-focused training
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase3-augmentation @ 2d1602f
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_phase3.py
+- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
+- **Resolution**: 768×384
+- **Iters**: 8000 (eval every 500; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD, poly, warmup 1500 iters)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets
+- **Results (val)**: TBD
+- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%.
+
+---
+
+## EXP-020
+- **ID**: EXP-020
+- **Date**: 2026-03-11 19:00 UTC
+- **Phase**: Phase 3 — augmentation-focused training
+- **Status**: PLANNED (run after EXP-019 completes)
+- **Branch/Commit**: exp/phase3-augmentation @ 2d1602f
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/stdc2_768x384_lars_phase3.py
+- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
+- **Resolution**: 768×384
+- **Iters**: 5000 (eval every 500; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD, poly, warmup 300 iters)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_stdc2
+- **Results (val)**: TBD
+- **Notes**: Same CopyPaste + EnhancedPhotoMetricDistortion augmentations. No GenerateEdgeMasked (STDC2 doesn't use GenerateEdge). Hardware constraint: must run after EXP-019 finishes. Baseline to beat: EXP-017 Q=64.49%.
