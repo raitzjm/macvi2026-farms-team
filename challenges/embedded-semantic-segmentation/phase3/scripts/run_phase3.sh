@@ -44,6 +44,13 @@ fi
 # ── Env setup ──────────────────────────────────────────────────────────────────
 export PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}"
 
+# Add conda env lib dir to LD_LIBRARY_PATH so DataLoader worker processes
+# can find libicui18n.so.78 → libstdc++ (CXXABI_1.3.15) correctly.
+# Without this, worker subprocesses spawned by num_workers>0 fail to import
+# sqlite3 (used lazily by CopyPasteObstacles._load_candidates).
+CONDA_LIB="/home/farms/miniforge3/envs/macvi2/lib"
+export LD_LIBRARY_PATH="$CONDA_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+
 # WANDB_DIR must NOT be on PYTHONPATH (else wandb/ cache shadows the package).
 export WANDB_DIR="$OUTPUTS/phase3"
 mkdir -p "$WANDB_DIR"
@@ -87,9 +94,10 @@ echo "========================================================"
 cd "$REPO_ROOT"
 
 "$CONDA_RUN" run --no-capture-output -n macvi2 \
-    env PYTHONPATH="$REPO_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+    env PYTHONPATH="$PYTHONPATH" \
         WANDB_API_KEY="$WANDB_API_KEY" \
         WANDB_DIR="$WANDB_DIR" \
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH" \
     torchrun --standalone --nproc_per_node="$NUM_GPUS" \
         "$MMSEG_TRAIN" --launcher pytorch \
         "$CONFIGS/$CONFIG_FILE" \
