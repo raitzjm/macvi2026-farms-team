@@ -52,20 +52,26 @@ log.info("\n--- §0a: MULTIAQUA class verification ---")
 MAQUA_ANN = DATA / 'MULTIAQUA_night/annotations'
 MAQUA_IMG = DATA / 'MULTIAQUA_night/data/zed'
 
-ann_files = sorted(MAQUA_ANN.iterdir())
-log.info(f"MULTIAQUA: {len(ann_files)} annotation files")
+# Fast-path: skip full scan if QA figures already exist (class mapping already confirmed)
+_0a_done = (FIGS / 'multiaqua_allclass_verify.png').exists()
+if _0a_done:
+    log.info("§0a QA figures already exist — skipping annotation scan (mapping confirmed)")
+    ann_files = []
+else:
+    ann_files = sorted(MAQUA_ANN.iterdir())
+    log.info(f"MULTIAQUA: {len(ann_files)} annotation files")
 
 # Collect images per class 3 and 4
 per_class = defaultdict(list)
-for af in ann_files:
-    arr = np.array(Image.open(af))
-    for c in np.unique(arr):
-        per_class[c].append(af.name)
-
-log.info(f"MULTIAQUA unique classes found: {sorted(per_class.keys())}")
+if not _0a_done:
+    for af in ann_files:
+        arr = np.array(Image.open(af))
+        for c in np.unique(arr):
+            per_class[c].append(af.name)
+    log.info(f"MULTIAQUA unique classes found: {sorted(per_class.keys())}")
 
 # Visual QA for classes 3 and 4
-for target_class in [3, 4]:
+for target_class in [3, 4] if not _0a_done else []:
     samples = per_class.get(target_class, [])[:10]
     if not samples:
         log.warning(f"  class {target_class}: no samples found")
@@ -111,8 +117,13 @@ log.info("\n--- §0b: WaterScenes class 0 QA ---")
 WS_SEM  = DATA / 'water_scenes/semantic/SegmentationClass'
 WS_IMG  = DATA / 'water_scenes/image'
 
-all_sem = sorted(WS_SEM.iterdir())
-log.info(f"WaterScenes: {len(all_sem)} semantic files")
+_0b_done = (FIGS / 'waterscenes_class0_qa.png').exists()
+if _0b_done:
+    log.info("§0b QA figure already exists — skipping (decision: class 0 → sky (2))")
+    all_sem = []
+else:
+    all_sem = sorted(WS_SEM.iterdir())
+    log.info(f"WaterScenes: {len(all_sem)} semantic files")
 
 # Sample 20 images where class 0 pixels exist
 class0_files = []
@@ -123,9 +134,10 @@ for sf in all_sem:
     if len(class0_files) >= 20:
         break
 
-log.info(f"Found {len(class0_files)} WaterScenes images with class 0 pixels")
+if not _0b_done:
+    log.info(f"Found {len(class0_files)} WaterScenes images with class 0 pixels")
 
-if class0_files:
+if class0_files and not _0b_done:
     # Also get all-class distribution from first 200 files
     all_classes_ws = set()
     for sf in all_sem[:200]:
@@ -172,10 +184,27 @@ if class0_files:
     WATERSCENES_CLASS0_DECISION = 'sky'  # will be updated after QA
     log.info(f"Default class 0 decision: {WATERSCENES_CLASS0_DECISION} — override in §0e if needed")
 
+# Always set this (needed by §0e harmonization)
+WATERSCENES_CLASS0_DECISION = 'sky'
+
 # ──────────────────────────────────────────────
 # §0c — Within-Dataset Deduplication
 # ──────────────────────────────────────────────
 log.info("\n--- §0c: pHash deduplication ---")
+
+# Fast-path: if 00b_dedup_checkpoint.py already produced the index, load it and skip
+import json as _json
+_dedup_index_path = SHARED / 'dedup_kept_index.json'
+_0c_skip = _dedup_index_path.exists()
+if _0c_skip:
+    log.info("§0c fast-path: dedup_kept_index.json already exists — loading and skipping dedup")
+    with open(_dedup_index_path) as _f:
+        _loaded = _json.load(_f)
+    dedup_kept = {ds: [Path(p) for p in paths] for ds, paths in _loaded.items()}
+    dedup_stats_all = []  # stats won't be recomputed; dedup_stats.csv already written
+    log.info(f"  Loaded {sum(len(v) for v in dedup_kept.values())} images across {len(dedup_kept)} datasets")
+    log.info("§0c complete (loaded from checkpoint)")
+
 
 def dedup_dataset(name, img_paths, hash_thr=10):
     """Deduplicate a list of image paths using pHash with Hamming distance <= hash_thr.
@@ -217,83 +246,85 @@ def dedup_dataset(name, img_paths, hash_thr=10):
              f"({stats['n_removed']} removed, {stats['pct_removed']}%)")
     return kept_paths, stats
 
-dedup_stats_all = []
-dedup_kept = {}  # dataset_name -> list of kept image paths
+if not _0c_skip:
+    dedup_stats_all = []
+    dedup_kept = {}  # dataset_name -> list of kept image paths
 
-# MULTIAQUA: only images with annotations
-log.info("\n  MULTIAQUA...")
-ann_names = {af.stem for af in MAQUA_ANN.iterdir()}
-maqua_img_list = sorted([MAQUA_IMG / (n + '.png') for n in ann_names
-                         if (MAQUA_IMG / (n + '.png')).exists()])
-if not maqua_img_list:
-    maqua_img_list = sorted([p for p in MAQUA_IMG.iterdir()
-                              if p.stem in ann_names])
-log.info(f"  MULTIAQUA: {len(maqua_img_list)} images with annotations")
-kept_maqua, stats = dedup_dataset('MULTIAQUA_night', maqua_img_list)
-dedup_kept['MULTIAQUA_night'] = kept_maqua
-dedup_stats_all.append(stats)
+    # MULTIAQUA: only images with annotations
+    log.info("\n  MULTIAQUA...")
+    ann_names = {af.stem for af in MAQUA_ANN.iterdir()}
+    maqua_img_list = sorted([MAQUA_IMG / (n + '.png') for n in ann_names
+                             if (MAQUA_IMG / (n + '.png')).exists()])
+    if not maqua_img_list:
+        maqua_img_list = sorted([p for p in MAQUA_IMG.iterdir()
+                                  if p.stem in ann_names])
+    log.info(f"  MULTIAQUA: {len(maqua_img_list)} images with annotations")
+    kept_maqua, stats = dedup_dataset('MULTIAQUA_night', maqua_img_list)
+    dedup_kept['MULTIAQUA_night'] = kept_maqua
+    dedup_stats_all.append(stats)
 
-# OrcaTech: all splits combined (treat 1280x640 and 640x320 separately per issue)
-log.info("\n  OrcaTech 1280x640...")
-orca_1280_train = sorted((DATA / 'orca_tech_water_segmentation/training/training/1280_640_undistorted').iterdir())
-orca_1280_test  = sorted((DATA / 'orca_tech_water_segmentation/test/test/1280_640_undistorted').iterdir())
-orca_1280_all   = orca_1280_train + orca_1280_test
-kept_orca1280, stats = dedup_dataset('OrcaTech_1280x640', orca_1280_all)
-dedup_kept['OrcaTech_1280x640'] = kept_orca1280
-dedup_stats_all.append(stats)
+    # OrcaTech: all splits combined (treat 1280x640 and 640x320 separately per issue)
+    log.info("\n  OrcaTech 1280x640...")
+    orca_1280_train = sorted((DATA / 'orca_tech_water_segmentation/training/training/1280_640_undistorted').iterdir())
+    orca_1280_test  = sorted((DATA / 'orca_tech_water_segmentation/test/test/1280_640_undistorted').iterdir())
+    orca_1280_all   = orca_1280_train + orca_1280_test
+    kept_orca1280, stats = dedup_dataset('OrcaTech_1280x640', orca_1280_all)
+    dedup_kept['OrcaTech_1280x640'] = kept_orca1280
+    dedup_stats_all.append(stats)
 
-log.info("  OrcaTech 640x320...")
-orca_640_train = sorted((DATA / 'orca_tech_water_segmentation/training/training/640_320_undistorted').iterdir())
-orca_640_test  = sorted((DATA / 'orca_tech_water_segmentation/test/test/640_320_undistorted').iterdir())
-orca_640_all   = orca_640_train + orca_640_test
-kept_orca640, stats = dedup_dataset('OrcaTech_640x320', orca_640_all)
-dedup_kept['OrcaTech_640x320'] = kept_orca640
-dedup_stats_all.append(stats)
+    log.info("  OrcaTech 640x320...")
+    orca_640_train = sorted((DATA / 'orca_tech_water_segmentation/training/training/640_320_undistorted').iterdir())
+    orca_640_test  = sorted((DATA / 'orca_tech_water_segmentation/test/test/640_320_undistorted').iterdir())
+    orca_640_all   = orca_640_train + orca_640_test
+    kept_orca640, stats = dedup_dataset('OrcaTech_640x320', orca_640_all)
+    dedup_kept['OrcaTech_640x320'] = kept_orca640
+    dedup_stats_all.append(stats)
 
-# Tampere: images from dock, channel, open folders
-log.info("\n  Tampere-WaterSeg...")
-tampere_imgs = []
-for scene in ['dock', 'channel', 'open']:
-    scene_dir = DATA / 'Tampere-WaterSeg' / scene
-    if scene_dir.exists():
-        tampere_imgs.extend(sorted(scene_dir.iterdir()))
-kept_tampere, stats = dedup_dataset('Tampere-WaterSeg', tampere_imgs)
-dedup_kept['Tampere-WaterSeg'] = kept_tampere
-dedup_stats_all.append(stats)
+    # Tampere: images from dock, channel, open folders
+    log.info("\n  Tampere-WaterSeg...")
+    tampere_imgs = []
+    for scene in ['dock', 'channel', 'open']:
+        scene_dir = DATA / 'Tampere-WaterSeg' / scene
+        if scene_dir.exists():
+            tampere_imgs.extend(sorted(scene_dir.iterdir()))
+    kept_tampere, stats = dedup_dataset('Tampere-WaterSeg', tampere_imgs)
+    dedup_kept['Tampere-WaterSeg'] = kept_tampere
+    dedup_stats_all.append(stats)
 
-# ROSEBUD: images only
-log.info("\n  ROSEBUD...")
-rosebud_imgs = sorted((DATA / 'ROSEBUD/bundle/ROSEBUD-HD/HD/images').iterdir())
-kept_rosebud, stats = dedup_dataset('ROSEBUD', rosebud_imgs)
-dedup_kept['ROSEBUD'] = kept_rosebud
-dedup_stats_all.append(stats)
+    # ROSEBUD: images only
+    log.info("\n  ROSEBUD...")
+    rosebud_imgs = sorted((DATA / 'ROSEBUD/bundle/ROSEBUD-HD/HD/images').iterdir())
+    kept_rosebud, stats = dedup_dataset('ROSEBUD', rosebud_imgs)
+    dedup_kept['ROSEBUD'] = kept_rosebud
+    dedup_stats_all.append(stats)
 
-# WaterScenes: largest dataset — do last
-log.info("\n  WaterScenes (54k images — takes ~2-3 min)...")
-ws_imgs = sorted(WS_IMG.iterdir())
-kept_ws, stats = dedup_dataset('WaterScenes', ws_imgs)
-dedup_kept['WaterScenes'] = kept_ws
-dedup_stats_all.append(stats)
+    # WaterScenes: largest dataset — do last
+    log.info("\n  WaterScenes (54k images — longest step)...")
+    ws_imgs = sorted(WS_IMG.iterdir())
+    log.info(f"  WaterScenes: {len(ws_imgs)} images found")
+    kept_ws, stats = dedup_dataset('WaterScenes', ws_imgs)
+    dedup_kept['WaterScenes'] = kept_ws
+    dedup_stats_all.append(stats)
 
-# Save dedup stats
-dedup_csv = SHARED / 'dedup_stats.csv'
-with open(dedup_csv, 'w', newline='') as f:
-    w = csv.DictWriter(f, fieldnames=['dataset','n_original','n_valid','n_deduplicated','n_removed','pct_removed'])
-    w.writeheader()
-    w.writerows(dedup_stats_all)
-log.info(f"\nSaved dedup_stats.csv: {dedup_csv}")
+    # Save dedup stats
+    dedup_csv = SHARED / 'dedup_stats.csv'
+    with open(dedup_csv, 'w', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=['dataset','n_original','n_valid','n_deduplicated','n_removed','pct_removed'])
+        w.writeheader()
+        w.writerows(dedup_stats_all)
+    log.info(f"\nSaved dedup_stats.csv: {dedup_csv}")
 
-for s in dedup_stats_all:
-    log.info(f"  {s['dataset']:30s}: {s['n_original']:6d} → {s['n_deduplicated']:6d} ({s['pct_removed']}% removed)")
+    for s in dedup_stats_all:
+        log.info(f"  {s['dataset']:30s}: {s['n_original']:6d} → {s['n_deduplicated']:6d} ({s['pct_removed']}% removed)")
 
-# Save kept image path lists for downstream use
-import json
-kept_index = {}
-for ds, paths in dedup_kept.items():
-    kept_index[ds] = [str(p) for p in paths]
-with open(SHARED / 'dedup_kept_index.json', 'w') as f:
-    json.dump(kept_index, f, indent=2)
-log.info("Saved dedup_kept_index.json")
+    # Save kept image path lists for downstream use
+    import json
+    kept_index = {}
+    for ds, paths in dedup_kept.items():
+        kept_index[ds] = [str(p) for p in paths]
+    with open(SHARED / 'dedup_kept_index.json', 'w') as f:
+        json.dump(kept_index, f, indent=2)
+    log.info("Saved dedup_kept_index.json")
 
 # ──────────────────────────────────────────────
 # §0d — Sky/Obstacle Heuristic for Binary Datasets
