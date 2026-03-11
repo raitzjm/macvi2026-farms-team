@@ -54,7 +54,7 @@ if [ -z "${WANDB_API_KEY:-}" ]; then
 fi
 
 # ── LaRS symlink tree ──────────────────────────────────────────────────────────
-LARS_SRC="/home/farms/data/lars_dataset"
+LARS_SRC="/home/farms/data/datasets/lars_dataset"
 LARS_LINKED="/home/farms/lars_linked"
 
 if [ ! -d "$LARS_LINKED/train/images" ]; then
