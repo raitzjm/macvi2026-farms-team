@@ -692,11 +692,20 @@ prediction is nearest-neighbour resized to the original image resolution for met
 computation against the GT mask. All 9 models use the same argmax ONNX format (FP32 weights),
 ensuring consistency within this analysis.</p>
 <div class="note">
-<b>Difference from Phase 1 analysis (v1):</b> v1 used <em>logits</em> ONNX (Phase 1 only had
-logit-output models) with bilinear upsampling of logits before argmax, and <em>simple resize</em>
-preprocessing (no keep-ratio, no padding). v2 uses <em>argmax</em> ONNX with Phase 2
-server-matching preprocessing. The two analyses are not directly comparable at the per-image
-level, but both report standard IoU/Dice metrics at original GT resolution.
+<b>Full methodology differences vs Phase 1 analysis (v1):</b>
+<table style="margin-top:6px;">
+  <tr><th>Aspect</th><th>v1 (Phase 1)</th><th>v2 (Phase 2/2.5)</th></tr>
+  <tr><td>ONNX output type</td><td>Logits <code>(1,3,384,768) float32</code></td><td>Argmax <code>(1,1,384,768) int64</code></td></tr>
+  <tr><td>Post-inference</td><td>Bilinear upsample logits → argmax at original res</td><td>Crop reflect-pad → nearest-neighbour resize to original res</td></tr>
+  <tr><td>Preprocessing</td><td>Simple resize to 768×384 (no keep-ratio, no padding)</td><td>Keep-ratio bilinear resize → center reflect-pad to 768×384</td></tr>
+  <tr><td>Execution provider</td><td>CPU only (CPUExecutionProvider)</td><td>CUDA if available (RTX4050), fallback to CPU</td></tr>
+  <tr><td>Val dataset path</td><td><code>/home/farms/lars_linked/val/</code> (symlink tree)</td><td><code>/home/farms/data/datasets/lars_dataset/</code> (direct)</td></tr>
+  <tr><td>Models evaluated</td><td>3 (STDC2, SegNeXt-T, SegFormer — Phase 1 checkpoints)</td><td>9 (Phase 2 + Phase 2.5 — full training checkpoints)</td></tr>
+  <tr><td>Failure overlap viz</td><td>3-circle Venn diagram</td><td>Breadth distribution bar chart + pairwise co-failure heatmap</td></tr>
+  <tr><td>Annotation suspects</td><td>All 3 models fail (obs IoU &lt; 0.1)</td><td>All 9 models fail (obs IoU &lt; 0.1)</td></tr>
+</table>
+<p style="margin-top:6px;">The two analyses are not directly comparable at the per-image level due to preprocessing
+and ONNX differences. Per-image failure rankings within each analysis are internally consistent.</p>
 </div>
 
 <h3>Metric definitions</h3>
