@@ -634,19 +634,25 @@ bilinear resize → center reflect-pad to 384×768).</p>
 </ul>
 </div>
 
-<h2>2. Models</h2>
+<h2>2. Models Trained</h2>
+<p>All models were trained on the LaRS dataset (2605 train / 198 val images) at 768×384 resolution
+using mmsegmentation 1.2.2 with Phase 2 server-matching preprocessing (keep-ratio + reflect-pad).
+Phase 2.5 re-ran two models with the corrected preprocessing pipeline to verify the impact of the fix.</p>
 <table>
-  <tr><th>Model</th><th>Phase</th><th>Exp</th><th>Val F1</th><th>Val mIoU</th><th>INT8-stable?</th><th>Notes</th></tr>
-  <tr><td><b>SegFormer MiT-B2</b></td><td>P2</td><td>EXP-005</td><td>77.51%</td><td>89.72%</td><td>✗</td><td>Upper-bound reference; exceeds 30 FPS limit</td></tr>
-  <tr><td><b>SegNeXt-T + UPerHead (P2)</b></td><td>P2</td><td>EXP-015</td><td>80.21%</td><td>92.48%</td><td>✗ (−78%)</td><td>See §2.1 — head replacement experiment</td></tr>
-  <tr><td><b>PIDNet-S (P2)</b></td><td>P2</td><td>EXP-008</td><td>76.17%</td><td>93.25%</td><td>✓</td><td>Best INT8-stable model</td></tr>
-  <tr><td><b>SegNeXt-S (P2)</b></td><td>P2</td><td>EXP-010</td><td>72.33%</td><td>92.40%</td><td>✗ (−82%)</td><td>Larger MSCAN backbone</td></tr>
-  <tr><td><b>SegNeXt-T (P2)</b></td><td>P2</td><td>EXP-006</td><td>71.74%</td><td>91.79%</td><td>✗ (−67%)</td><td>Standard LightHamHead</td></tr>
-  <tr><td><b>BiSeNetV2 (P2)</b></td><td>P2</td><td>EXP-009</td><td>69.06%</td><td>91.09%</td><td>✓</td><td>SGD training</td></tr>
-  <tr><td><b>STDC2 (P2.5)</b></td><td>P2.5</td><td>EXP-017</td><td>—</td><td>—</td><td>✓</td><td>Pipeline fix (keep_ratio + reflect-pad); +1.99% Q vs P2</td></tr>
-  <tr><td><b>STDC2 (P2)</b></td><td>P2</td><td>EXP-007</td><td>68.92%</td><td>90.69%</td><td>✓</td><td>Phase 2 baseline</td></tr>
-  <tr><td><b>PIDNet-S (P2.5)</b></td><td>P2.5</td><td>EXP-018</td><td>—</td><td>—</td><td>✓</td><td>Pipeline fix; −6.30% Q regression vs P2</td></tr>
+  <tr><th>Model</th><th>Exp</th><th>Phase</th><th>Iters</th><th>Optimizer</th><th>LR</th><th>Batch size</th><th>Val F1</th><th>Val mIoU</th><th>Q-score</th><th>INT8-stable?</th><th>Notes</th></tr>
+  <tr><td><b>SegFormer MiT-B2</b></td><td>EXP-005</td><td>P2</td><td>3 000</td><td>AdamW</td><td>6e-5</td><td>72</td><td>77.51%</td><td>89.72%</td><td>71.85%</td><td>✗</td><td>Upper-bound reference; exceeds 30 FPS limit</td></tr>
+  <tr><td><b>SegNeXt-T + UPerHead + BoundaryLoss</b></td><td>EXP-015</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>80.21%</td><td>92.48%</td><td>74.18%</td><td>✗ (−78%)</td><td>Highest FP32 F1; see §2.1</td></tr>
+  <tr><td><b>PIDNet-S</b></td><td>EXP-008</td><td>P2</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>76.17%</td><td>93.25%</td><td>71.03%</td><td>✓</td><td>Best INT8-stable model</td></tr>
+  <tr><td><b>SegNeXt-S</b></td><td>EXP-010</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>80</td><td>72.33%</td><td>92.40%</td><td>66.83%</td><td>✗ (−82%)</td><td>Larger MSCAN-S backbone</td></tr>
+  <tr><td><b>SegNeXt-T</b></td><td>EXP-006</td><td>P2</td><td>5 000</td><td>AdamW</td><td>6e-5</td><td>112</td><td>71.74%</td><td>91.79%</td><td>65.85%</td><td>✗ (−67%)</td><td>Standard LightHamHead</td></tr>
+  <tr><td><b>BiSeNetV2</b></td><td>EXP-009</td><td>P2</td><td>6 000</td><td>SGD</td><td>0.80</td><td>256</td><td>69.06%</td><td>91.09%</td><td>62.91%</td><td>✓</td><td></td></tr>
+  <tr><td><b>STDC2</b></td><td>EXP-007</td><td>P2</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>68.92%</td><td>90.69%</td><td>62.50%</td><td>✓</td><td>Phase 2 baseline</td></tr>
+  <tr><td><b>STDC2</b></td><td>EXP-017</td><td>P2.5</td><td>3 000</td><td>SGD</td><td>0.267</td><td>320</td><td>—</td><td>—</td><td>+1.99% vs P2</td><td>✓</td><td>Pipeline fix verification</td></tr>
+  <tr><td><b>PIDNet-S</b></td><td>EXP-018</td><td>P2.5</td><td>5 000</td><td>SGD</td><td>0.133</td><td>320</td><td>—</td><td>—</td><td>−6.30% vs P2</td><td>✓</td><td>Pipeline fix — Q regression</td></tr>
 </table>
+<p><em>Q-score = challenge server quality score (FP32 ONNX submission). Val F1/mIoU are from the
+mmseg evaluator / post-export ONNX eval. Phase 2.5 F1/mIoU not separately recorded; only
+Q-score delta vs Phase 2 was measured.</em></p>
 
 <h3>2.1 SegNeXt-T + UPerHead — EXP-015</h3>
 <div class="note">
