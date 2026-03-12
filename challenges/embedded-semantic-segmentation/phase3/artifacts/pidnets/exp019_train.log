@@ -1,0 +1,1681 @@
+2026/03/11 19:24:58 - mmengine - INFO - 
+------------------------------------------------------------
+System environment:
+    sys.platform: linux
+    Python: 3.11.15 | packaged by conda-forge | (main, Mar  5 2026, 16:45:40) [GCC 14.3.0]
+    CUDA available: True
+    MUSA available: False
+    numpy_random_seed: 42
+    GPU 0,1: NVIDIA RTX A6000
+    CUDA_HOME: /usr/local/cuda
+    NVCC: Cuda compilation tools, release 12.1, V12.1.105
+    GCC: gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0
+    PyTorch: 2.1.2+cu121
+    PyTorch compiling details: PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.1.1 (Git Hash 64f6bcbcbab628e96f33a62c3e975f8535a7bde4)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 12.1
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90
+  - CuDNN 8.9.2
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.1, CUDNN_VERSION=8.9.2, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-unused-private-field -Wno-aligned-allocation-unavailable -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_DISABLE_GPU_ASSERTS=ON, TORCH_VERSION=2.1.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+    TorchVision: 0.16.2+cu121
+    OpenCV: 4.10.0
+    MMEngine: 0.10.7
+
+Runtime environment:
+    cudnn_benchmark: True
+    mp_cfg: {'mp_start_method': 'fork', 'opencv_num_threads': 0}
+    dist_cfg: {'backend': 'nccl'}
+    seed: 42
+    Distributed launcher: pytorch
+    Distributed training: True
+    GPU number: 2
+------------------------------------------------------------
+
+2026/03/11 19:24:59 - mmengine - INFO - Config:
+DATA_ROOT = '/home/farms/lars_linked/'
+DB_PATH = 'challenges/common/external-dataset-analysis/shared_data/copypaste_candidates.db'
+checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth'
+crop_size = (
+    384,
+    768,
+)
+custom_imports = dict(
+    allow_failed_imports=False,
+    imports=[
+        'challenges.embedded-semantic-segmentation.phase3.datasets.lars_dataset',
+        'challenges.embedded-semantic-segmentation.phase3.pipelines',
+    ])
+default_hooks = dict(
+    checkpoint=dict(
+        by_epoch=False,
+        interval=4000,
+        rule='greater',
+        save_best='mIoU',
+        type='CheckpointHook'),
+    logger=dict(interval=50, log_metric_by_epoch=False, type='LoggerHook'),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    timer=dict(type='IterTimerHook'),
+    visualization=dict(draw=True, interval=5, type='SegVisualizationHook'))
+default_scope = 'mmseg'
+env_cfg = dict(
+    cudnn_benchmark=True,
+    dist_cfg=dict(backend='nccl'),
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
+img_scale = (
+    768,
+    384,
+)
+iters = 8000
+launcher = 'pytorch'
+load_from = None
+log_level = 'INFO'
+model = dict(
+    backbone=dict(
+        act_cfg=dict(inplace=True, type='ReLU'),
+        align_corners=False,
+        channels=32,
+        in_channels=3,
+        init_cfg=dict(
+            checkpoint=
+            'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth',
+            type='Pretrained'),
+        norm_cfg=dict(requires_grad=True, type='SyncBN'),
+        num_branch_blocks=3,
+        num_stem_blocks=2,
+        ppm_channels=96,
+        type='PIDNet'),
+    data_preprocessor=dict(
+        bgr_to_rgb=True,
+        mean=[
+            123.675,
+            116.28,
+            103.53,
+        ],
+        pad_val=0,
+        seg_pad_val=255,
+        size=(
+            384,
+            768,
+        ),
+        std=[
+            58.395,
+            57.12,
+            57.375,
+        ],
+        type='SegDataPreProcessor'),
+    decode_head=dict(
+        act_cfg=dict(inplace=True, type='ReLU'),
+        align_corners=True,
+        channels=128,
+        in_channels=128,
+        loss_decode=[
+            dict(loss_weight=0.4, type='CrossEntropyLoss', use_sigmoid=False),
+            dict(
+                loss_weight=1.0,
+                min_kept=32768,
+                thres=0.9,
+                type='OhemCrossEntropy'),
+            dict(loss_weight=20.0, type='BoundaryLoss'),
+            dict(
+                loss_weight=1.0,
+                min_kept=32768,
+                thres=0.9,
+                type='OhemCrossEntropy'),
+        ],
+        norm_cfg=dict(requires_grad=True, type='SyncBN'),
+        num_classes=3,
+        type='PIDHead'),
+    test_cfg=dict(mode='whole'),
+    train_cfg=dict(),
+    type='EncoderDecoder')
+norm_cfg = dict(requires_grad=True, type='SyncBN')
+optim_wrapper = dict(
+    optimizer=dict(lr=0.133, momentum=0.9, type='SGD', weight_decay=0.0005),
+    type='OptimWrapper')
+param_scheduler = [
+    dict(
+        begin=0, by_epoch=False, end=1500, start_factor=0.001,
+        type='LinearLR'),
+    dict(
+        begin=1500,
+        by_epoch=False,
+        end=8000,
+        eta_min=0.0,
+        power=0.9,
+        type='PolyLR'),
+]
+pidnet_train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(
+        keep_ratio=True,
+        ratio_range=(
+            0.5,
+            2.0,
+        ),
+        scale=(
+            768,
+            384,
+        ),
+        type='RandomResize'),
+    dict(cat_max_ratio=0.75, crop_size=(
+        384,
+        768,
+    ), type='RandomCrop'),
+    dict(prob=0.5, type='RandomFlip'),
+    dict(
+        boundary_blur_radius=2,
+        db_path=
+        'challenges/common/external-dataset-analysis/shared_data/copypaste_candidates.db',
+        match_brightness=True,
+        n_paste=(
+            1,
+            3,
+        ),
+        prefer_waterline_prob=0.3,
+        prob_apply=0.7,
+        scale_range=(
+            0.5,
+            1.5,
+        ),
+        type='CopyPasteObstacles'),
+    dict(
+        brightness_delta=77,
+        contrast_range=(
+            0.6,
+            1.5,
+        ),
+        gamma_prob=0.3,
+        gamma_range=(
+            0.6,
+            1.6,
+        ),
+        hue_delta=27,
+        saturation_range=(
+            0.6,
+            1.5,
+        ),
+        type='EnhancedPhotoMetricDistortion'),
+    dict(seg_pad_val=255, size=(
+        384,
+        768,
+    ), type='ReflectPad'),
+    dict(edge_width=4, type='GenerateEdgeMasked'),
+    dict(
+        meta_keys=(
+            'img_path',
+            'seg_map_path',
+            'ori_shape',
+            'img_shape',
+            'pad_shape',
+            'scale_factor',
+            'flip',
+            'flip_direction',
+            'reduce_zero_label',
+            'img_padding_size',
+        ),
+        type='PackSegInputs'),
+]
+randomness = dict(seed=42)
+resume = False
+test_cfg = dict(type='TestLoop')
+test_dataloader = dict(
+    batch_size=1,
+    dataset=dict(
+        ann_file='image_list.txt',
+        data_prefix=dict(img_path='images', seg_map_path='semantic_masks'),
+        data_root='/home/farms/lars_linked/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(keep_ratio=True, scale=(
+                768,
+                384,
+            ), type='Resize'),
+            dict(center=True, size=(
+                384,
+                768,
+            ), type='ReflectPad'),
+            dict(type='LoadAnnotations'),
+            dict(
+                meta_keys=(
+                    'img_path',
+                    'seg_map_path',
+                    'ori_shape',
+                    'img_shape',
+                    'pad_shape',
+                    'scale_factor',
+                    'flip',
+                    'flip_direction',
+                    'reduce_zero_label',
+                    'img_padding_size',
+                ),
+                type='PackSegInputs'),
+        ],
+        type='LaRSDataset'),
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(shuffle=False, type='DefaultSampler'))
+test_evaluator = dict(
+    iou_metrics=[
+        'mIoU',
+    ], type='IoUMetric')
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(keep_ratio=True, scale=(
+        768,
+        384,
+    ), type='Resize'),
+    dict(center=True, size=(
+        384,
+        768,
+    ), type='ReflectPad'),
+    dict(type='LoadAnnotations'),
+    dict(
+        meta_keys=(
+            'img_path',
+            'seg_map_path',
+            'ori_shape',
+            'img_shape',
+            'pad_shape',
+            'scale_factor',
+            'flip',
+            'flip_direction',
+            'reduce_zero_label',
+            'img_padding_size',
+        ),
+        type='PackSegInputs'),
+]
+train_cfg = dict(max_iters=8000, type='IterBasedTrainLoop', val_interval=500)
+train_dataloader = dict(
+    batch_size=160,
+    dataset=dict(
+        ann_file='image_list.txt',
+        data_prefix=dict(img_path='images', seg_map_path='semantic_masks'),
+        data_root='/home/farms/lars_linked/train',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(type='LoadAnnotations'),
+            dict(
+                keep_ratio=True,
+                ratio_range=(
+                    0.5,
+                    2.0,
+                ),
+                scale=(
+                    768,
+                    384,
+                ),
+                type='RandomResize'),
+            dict(
+                cat_max_ratio=0.75, crop_size=(
+                    384,
+                    768,
+                ), type='RandomCrop'),
+            dict(prob=0.5, type='RandomFlip'),
+            dict(
+                boundary_blur_radius=2,
+                db_path=
+                'challenges/common/external-dataset-analysis/shared_data/copypaste_candidates.db',
+                match_brightness=True,
+                n_paste=(
+                    1,
+                    3,
+                ),
+                prefer_waterline_prob=0.3,
+                prob_apply=0.7,
+                scale_range=(
+                    0.5,
+                    1.5,
+                ),
+                type='CopyPasteObstacles'),
+            dict(
+                brightness_delta=77,
+                contrast_range=(
+                    0.6,
+                    1.5,
+                ),
+                gamma_prob=0.3,
+                gamma_range=(
+                    0.6,
+                    1.6,
+                ),
+                hue_delta=27,
+                saturation_range=(
+                    0.6,
+                    1.5,
+                ),
+                type='EnhancedPhotoMetricDistortion'),
+            dict(seg_pad_val=255, size=(
+                384,
+                768,
+            ), type='ReflectPad'),
+            dict(edge_width=4, type='GenerateEdgeMasked'),
+            dict(
+                meta_keys=(
+                    'img_path',
+                    'seg_map_path',
+                    'ori_shape',
+                    'img_shape',
+                    'pad_shape',
+                    'scale_factor',
+                    'flip',
+                    'flip_direction',
+                    'reduce_zero_label',
+                    'img_padding_size',
+                ),
+                type='PackSegInputs'),
+        ],
+        type='LaRSDataset'),
+    num_workers=8,
+    persistent_workers=True,
+    pin_memory=False,
+    sampler=dict(shuffle=True, type='InfiniteSampler'))
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations'),
+    dict(
+        keep_ratio=True,
+        ratio_range=(
+            0.5,
+            2.0,
+        ),
+        scale=(
+            768,
+            384,
+        ),
+        type='RandomResize'),
+    dict(cat_max_ratio=0.75, crop_size=(
+        384,
+        768,
+    ), type='RandomCrop'),
+    dict(prob=0.5, type='RandomFlip'),
+    dict(
+        boundary_blur_radius=2,
+        db_path=
+        'challenges/common/external-dataset-analysis/shared_data/copypaste_candidates.db',
+        match_brightness=True,
+        n_paste=(
+            1,
+            3,
+        ),
+        prefer_waterline_prob=0.3,
+        prob_apply=0.7,
+        scale_range=(
+            0.5,
+            1.5,
+        ),
+        type='CopyPasteObstacles'),
+    dict(
+        brightness_delta=77,
+        contrast_range=(
+            0.6,
+            1.5,
+        ),
+        gamma_prob=0.3,
+        gamma_range=(
+            0.6,
+            1.6,
+        ),
+        hue_delta=27,
+        saturation_range=(
+            0.6,
+            1.5,
+        ),
+        type='EnhancedPhotoMetricDistortion'),
+    dict(seg_pad_val=255, size=(
+        384,
+        768,
+    ), type='ReflectPad'),
+    dict(
+        meta_keys=(
+            'img_path',
+            'seg_map_path',
+            'ori_shape',
+            'img_shape',
+            'pad_shape',
+            'scale_factor',
+            'flip',
+            'flip_direction',
+            'reduce_zero_label',
+            'img_padding_size',
+        ),
+        type='PackSegInputs'),
+]
+val_cfg = dict(type='ValLoop')
+val_dataloader = dict(
+    batch_size=1,
+    dataset=dict(
+        ann_file='image_list.txt',
+        data_prefix=dict(img_path='images', seg_map_path='semantic_masks'),
+        data_root='/home/farms/lars_linked/val',
+        pipeline=[
+            dict(type='LoadImageFromFile'),
+            dict(keep_ratio=True, scale=(
+                768,
+                384,
+            ), type='Resize'),
+            dict(center=True, size=(
+                384,
+                768,
+            ), type='ReflectPad'),
+            dict(type='LoadAnnotations'),
+            dict(
+                meta_keys=(
+                    'img_path',
+                    'seg_map_path',
+                    'ori_shape',
+                    'img_shape',
+                    'pad_shape',
+                    'scale_factor',
+                    'flip',
+                    'flip_direction',
+                    'reduce_zero_label',
+                    'img_padding_size',
+                ),
+                type='PackSegInputs'),
+        ],
+        type='LaRSDataset'),
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(shuffle=False, type='DefaultSampler'))
+val_evaluator = dict(
+    iou_metrics=[
+        'mIoU',
+    ], type='IoUMetric')
+vis_backends = [
+    dict(type='LocalVisBackend'),
+    dict(
+        init_kwargs=dict(
+            entity='little_farms',
+            name='phase3_pidnets',
+            project='embedded_segmentation_macvi2026'),
+        type='WandbVisBackend'),
+]
+visualizer = dict(
+    alpha=0.8,
+    type='MacViSegVisualizer',
+    vis_backends=[
+        dict(type='LocalVisBackend'),
+        dict(
+            init_kwargs=dict(
+                entity='little_farms',
+                name='phase3_pidnets',
+                project='embedded_segmentation_macvi2026'),
+            type='WandbVisBackend'),
+    ])
+work_dir = '/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase3/pidnets'
+
+2026/03/11 19:25:06 - mmengine - INFO - Hooks will be executed in the following order:
+before_run:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+before_train:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_train_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) DistSamplerSeedHook                
+ -------------------- 
+before_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_train_iter:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) SegVisualizationHook               
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_train_epoch:
+(NORMAL      ) IterTimerHook                      
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_val:
+(VERY_HIGH   ) RuntimeInfoHook                    
+ -------------------- 
+before_val_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_val_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_val_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) SegVisualizationHook               
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_val_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+(LOW         ) ParamSchedulerHook                 
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+after_val:
+(VERY_HIGH   ) RuntimeInfoHook                    
+ -------------------- 
+after_train:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(VERY_LOW    ) CheckpointHook                     
+ -------------------- 
+before_test:
+(VERY_HIGH   ) RuntimeInfoHook                    
+ -------------------- 
+before_test_epoch:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+before_test_iter:
+(NORMAL      ) IterTimerHook                      
+ -------------------- 
+after_test_iter:
+(NORMAL      ) IterTimerHook                      
+(NORMAL      ) SegVisualizationHook               
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_test_epoch:
+(VERY_HIGH   ) RuntimeInfoHook                    
+(NORMAL      ) IterTimerHook                      
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+after_test:
+(VERY_HIGH   ) RuntimeInfoHook                    
+ -------------------- 
+after_run:
+(BELOW_NORMAL) LoggerHook                         
+ -------------------- 
+2026/03/11 19:25:08 - mmengine - WARNING - The prefix is not set in metric class IoUMetric.
+2026/03/11 19:25:10 - mmengine - INFO - Loads checkpoint by http backend from path: https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/pidnet/pidnet-s_imagenet1k_20230306-715e6273.pth
+Name of parameter - Initialization information
+
+backbone.stem.0.conv.weight - torch.Size([32, 3, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.0.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.0.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.1.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.1.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.1.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv1.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv1.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv1.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv2.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv2.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.0.conv2.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv1.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv1.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv1.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv2.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv2.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.2.1.conv2.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv1.conv.weight - torch.Size([64, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.downsample.conv.weight - torch.Size([64, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.downsample.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.0.downsample.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv1.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.stem.4.1.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv1.conv.weight - torch.Size([128, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv1.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv1.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv2.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv2.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.conv2.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.downsample.conv.weight - torch.Size([128, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.downsample.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.0.downsample.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv1.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv1.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv1.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv2.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv2.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.1.conv2.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv1.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv1.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv1.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv2.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv2.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.0.2.conv2.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv1.conv.weight - torch.Size([256, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv1.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv1.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv2.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.conv2.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.downsample.conv.weight - torch.Size([256, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.downsample.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.0.downsample.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv1.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv1.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv2.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.1.conv2.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv1.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv1.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv1.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv2.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.1.2.conv2.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv1.conv.weight - torch.Size([256, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv1.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv1.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv2.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv2.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv3.conv.weight - torch.Size([512, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv3.bn.weight - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.conv3.bn.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.downsample.conv.weight - torch.Size([512, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.downsample.bn.weight - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.0.downsample.bn.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv1.conv.weight - torch.Size([256, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv1.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv1.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv2.conv.weight - torch.Size([256, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv2.bn.weight - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv2.bn.bias - torch.Size([256]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv3.conv.weight - torch.Size([512, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv3.bn.weight - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.i_branch_layers.2.1.conv3.bn.bias - torch.Size([512]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv1.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.0.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv1.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.0.1.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv1.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.0.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv1.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.1.1.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv1.conv.weight - torch.Size([64, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv3.conv.weight - torch.Size([128, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv3.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.conv3.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.downsample.conv.weight - torch.Size([128, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.downsample.bn.weight - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.p_branch_layers.2.0.downsample.bn.bias - torch.Size([128]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_1.conv.weight - torch.Size([64, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_1.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_1.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_2.conv.weight - torch.Size([64, 256, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_2.bn.weight - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.compression_2.bn.bias - torch.Size([64]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_i.conv.weight - torch.Size([32, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_i.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_i.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_p.conv.weight - torch.Size([32, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_p.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_1.f_p.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_i.conv.weight - torch.Size([32, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_i.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_i.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_p.conv.weight - torch.Size([32, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_p.bn.weight - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.pag_2.f_p.bn.bias - torch.Size([32]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.0.conv1.conv.weight - torch.Size([32, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.0.conv1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.0.conv1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.0.conv2.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.0.conv2.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.0.conv2.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.0.downsample.conv.weight - torch.Size([32, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.0.downsample.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.0.downsample.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv1.conv.weight - torch.Size([32, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.1.0.conv1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv2.conv.weight - torch.Size([32, 32, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.1.0.conv2.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv2.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv3.conv.weight - torch.Size([64, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.1.0.conv3.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.conv3.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.downsample.conv.weight - torch.Size([64, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.1.0.downsample.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.1.0.downsample.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv1.conv.weight - torch.Size([64, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.2.0.conv1.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv1.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv2.conv.weight - torch.Size([64, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.2.0.conv2.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv2.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv3.conv.weight - torch.Size([128, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.2.0.conv3.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.conv3.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.downsample.conv.weight - torch.Size([128, 64, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.d_branch_layers.2.0.downsample.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.d_branch_layers.2.0.downsample.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.diff_1.conv.weight - torch.Size([32, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.diff_1.bn.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.diff_1.bn.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.diff_2.conv.weight - torch.Size([64, 256, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.diff_2.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.diff_2.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.0.conv.weight - torch.Size([96, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.scales.0.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.0.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.1.1.conv.weight - torch.Size([96, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.scales.1.1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.1.1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.2.1.conv.weight - torch.Size([96, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.scales.2.1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.2.1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.3.1.conv.weight - torch.Size([96, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.scales.3.1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.3.1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.4.1.conv.weight - torch.Size([96, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.scales.4.1.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.scales.4.1.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.processes.conv.weight - torch.Size([384, 96, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.processes.bn.weight - torch.Size([384]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.processes.bn.bias - torch.Size([384]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.compression.conv.weight - torch.Size([128, 480, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.compression.bn.weight - torch.Size([480]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.compression.bn.bias - torch.Size([480]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.shortcut.conv.weight - torch.Size([128, 512, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.spp.shortcut.bn.weight - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.spp.shortcut.bn.bias - torch.Size([512]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.dfm.f_p.conv.weight - torch.Size([128, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.dfm.f_p.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.dfm.f_p.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.dfm.f_i.conv.weight - torch.Size([128, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDNet  
+
+backbone.dfm.f_i.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+backbone.dfm.f_i.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.conv_seg.weight - torch.Size([3, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.conv_seg.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.i_head.conv.conv.weight - torch.Size([128, 128, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.i_head.conv.bn.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.i_head.conv.bn.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.i_head.norm.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.i_head.norm.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.p_head.conv.conv.weight - torch.Size([128, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.p_head.conv.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.p_head.conv.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.p_head.norm.weight - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.p_head.norm.bias - torch.Size([128]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.d_head.conv.conv.weight - torch.Size([32, 64, 3, 3]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.d_head.conv.bn.weight - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.d_head.conv.bn.bias - torch.Size([64]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.d_head.norm.weight - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.d_head.norm.bias - torch.Size([32]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.p_cls_seg.weight - torch.Size([3, 128, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.p_cls_seg.bias - torch.Size([3]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+
+decode_head.d_cls_seg.weight - torch.Size([1, 32, 1, 1]): 
+Initialized by user-defined `init_weights` in PIDHead  
+
+decode_head.d_cls_seg.bias - torch.Size([1]): 
+The value is the same before and after calling `init_weights` of EncoderDecoder  
+2026/03/11 19:25:10 - mmengine - WARNING - "FileClient" will be deprecated in future. Please use io functions in https://mmengine.readthedocs.io/en/latest/api/fileio.html#file-io
+2026/03/11 19:25:10 - mmengine - WARNING - "HardDiskBackend" is the alias of "LocalBackend" and the former will be deprecated in future.
+2026/03/11 19:25:10 - mmengine - INFO - Checkpoints will be saved to /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase3/pidnets.
+2026/03/11 19:26:29 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 19:26:29 - mmengine - INFO - Epoch(train) [1][17/17]  lr: 1.5512e-03  eta: 10:17:54  time: 2.6384  data_time: 0.8847  memory: 33843  loss: 9.5738  decode.loss_sem_p: 1.2115  decode.loss_sem_i: 3.4206  decode.loss_bd: 1.3785  decode.loss_sem_bd: 3.5632  decode.acc_seg: 86.6386
+2026/03/11 19:27:56 - mmengine - INFO - Epoch(train) [1][50/17]  lr: 4.4762e-03  eta: 7:20:20  time: 2.6677  data_time: 0.8724  memory: 33791  loss: 2.2037  decode.loss_sem_p: 0.2704  decode.loss_sem_i: 0.7039  decode.loss_bd: 0.5370  decode.loss_sem_bd: 0.6925  decode.acc_seg: 95.4114
+2026/03/11 19:30:09 - mmengine - INFO - Epoch(train) [1][100/17]  lr: 8.9081e-03  eta: 6:33:42  time: 2.7293  data_time: 0.8539  memory: 33759  loss: 1.6531  decode.loss_sem_p: 0.1176  decode.loss_sem_i: 0.5737  decode.loss_bd: 0.3702  decode.loss_sem_bd: 0.5915  decode.acc_seg: 96.7794
+2026/03/11 19:32:22 - mmengine - INFO - Epoch(train) [1][150/17]  lr: 1.3340e-02  eta: 6:17:13  time: 2.7212  data_time: 0.9591  memory: 33746  loss: 1.5492  decode.loss_sem_p: 0.0875  decode.loss_sem_i: 0.5668  decode.loss_bd: 0.3188  decode.loss_sem_bd: 0.5760  decode.acc_seg: 97.2757
+2026/03/11 19:34:30 - mmengine - INFO - Epoch(train) [1][200/17]  lr: 1.7772e-02  eta: 6:04:16  time: 2.5389  data_time: 0.7194  memory: 33758  loss: 1.4817  decode.loss_sem_p: 0.0689  decode.loss_sem_i: 0.5592  decode.loss_bd: 0.2800  decode.loss_sem_bd: 0.5736  decode.acc_seg: 97.2860
+2026/03/11 19:36:39 - mmengine - INFO - Epoch(train) [1][250/17]  lr: 2.2204e-02  eta: 5:56:16  time: 2.6404  data_time: 0.8090  memory: 33736  loss: 1.4163  decode.loss_sem_p: 0.0560  decode.loss_sem_i: 0.5525  decode.loss_bd: 0.2538  decode.loss_sem_bd: 0.5541  decode.acc_seg: 97.7333
+2026/03/11 19:38:48 - mmengine - INFO - Epoch(train) [1][300/17]  lr: 2.6635e-02  eta: 5:49:48  time: 2.5569  data_time: 0.7490  memory: 33764  loss: 1.5589  decode.loss_sem_p: 0.1076  decode.loss_sem_i: 0.5691  decode.loss_bd: 0.3280  decode.loss_sem_bd: 0.5541  decode.acc_seg: 96.7896
+2026/03/11 19:40:57 - mmengine - INFO - Epoch(train) [1][350/17]  lr: 3.1067e-02  eta: 5:44:49  time: 2.5365  data_time: 0.8584  memory: 33742  loss: 1.4294  decode.loss_sem_p: 0.0620  decode.loss_sem_i: 0.5466  decode.loss_bd: 0.2703  decode.loss_sem_bd: 0.5505  decode.acc_seg: 97.8805
+2026/03/11 19:43:02 - mmengine - INFO - Epoch(train) [1][400/17]  lr: 3.5499e-02  eta: 5:39:30  time: 2.4995  data_time: 0.7185  memory: 33744  loss: 1.4131  decode.loss_sem_p: 0.0577  decode.loss_sem_i: 0.5484  decode.loss_bd: 0.2506  decode.loss_sem_bd: 0.5565  decode.acc_seg: 97.8703
+2026/03/11 19:45:09 - mmengine - INFO - Epoch(train) [1][450/17]  lr: 3.9931e-02  eta: 5:35:15  time: 2.6216  data_time: 0.8229  memory: 33730  loss: 1.3739  decode.loss_sem_p: 0.0501  decode.loss_sem_i: 0.5317  decode.loss_bd: 0.2456  decode.loss_sem_bd: 0.5465  decode.acc_seg: 98.1211
+2026/03/11 19:47:14 - mmengine - INFO - Epoch(train) [1][500/17]  lr: 4.4363e-02  eta: 5:31:06  time: 2.4347  data_time: 0.6742  memory: 33743  loss: 1.3739  decode.loss_sem_p: 0.0492  decode.loss_sem_i: 0.5381  decode.loss_bd: 0.2302  decode.loss_sem_bd: 0.5565  decode.acc_seg: 98.0020
+2026/03/11 19:48:21 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:01  time: 1.3072  data_time: 1.2768  memory: 266  
+2026/03/11 19:49:06 - mmengine - INFO - per class results:
+2026/03/11 19:49:06 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 92.51 | 95.68 |
+|  water   | 97.39 | 98.89 |
+|   sky    | 97.66 | 98.82 |
++----------+-------+-------+
+2026/03/11 19:49:06 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 98.1000  mIoU: 95.8500  mAcc: 97.8000  data_time: 1.1012  time: 1.1301
+2026/03/11 19:49:07 - mmengine - INFO - The best checkpoint with 95.8500 mIoU at 500 iter is saved to best_mIoU_iter_500.pth.
+2026/03/11 19:51:11 - mmengine - INFO - Epoch(train) [1][550/17]  lr: 4.8795e-02  eta: 5:27:04  time: 2.5203  data_time: 0.7557  memory: 33752  loss: 1.7270  decode.loss_sem_p: 0.0895  decode.loss_sem_i: 0.7094  decode.loss_bd: 0.3299  decode.loss_sem_bd: 0.5982  decode.acc_seg: 86.1723
+2026/03/11 19:53:17 - mmengine - INFO - Epoch(train) [1][600/17]  lr: 5.3227e-02  eta: 5:23:50  time: 2.4692  data_time: 0.7603  memory: 33968  loss: 2.1340  decode.loss_sem_p: 0.2331  decode.loss_sem_i: 0.6039  decode.loss_bd: 0.6471  decode.loss_sem_bd: 0.6498  decode.acc_seg: 86.6242
+2026/03/11 19:55:24 - mmengine - INFO - Epoch(train) [1][650/17]  lr: 5.7658e-02  eta: 5:20:44  time: 2.5515  data_time: 0.8042  memory: 33810  loss: 2.0236  decode.loss_sem_p: 0.2185  decode.loss_sem_i: 0.5759  decode.loss_bd: 0.6077  decode.loss_sem_bd: 0.6215  decode.acc_seg: 86.8389
+2026/03/11 19:57:31 - mmengine - INFO - Epoch(train) [1][700/17]  lr: 6.2090e-02  eta: 5:17:56  time: 2.5204  data_time: 0.7666  memory: 33793  loss: 1.9458  decode.loss_sem_p: 0.2019  decode.loss_sem_i: 0.5810  decode.loss_bd: 0.5533  decode.loss_sem_bd: 0.6097  decode.acc_seg: 89.4692
+2026/03/11 19:59:37 - mmengine - INFO - Epoch(train) [1][750/17]  lr: 6.6522e-02  eta: 5:15:04  time: 2.4680  data_time: 0.7405  memory: 33777  loss: 1.8748  decode.loss_sem_p: 0.1846  decode.loss_sem_i: 0.5580  decode.loss_bd: 0.5362  decode.loss_sem_bd: 0.5959  decode.acc_seg: 90.2539
+2026/03/11 20:01:44 - mmengine - INFO - Epoch(train) [1][800/17]  lr: 7.0954e-02  eta: 5:12:20  time: 2.4998  data_time: 0.7579  memory: 33822  loss: 1.9318  decode.loss_sem_p: 0.1985  decode.loss_sem_i: 0.5895  decode.loss_bd: 0.5411  decode.loss_sem_bd: 0.6028  decode.acc_seg: 89.3748
+2026/03/11 20:03:51 - mmengine - INFO - Epoch(train) [1][850/17]  lr: 7.5386e-02  eta: 5:09:43  time: 2.5654  data_time: 0.8299  memory: 33807  loss: 1.8562  decode.loss_sem_p: 0.1833  decode.loss_sem_i: 0.5663  decode.loss_bd: 0.5099  decode.loss_sem_bd: 0.5968  decode.acc_seg: 91.0949
+2026/03/11 20:05:58 - mmengine - INFO - Epoch(train) [1][900/17]  lr: 7.9818e-02  eta: 5:07:13  time: 2.5362  data_time: 0.7581  memory: 33773  loss: 1.7711  decode.loss_sem_p: 0.1643  decode.loss_sem_i: 0.5455  decode.loss_bd: 0.4754  decode.loss_sem_bd: 0.5859  decode.acc_seg: 92.4572
+2026/03/11 20:08:05 - mmengine - INFO - Epoch(train) [1][950/17]  lr: 8.4250e-02  eta: 5:04:39  time: 2.5402  data_time: 0.8575  memory: 33773  loss: 1.7191  decode.loss_sem_p: 0.1379  decode.loss_sem_i: 0.5390  decode.loss_bd: 0.4594  decode.loss_sem_bd: 0.5827  decode.acc_seg: 91.6348
+2026/03/11 20:10:11 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 20:10:11 - mmengine - INFO - Epoch(train) [1][1000/17]  lr: 8.8681e-02  eta: 5:02:03  time: 2.4678  data_time: 0.7238  memory: 33770  loss: 1.7353  decode.loss_sem_p: 0.1370  decode.loss_sem_i: 0.5612  decode.loss_bd: 0.4538  decode.loss_sem_bd: 0.5833  decode.acc_seg: 91.4209
+2026/03/11 20:11:16 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:00  time: 1.2706  data_time: 1.2536  memory: 255  
+2026/03/11 20:12:00 - mmengine - INFO - per class results:
+2026/03/11 20:12:00 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 81.61 | 89.83 |
+|  water   | 92.33 | 95.72 |
+|   sky    | 95.43 | 98.28 |
++----------+-------+-------+
+2026/03/11 20:12:00 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 94.9600  mIoU: 89.7900  mAcc: 94.6100  data_time: 1.0750  time: 1.0952
+2026/03/11 20:14:04 - mmengine - INFO - Epoch(train) [1][1050/17]  lr: 9.3113e-02  eta: 4:59:15  time: 2.5485  data_time: 0.7921  memory: 33790  loss: 1.8283  decode.loss_sem_p: 0.1674  decode.loss_sem_i: 0.5727  decode.loss_bd: 0.4995  decode.loss_sem_bd: 0.5887  decode.acc_seg: 92.6564
+2026/03/11 20:16:09 - mmengine - INFO - Epoch(train) [1][1100/17]  lr: 9.7545e-02  eta: 4:56:38  time: 2.4270  data_time: 0.7257  memory: 33805  loss: 1.7908  decode.loss_sem_p: 0.1491  decode.loss_sem_i: 0.5687  decode.loss_bd: 0.4820  decode.loss_sem_bd: 0.5911  decode.acc_seg: 92.8103
+2026/03/11 20:18:15 - mmengine - INFO - Epoch(train) [1][1150/17]  lr: 1.0198e-01  eta: 4:54:10  time: 2.4307  data_time: 0.7485  memory: 33782  loss: 1.7095  decode.loss_sem_p: 0.1322  decode.loss_sem_i: 0.5464  decode.loss_bd: 0.4499  decode.loss_sem_bd: 0.5810  decode.acc_seg: 92.4195
+2026/03/11 20:20:21 - mmengine - INFO - Epoch(train) [1][1200/17]  lr: 1.0641e-01  eta: 4:51:47  time: 2.6059  data_time: 0.8245  memory: 33837  loss: 1.6658  decode.loss_sem_p: 0.1226  decode.loss_sem_i: 0.5414  decode.loss_bd: 0.4289  decode.loss_sem_bd: 0.5729  decode.acc_seg: 93.3880
+2026/03/11 20:22:27 - mmengine - INFO - Epoch(train) [1][1250/17]  lr: 1.1084e-01  eta: 4:49:24  time: 2.5666  data_time: 0.8836  memory: 33758  loss: 1.6337  decode.loss_sem_p: 0.1123  decode.loss_sem_i: 0.5488  decode.loss_bd: 0.4044  decode.loss_sem_bd: 0.5683  decode.acc_seg: 93.7361
+2026/03/11 20:24:32 - mmengine - INFO - Epoch(train) [1][1300/17]  lr: 1.1527e-01  eta: 4:46:59  time: 2.5354  data_time: 0.6945  memory: 33744  loss: 1.6148  decode.loss_sem_p: 0.1061  decode.loss_sem_i: 0.5429  decode.loss_bd: 0.3969  decode.loss_sem_bd: 0.5690  decode.acc_seg: 94.8365
+2026/03/11 20:26:37 - mmengine - INFO - Epoch(train) [1][1350/17]  lr: 1.1970e-01  eta: 4:44:33  time: 2.4857  data_time: 0.7782  memory: 33768  loss: 1.6445  decode.loss_sem_p: 0.1211  decode.loss_sem_i: 0.5350  decode.loss_bd: 0.4084  decode.loss_sem_bd: 0.5800  decode.acc_seg: 94.7623
+2026/03/11 20:28:42 - mmengine - INFO - Epoch(train) [1][1400/17]  lr: 1.2414e-01  eta: 4:42:09  time: 2.4873  data_time: 0.8211  memory: 33745  loss: 1.6498  decode.loss_sem_p: 0.1121  decode.loss_sem_i: 0.5559  decode.loss_bd: 0.4122  decode.loss_sem_bd: 0.5697  decode.acc_seg: 94.2057
+2026/03/11 20:30:49 - mmengine - INFO - Epoch(train) [1][1450/17]  lr: 1.2857e-01  eta: 4:39:53  time: 2.5806  data_time: 0.8066  memory: 33760  loss: 1.5713  decode.loss_sem_p: 0.0981  decode.loss_sem_i: 0.5317  decode.loss_bd: 0.3748  decode.loss_sem_bd: 0.5666  decode.acc_seg: 94.9795
+2026/03/11 20:32:55 - mmengine - INFO - Epoch(train) [1][1500/17]  lr: 1.3300e-01  eta: 4:37:36  time: 2.4767  data_time: 0.7529  memory: 33762  loss: 1.5874  decode.loss_sem_p: 0.0963  decode.loss_sem_i: 0.5639  decode.loss_bd: 0.3637  decode.loss_sem_bd: 0.5636  decode.acc_seg: 95.4433
+2026/03/11 20:34:12 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:11  time: 1.4417  data_time: 1.4244  memory: 254  
+2026/03/11 20:34:56 - mmengine - INFO - per class results:
+2026/03/11 20:34:56 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 83.62 | 93.09 |
+|  water   | 93.21 | 95.27 |
+|   sky    | 95.55 | 98.08 |
++----------+-------+-------+
+2026/03/11 20:34:56 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 95.4700  mIoU: 90.7900  mAcc: 95.4800  data_time: 1.1908  time: 1.2111
+2026/03/11 20:36:59 - mmengine - INFO - Epoch(train) [1][1550/17]  lr: 1.3210e-01  eta: 4:35:06  time: 2.4798  data_time: 0.7630  memory: 33761  loss: 1.5540  decode.loss_sem_p: 0.0878  decode.loss_sem_i: 0.5417  decode.loss_bd: 0.3561  decode.loss_sem_bd: 0.5683  decode.acc_seg: 95.6202
+2026/03/11 20:39:05 - mmengine - INFO - Epoch(train) [1][1600/17]  lr: 1.3118e-01  eta: 4:32:50  time: 2.4295  data_time: 0.7763  memory: 33762  loss: 1.6057  decode.loss_sem_p: 0.1001  decode.loss_sem_i: 0.5350  decode.loss_bd: 0.3967  decode.loss_sem_bd: 0.5740  decode.acc_seg: 95.3331
+2026/03/11 20:41:13 - mmengine - INFO - Epoch(train) [1][1650/17]  lr: 1.3025e-01  eta: 4:30:42  time: 2.5377  data_time: 0.8493  memory: 33751  loss: 1.5317  decode.loss_sem_p: 0.0872  decode.loss_sem_i: 0.5287  decode.loss_bd: 0.3634  decode.loss_sem_bd: 0.5524  decode.acc_seg: 96.0213
+2026/03/11 20:43:19 - mmengine - INFO - Epoch(train) [1][1700/17]  lr: 1.2933e-01  eta: 4:28:26  time: 2.4829  data_time: 0.7391  memory: 33750  loss: 1.5360  decode.loss_sem_p: 0.0842  decode.loss_sem_i: 0.5392  decode.loss_bd: 0.3451  decode.loss_sem_bd: 0.5674  decode.acc_seg: 95.8459
+2026/03/11 20:45:24 - mmengine - INFO - Epoch(train) [1][1750/17]  lr: 1.2840e-01  eta: 4:26:10  time: 2.4887  data_time: 0.7871  memory: 33759  loss: 1.5275  decode.loss_sem_p: 0.0818  decode.loss_sem_i: 0.5413  decode.loss_bd: 0.3441  decode.loss_sem_bd: 0.5604  decode.acc_seg: 96.4314
+2026/03/11 20:47:30 - mmengine - INFO - Epoch(train) [1][1800/17]  lr: 1.2748e-01  eta: 4:23:56  time: 2.5006  data_time: 0.8063  memory: 33745  loss: 1.4709  decode.loss_sem_p: 0.0768  decode.loss_sem_i: 0.5203  decode.loss_bd: 0.3251  decode.loss_sem_bd: 0.5487  decode.acc_seg: 96.6647
+2026/03/11 20:49:36 - mmengine - INFO - Epoch(train) [1][1850/17]  lr: 1.2655e-01  eta: 4:21:41  time: 2.5978  data_time: 0.8799  memory: 33734  loss: 1.4640  decode.loss_sem_p: 0.0758  decode.loss_sem_i: 0.5305  decode.loss_bd: 0.3090  decode.loss_sem_bd: 0.5488  decode.acc_seg: 96.8135
+2026/03/11 20:51:40 - mmengine - INFO - Epoch(train) [1][1900/17]  lr: 1.2563e-01  eta: 4:19:23  time: 2.4684  data_time: 0.7451  memory: 33764  loss: 1.4754  decode.loss_sem_p: 0.0752  decode.loss_sem_i: 0.5355  decode.loss_bd: 0.3133  decode.loss_sem_bd: 0.5513  decode.acc_seg: 96.8333
+2026/03/11 20:53:45 - mmengine - INFO - Epoch(train) [1][1950/17]  lr: 1.2470e-01  eta: 4:17:07  time: 2.4586  data_time: 0.7754  memory: 33736  loss: 1.5009  decode.loss_sem_p: 0.0798  decode.loss_sem_i: 0.5433  decode.loss_bd: 0.3186  decode.loss_sem_bd: 0.5592  decode.acc_seg: 96.4764
+2026/03/11 20:55:51 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 20:55:51 - mmengine - INFO - Epoch(train) [1][2000/17]  lr: 1.2377e-01  eta: 4:14:55  time: 2.5534  data_time: 0.8316  memory: 33738  loss: 1.4754  decode.loss_sem_p: 0.0729  decode.loss_sem_i: 0.5346  decode.loss_bd: 0.3087  decode.loss_sem_bd: 0.5592  decode.acc_seg: 96.6865
+2026/03/11 20:56:55 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:00  time: 1.2992  data_time: 1.2804  memory: 255  
+2026/03/11 20:57:40 - mmengine - INFO - per class results:
+2026/03/11 20:57:40 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 85.31 | 93.83 |
+|  water   | 94.17 | 96.46 |
+|   sky    | 93.33 | 95.87 |
++----------+-------+-------+
+2026/03/11 20:57:40 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 95.6700  mIoU: 90.9400  mAcc: 95.3900  data_time: 1.0767  time: 1.0963
+2026/03/11 20:59:44 - mmengine - INFO - Epoch(train) [1][2050/17]  lr: 1.2284e-01  eta: 4:12:37  time: 2.5579  data_time: 0.8716  memory: 33719  loss: 1.4676  decode.loss_sem_p: 0.0693  decode.loss_sem_i: 0.5495  decode.loss_bd: 0.2950  decode.loss_sem_bd: 0.5538  decode.acc_seg: 96.9854
+2026/03/11 21:01:50 - mmengine - INFO - Epoch(train) [1][2100/17]  lr: 1.2191e-01  eta: 4:10:23  time: 2.4455  data_time: 0.7088  memory: 33751  loss: 1.4529  decode.loss_sem_p: 0.0696  decode.loss_sem_i: 0.5363  decode.loss_bd: 0.2953  decode.loss_sem_bd: 0.5517  decode.acc_seg: 97.0842
+2026/03/11 21:03:54 - mmengine - INFO - Epoch(train) [1][2150/17]  lr: 1.2098e-01  eta: 4:08:09  time: 2.4917  data_time: 0.7908  memory: 33724  loss: 1.4507  decode.loss_sem_p: 0.0765  decode.loss_sem_i: 0.5233  decode.loss_bd: 0.3048  decode.loss_sem_bd: 0.5461  decode.acc_seg: 97.4116
+2026/03/11 21:06:00 - mmengine - INFO - Epoch(train) [1][2200/17]  lr: 1.2005e-01  eta: 4:05:57  time: 2.4976  data_time: 0.7318  memory: 33753  loss: 1.4449  decode.loss_sem_p: 0.0729  decode.loss_sem_i: 0.5341  decode.loss_bd: 0.2929  decode.loss_sem_bd: 0.5449  decode.acc_seg: 96.9644
+2026/03/11 21:08:05 - mmengine - INFO - Epoch(train) [1][2250/17]  lr: 1.1912e-01  eta: 4:03:44  time: 2.4652  data_time: 0.8041  memory: 33764  loss: 1.4389  decode.loss_sem_p: 0.0704  decode.loss_sem_i: 0.5311  decode.loss_bd: 0.2927  decode.loss_sem_bd: 0.5448  decode.acc_seg: 96.7448
+2026/03/11 21:10:10 - mmengine - INFO - Epoch(train) [1][2300/17]  lr: 1.1819e-01  eta: 4:01:33  time: 2.5622  data_time: 0.8669  memory: 33752  loss: 1.4284  decode.loss_sem_p: 0.0693  decode.loss_sem_i: 0.5307  decode.loss_bd: 0.2843  decode.loss_sem_bd: 0.5442  decode.acc_seg: 97.2349
+2026/03/11 21:12:17 - mmengine - INFO - Epoch(train) [1][2350/17]  lr: 1.1726e-01  eta: 3:59:24  time: 2.6553  data_time: 0.8585  memory: 33757  loss: 1.4208  decode.loss_sem_p: 0.0643  decode.loss_sem_i: 0.5389  decode.loss_bd: 0.2685  decode.loss_sem_bd: 0.5490  decode.acc_seg: 97.5014
+2026/03/11 21:14:22 - mmengine - INFO - Epoch(train) [1][2400/17]  lr: 1.1632e-01  eta: 3:57:12  time: 2.5081  data_time: 0.8273  memory: 33754  loss: 1.4122  decode.loss_sem_p: 0.0655  decode.loss_sem_i: 0.5318  decode.loss_bd: 0.2692  decode.loss_sem_bd: 0.5457  decode.acc_seg: 97.6229
+2026/03/11 21:16:28 - mmengine - INFO - Epoch(train) [1][2450/17]  lr: 1.1539e-01  eta: 3:55:04  time: 2.5829  data_time: 0.8378  memory: 33751  loss: 1.3974  decode.loss_sem_p: 0.0632  decode.loss_sem_i: 0.5124  decode.loss_bd: 0.2768  decode.loss_sem_bd: 0.5450  decode.acc_seg: 97.7510
+2026/03/11 21:18:33 - mmengine - INFO - Epoch(train) [1][2500/17]  lr: 1.1445e-01  eta: 3:52:53  time: 2.5089  data_time: 0.8319  memory: 33733  loss: 1.4139  decode.loss_sem_p: 0.0636  decode.loss_sem_i: 0.5310  decode.loss_bd: 0.2714  decode.loss_sem_bd: 0.5480  decode.acc_seg: 97.7863
+2026/03/11 21:19:46 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:07  time: 1.6429  data_time: 1.6237  memory: 255  
+2026/03/11 21:20:31 - mmengine - INFO - per class results:
+2026/03/11 21:20:31 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 88.49 | 91.48 |
+|  water   | 95.43 | 98.96 |
+|   sky    | 97.07 | 98.34 |
++----------+-------+-------+
+2026/03/11 21:20:31 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 96.9900  mIoU: 93.6600  mAcc: 96.2600  data_time: 1.1505  time: 1.1706
+2026/03/11 21:22:36 - mmengine - INFO - Epoch(train) [1][2550/17]  lr: 1.1351e-01  eta: 3:50:42  time: 2.5847  data_time: 0.7780  memory: 33734  loss: 1.4204  decode.loss_sem_p: 0.0684  decode.loss_sem_i: 0.5171  decode.loss_bd: 0.2851  decode.loss_sem_bd: 0.5498  decode.acc_seg: 97.3943
+2026/03/11 21:24:43 - mmengine - INFO - Epoch(train) [1][2600/17]  lr: 1.1258e-01  eta: 3:48:36  time: 2.4295  data_time: 0.7217  memory: 33731  loss: 1.3606  decode.loss_sem_p: 0.0608  decode.loss_sem_i: 0.4968  decode.loss_bd: 0.2621  decode.loss_sem_bd: 0.5409  decode.acc_seg: 97.7066
+2026/03/11 21:26:51 - mmengine - INFO - Epoch(train) [1][2650/17]  lr: 1.1164e-01  eta: 3:46:29  time: 2.5376  data_time: 0.7772  memory: 33726  loss: 1.3761  decode.loss_sem_p: 0.0607  decode.loss_sem_i: 0.5195  decode.loss_bd: 0.2533  decode.loss_sem_bd: 0.5427  decode.acc_seg: 97.4088
+2026/03/11 21:28:57 - mmengine - INFO - Epoch(train) [1][2700/17]  lr: 1.1070e-01  eta: 3:44:21  time: 2.5308  data_time: 0.7598  memory: 33731  loss: 1.3805  decode.loss_sem_p: 0.0629  decode.loss_sem_i: 0.5190  decode.loss_bd: 0.2561  decode.loss_sem_bd: 0.5425  decode.acc_seg: 97.8581
+2026/03/11 21:31:04 - mmengine - INFO - Epoch(train) [1][2750/17]  lr: 1.0976e-01  eta: 3:42:14  time: 2.5725  data_time: 0.8161  memory: 33737  loss: 1.3899  decode.loss_sem_p: 0.0646  decode.loss_sem_i: 0.5218  decode.loss_bd: 0.2632  decode.loss_sem_bd: 0.5403  decode.acc_seg: 97.6899
+2026/03/11 21:33:09 - mmengine - INFO - Epoch(train) [1][2800/17]  lr: 1.0882e-01  eta: 3:40:04  time: 2.4791  data_time: 0.7547  memory: 33719  loss: 1.3538  decode.loss_sem_p: 0.0569  decode.loss_sem_i: 0.5019  decode.loss_bd: 0.2490  decode.loss_sem_bd: 0.5461  decode.acc_seg: 97.9380
+2026/03/11 21:35:16 - mmengine - INFO - Epoch(train) [1][2850/17]  lr: 1.0787e-01  eta: 3:37:56  time: 2.5471  data_time: 0.7737  memory: 33754  loss: 1.3624  decode.loss_sem_p: 0.0571  decode.loss_sem_i: 0.5159  decode.loss_bd: 0.2473  decode.loss_sem_bd: 0.5421  decode.acc_seg: 98.0436
+2026/03/11 21:37:22 - mmengine - INFO - Epoch(train) [1][2900/17]  lr: 1.0693e-01  eta: 3:35:48  time: 2.6085  data_time: 0.7716  memory: 33738  loss: 1.4014  decode.loss_sem_p: 0.0634  decode.loss_sem_i: 0.5363  decode.loss_bd: 0.2601  decode.loss_sem_bd: 0.5416  decode.acc_seg: 97.4496
+2026/03/11 21:39:29 - mmengine - INFO - Epoch(train) [1][2950/17]  lr: 1.0599e-01  eta: 3:33:40  time: 2.6469  data_time: 0.8107  memory: 33728  loss: 1.3966  decode.loss_sem_p: 0.0609  decode.loss_sem_i: 0.5384  decode.loss_bd: 0.2496  decode.loss_sem_bd: 0.5476  decode.acc_seg: 97.1474
+2026/03/11 21:41:34 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 21:41:34 - mmengine - INFO - Epoch(train) [1][3000/17]  lr: 1.0504e-01  eta: 3:31:32  time: 2.5403  data_time: 0.7933  memory: 33728  loss: 1.3804  decode.loss_sem_p: 0.0592  decode.loss_sem_i: 0.5290  decode.loss_bd: 0.2483  decode.loss_sem_bd: 0.5439  decode.acc_seg: 97.9562
+2026/03/11 21:42:38 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:00:58  time: 1.2628  data_time: 1.2449  memory: 255  
+2026/03/11 21:43:23 - mmengine - INFO - per class results:
+2026/03/11 21:43:23 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 86.01 | 93.03 |
+|  water   |  94.7 | 96.33 |
+|   sky    | 94.69 | 98.57 |
++----------+-------+-------+
+2026/03/11 21:43:23 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 96.1100  mIoU: 91.8000  mAcc: 95.9800  data_time: 1.0647  time: 1.0833
+2026/03/11 21:45:27 - mmengine - INFO - Epoch(train) [1][3050/17]  lr: 1.0410e-01  eta: 3:29:20  time: 2.5322  data_time: 0.7569  memory: 33739  loss: 1.3588  decode.loss_sem_p: 0.0600  decode.loss_sem_i: 0.5090  decode.loss_bd: 0.2552  decode.loss_sem_bd: 0.5347  decode.acc_seg: 97.6811
+2026/03/11 21:47:33 - mmengine - INFO - Epoch(train) [1][3100/17]  lr: 1.0315e-01  eta: 3:27:12  time: 2.4843  data_time: 0.8527  memory: 33733  loss: 1.3742  decode.loss_sem_p: 0.0579  decode.loss_sem_i: 0.5257  decode.loss_bd: 0.2440  decode.loss_sem_bd: 0.5466  decode.acc_seg: 97.5915
+2026/03/11 21:49:40 - mmengine - INFO - Epoch(train) [1][3150/17]  lr: 1.0220e-01  eta: 3:25:05  time: 2.5563  data_time: 0.8098  memory: 33723  loss: 1.3654  decode.loss_sem_p: 0.0547  decode.loss_sem_i: 0.5269  decode.loss_bd: 0.2379  decode.loss_sem_bd: 0.5458  decode.acc_seg: 97.9849
+2026/03/11 21:51:46 - mmengine - INFO - Epoch(train) [1][3200/17]  lr: 1.0125e-01  eta: 3:22:57  time: 2.5004  data_time: 0.7611  memory: 33739  loss: 1.3571  decode.loss_sem_p: 0.0563  decode.loss_sem_i: 0.5214  decode.loss_bd: 0.2429  decode.loss_sem_bd: 0.5366  decode.acc_seg: 98.2212
+2026/03/11 21:53:51 - mmengine - INFO - Epoch(train) [1][3250/17]  lr: 1.0030e-01  eta: 3:20:48  time: 2.5189  data_time: 0.8630  memory: 33719  loss: 1.3814  decode.loss_sem_p: 0.0572  decode.loss_sem_i: 0.5386  decode.loss_bd: 0.2452  decode.loss_sem_bd: 0.5405  decode.acc_seg: 98.0632
+2026/03/11 21:55:57 - mmengine - INFO - Epoch(train) [1][3300/17]  lr: 9.9352e-02  eta: 3:18:40  time: 2.5218  data_time: 0.8001  memory: 33746  loss: 1.3917  decode.loss_sem_p: 0.0584  decode.loss_sem_i: 0.5478  decode.loss_bd: 0.2441  decode.loss_sem_bd: 0.5413  decode.acc_seg: 97.5084
+2026/03/11 21:58:02 - mmengine - INFO - Epoch(train) [1][3350/17]  lr: 9.8401e-02  eta: 3:16:31  time: 2.5312  data_time: 0.7899  memory: 33722  loss: 1.3428  decode.loss_sem_p: 0.0532  decode.loss_sem_i: 0.5259  decode.loss_bd: 0.2283  decode.loss_sem_bd: 0.5355  decode.acc_seg: 98.1894
+2026/03/11 22:00:08 - mmengine - INFO - Epoch(train) [1][3400/17]  lr: 9.7448e-02  eta: 3:14:22  time: 2.5601  data_time: 0.8927  memory: 33751  loss: 1.3496  decode.loss_sem_p: 0.0504  decode.loss_sem_i: 0.5333  decode.loss_bd: 0.2229  decode.loss_sem_bd: 0.5430  decode.acc_seg: 98.2443
+2026/03/11 22:02:13 - mmengine - INFO - Epoch(train) [1][3450/17]  lr: 9.6494e-02  eta: 3:12:13  time: 2.4303  data_time: 0.7803  memory: 33719  loss: 1.3644  decode.loss_sem_p: 0.0579  decode.loss_sem_i: 0.5146  decode.loss_bd: 0.2486  decode.loss_sem_bd: 0.5433  decode.acc_seg: 97.6481
+2026/03/11 22:04:18 - mmengine - INFO - Epoch(train) [1][3500/17]  lr: 9.5539e-02  eta: 3:10:05  time: 2.5272  data_time: 0.8354  memory: 33705  loss: 1.3530  decode.loss_sem_p: 0.0556  decode.loss_sem_i: 0.5254  decode.loss_bd: 0.2347  decode.loss_sem_bd: 0.5373  decode.acc_seg: 97.8473
+2026/03/11 22:05:27 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:04  time: 1.2116  data_time: 1.1926  memory: 255  
+2026/03/11 22:06:12 - mmengine - INFO - per class results:
+2026/03/11 22:06:12 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 89.61 | 95.03 |
+|  water   | 96.09 | 98.15 |
+|   sky    | 96.77 | 97.57 |
++----------+-------+-------+
+2026/03/11 22:06:12 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.2500  mIoU: 94.1600  mAcc: 96.9200  data_time: 1.1123  time: 1.1337
+2026/03/11 22:08:15 - mmengine - INFO - Epoch(train) [1][3550/17]  lr: 9.4583e-02  eta: 3:07:54  time: 2.5426  data_time: 0.8786  memory: 33704  loss: 1.3394  decode.loss_sem_p: 0.0519  decode.loss_sem_i: 0.5162  decode.loss_bd: 0.2321  decode.loss_sem_bd: 0.5392  decode.acc_seg: 98.0558
+2026/03/11 22:10:22 - mmengine - INFO - Epoch(train) [1][3600/17]  lr: 9.3626e-02  eta: 3:05:48  time: 2.5539  data_time: 0.8452  memory: 33724  loss: 1.3709  decode.loss_sem_p: 0.0533  decode.loss_sem_i: 0.5364  decode.loss_bd: 0.2385  decode.loss_sem_bd: 0.5428  decode.acc_seg: 97.7483
+2026/03/11 22:12:28 - mmengine - INFO - Epoch(train) [1][3650/17]  lr: 9.2668e-02  eta: 3:03:40  time: 2.5160  data_time: 0.8413  memory: 33730  loss: 1.3538  decode.loss_sem_p: 0.0517  decode.loss_sem_i: 0.5362  decode.loss_bd: 0.2283  decode.loss_sem_bd: 0.5377  decode.acc_seg: 97.8318
+2026/03/11 22:14:35 - mmengine - INFO - Epoch(train) [1][3700/17]  lr: 9.1709e-02  eta: 3:01:33  time: 2.5351  data_time: 0.8383  memory: 33744  loss: 1.3486  decode.loss_sem_p: 0.0519  decode.loss_sem_i: 0.5299  decode.loss_bd: 0.2285  decode.loss_sem_bd: 0.5383  decode.acc_seg: 98.1195
+2026/03/11 22:16:41 - mmengine - INFO - Epoch(train) [1][3750/17]  lr: 9.0749e-02  eta: 2:59:26  time: 2.5137  data_time: 0.8339  memory: 33726  loss: 1.3366  decode.loss_sem_p: 0.0536  decode.loss_sem_i: 0.5148  decode.loss_bd: 0.2329  decode.loss_sem_bd: 0.5354  decode.acc_seg: 98.1057
+2026/03/11 22:18:46 - mmengine - INFO - Epoch(train) [1][3800/17]  lr: 8.9787e-02  eta: 2:57:18  time: 2.4938  data_time: 0.7675  memory: 33731  loss: 1.3285  decode.loss_sem_p: 0.0508  decode.loss_sem_i: 0.5227  decode.loss_bd: 0.2206  decode.loss_sem_bd: 0.5344  decode.acc_seg: 98.0567
+2026/03/11 22:20:52 - mmengine - INFO - Epoch(train) [1][3850/17]  lr: 8.8825e-02  eta: 2:55:10  time: 2.5315  data_time: 0.7935  memory: 33730  loss: 1.3453  decode.loss_sem_p: 0.0517  decode.loss_sem_i: 0.5280  decode.loss_bd: 0.2237  decode.loss_sem_bd: 0.5420  decode.acc_seg: 98.1880
+2026/03/11 22:22:58 - mmengine - INFO - Epoch(train) [1][3900/17]  lr: 8.7861e-02  eta: 2:53:03  time: 2.5190  data_time: 0.8170  memory: 33731  loss: 1.3284  decode.loss_sem_p: 0.0512  decode.loss_sem_i: 0.5266  decode.loss_bd: 0.2143  decode.loss_sem_bd: 0.5363  decode.acc_seg: 98.2223
+2026/03/11 22:25:04 - mmengine - INFO - Epoch(train) [1][3950/17]  lr: 8.6896e-02  eta: 2:50:56  time: 2.5612  data_time: 0.8318  memory: 33720  loss: 1.3233  decode.loss_sem_p: 0.0513  decode.loss_sem_i: 0.5221  decode.loss_bd: 0.2152  decode.loss_sem_bd: 0.5348  decode.acc_seg: 98.3201
+2026/03/11 22:27:09 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 22:27:09 - mmengine - INFO - Epoch(train) [1][4000/17]  lr: 8.5930e-02  eta: 2:48:48  time: 2.4642  data_time: 0.7391  memory: 33760  loss: 1.3531  decode.loss_sem_p: 0.0540  decode.loss_sem_i: 0.5334  decode.loss_bd: 0.2264  decode.loss_sem_bd: 0.5394  decode.acc_seg: 97.7796
+2026/03/11 22:27:09 - mmengine - INFO - Saving checkpoint at 4000 iterations
+2026/03/11 22:28:16 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:00:59  time: 1.2666  data_time: 1.2475  memory: 255  
+2026/03/11 22:29:04 - mmengine - INFO - per class results:
+2026/03/11 22:29:04 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 89.08 | 94.23 |
+|  water   | 95.81 | 97.82 |
+|   sky    | 97.12 | 98.61 |
++----------+-------+-------+
+2026/03/11 22:29:04 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.1600  mIoU: 94.0000  mAcc: 96.8900  data_time: 1.1071  time: 1.1259
+2026/03/11 22:31:07 - mmengine - INFO - Epoch(train) [1][4050/17]  lr: 8.4962e-02  eta: 2:46:38  time: 2.4870  data_time: 0.8419  memory: 33730  loss: 1.3458  decode.loss_sem_p: 0.0497  decode.loss_sem_i: 0.5350  decode.loss_bd: 0.2158  decode.loss_sem_bd: 0.5454  decode.acc_seg: 98.2839
+2026/03/11 22:33:12 - mmengine - INFO - Epoch(train) [1][4100/17]  lr: 8.3994e-02  eta: 2:44:30  time: 2.4250  data_time: 0.7995  memory: 33740  loss: 1.3328  decode.loss_sem_p: 0.0518  decode.loss_sem_i: 0.5208  decode.loss_bd: 0.2248  decode.loss_sem_bd: 0.5354  decode.acc_seg: 98.3149
+2026/03/11 22:35:17 - mmengine - INFO - Epoch(train) [1][4150/17]  lr: 8.3024e-02  eta: 2:42:22  time: 2.4600  data_time: 0.7582  memory: 33743  loss: 1.3246  decode.loss_sem_p: 0.0488  decode.loss_sem_i: 0.5252  decode.loss_bd: 0.2147  decode.loss_sem_bd: 0.5359  decode.acc_seg: 98.3816
+2026/03/11 22:37:23 - mmengine - INFO - Epoch(train) [1][4200/17]  lr: 8.2053e-02  eta: 2:40:15  time: 2.4792  data_time: 0.8243  memory: 33722  loss: 1.3585  decode.loss_sem_p: 0.0493  decode.loss_sem_i: 0.5449  decode.loss_bd: 0.2213  decode.loss_sem_bd: 0.5431  decode.acc_seg: 98.4368
+2026/03/11 22:39:28 - mmengine - INFO - Epoch(train) [1][4250/17]  lr: 8.1081e-02  eta: 2:38:07  time: 2.5174  data_time: 0.7859  memory: 33724  loss: 1.3081  decode.loss_sem_p: 0.0479  decode.loss_sem_i: 0.5164  decode.loss_bd: 0.2097  decode.loss_sem_bd: 0.5341  decode.acc_seg: 98.4289
+2026/03/11 22:41:34 - mmengine - INFO - Epoch(train) [1][4300/17]  lr: 8.0107e-02  eta: 2:36:00  time: 2.4922  data_time: 0.7745  memory: 33753  loss: 1.3351  decode.loss_sem_p: 0.0487  decode.loss_sem_i: 0.5362  decode.loss_bd: 0.2101  decode.loss_sem_bd: 0.5402  decode.acc_seg: 98.4141
+2026/03/11 22:43:39 - mmengine - INFO - Epoch(train) [1][4350/17]  lr: 7.9132e-02  eta: 2:33:53  time: 2.5370  data_time: 0.8561  memory: 33730  loss: 1.3155  decode.loss_sem_p: 0.0463  decode.loss_sem_i: 0.5283  decode.loss_bd: 0.2055  decode.loss_sem_bd: 0.5355  decode.acc_seg: 98.5053
+2026/03/11 22:45:45 - mmengine - INFO - Epoch(train) [1][4400/17]  lr: 7.8156e-02  eta: 2:31:45  time: 2.4583  data_time: 0.8261  memory: 33743  loss: 1.3556  decode.loss_sem_p: 0.0513  decode.loss_sem_i: 0.5444  decode.loss_bd: 0.2163  decode.loss_sem_bd: 0.5436  decode.acc_seg: 98.0467
+2026/03/11 22:47:51 - mmengine - INFO - Epoch(train) [1][4450/17]  lr: 7.7178e-02  eta: 2:29:39  time: 2.4987  data_time: 0.7820  memory: 33730  loss: 1.3491  decode.loss_sem_p: 0.0514  decode.loss_sem_i: 0.5285  decode.loss_bd: 0.2251  decode.loss_sem_bd: 0.5441  decode.acc_seg: 98.4609
+2026/03/11 22:49:57 - mmengine - INFO - Epoch(train) [1][4500/17]  lr: 7.6199e-02  eta: 2:27:32  time: 2.4646  data_time: 0.7107  memory: 33734  loss: 1.3156  decode.loss_sem_p: 0.0451  decode.loss_sem_i: 0.5296  decode.loss_bd: 0.2030  decode.loss_sem_bd: 0.5379  decode.acc_seg: 98.2822
+2026/03/11 22:51:01 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:00:59  time: 1.2157  data_time: 1.1943  memory: 255  
+2026/03/11 22:51:46 - mmengine - INFO - per class results:
+2026/03/11 22:51:46 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 90.26 |  94.5 |
+|  water   | 96.77 | 98.94 |
+|   sky    | 96.29 | 97.34 |
++----------+-------+-------+
+2026/03/11 22:51:46 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.4600  mIoU: 94.4400  mAcc: 96.9300  data_time: 1.0749  time: 1.0944
+2026/03/11 22:53:50 - mmengine - INFO - Epoch(train) [1][4550/17]  lr: 7.5219e-02  eta: 2:25:23  time: 2.5661  data_time: 0.7916  memory: 33762  loss: 1.3240  decode.loss_sem_p: 0.0456  decode.loss_sem_i: 0.5300  decode.loss_bd: 0.2110  decode.loss_sem_bd: 0.5374  decode.acc_seg: 98.4128
+2026/03/11 22:55:56 - mmengine - INFO - Epoch(train) [1][4600/17]  lr: 7.4237e-02  eta: 2:23:16  time: 2.5311  data_time: 0.9026  memory: 33720  loss: 1.3061  decode.loss_sem_p: 0.0467  decode.loss_sem_i: 0.5190  decode.loss_bd: 0.2046  decode.loss_sem_bd: 0.5358  decode.acc_seg: 98.3116
+2026/03/11 22:58:01 - mmengine - INFO - Epoch(train) [1][4650/17]  lr: 7.3254e-02  eta: 2:21:09  time: 2.4869  data_time: 0.8009  memory: 33738  loss: 1.3550  decode.loss_sem_p: 0.0506  decode.loss_sem_i: 0.5439  decode.loss_bd: 0.2159  decode.loss_sem_bd: 0.5446  decode.acc_seg: 98.1914
+2026/03/11 23:00:05 - mmengine - INFO - Epoch(train) [1][4700/17]  lr: 7.2269e-02  eta: 2:19:01  time: 2.4511  data_time: 0.7175  memory: 33731  loss: 1.3158  decode.loss_sem_p: 0.0479  decode.loss_sem_i: 0.5180  decode.loss_bd: 0.2143  decode.loss_sem_bd: 0.5356  decode.acc_seg: 98.2688
+2026/03/11 23:02:11 - mmengine - INFO - Epoch(train) [1][4750/17]  lr: 7.1283e-02  eta: 2:16:54  time: 2.5677  data_time: 0.7788  memory: 33740  loss: 1.3010  decode.loss_sem_p: 0.0436  decode.loss_sem_i: 0.5239  decode.loss_bd: 0.1975  decode.loss_sem_bd: 0.5361  decode.acc_seg: 98.5414
+2026/03/11 23:04:16 - mmengine - INFO - Epoch(train) [1][4800/17]  lr: 7.0295e-02  eta: 2:14:47  time: 2.4496  data_time: 0.8149  memory: 33743  loss: 1.2930  decode.loss_sem_p: 0.0474  decode.loss_sem_i: 0.5087  decode.loss_bd: 0.2039  decode.loss_sem_bd: 0.5329  decode.acc_seg: 98.4631
+2026/03/11 23:06:22 - mmengine - INFO - Epoch(train) [1][4850/17]  lr: 6.9306e-02  eta: 2:12:40  time: 2.4878  data_time: 0.8224  memory: 33736  loss: 1.3116  decode.loss_sem_p: 0.0459  decode.loss_sem_i: 0.5293  decode.loss_bd: 0.1971  decode.loss_sem_bd: 0.5393  decode.acc_seg: 98.2694
+2026/03/11 23:08:27 - mmengine - INFO - Epoch(train) [1][4900/17]  lr: 6.8315e-02  eta: 2:10:33  time: 2.4443  data_time: 0.7619  memory: 33729  loss: 1.3039  decode.loss_sem_p: 0.0464  decode.loss_sem_i: 0.5283  decode.loss_bd: 0.1984  decode.loss_sem_bd: 0.5308  decode.acc_seg: 98.3321
+2026/03/11 23:10:34 - mmengine - INFO - Epoch(train) [1][4950/17]  lr: 6.7322e-02  eta: 2:08:27  time: 2.5848  data_time: 0.8251  memory: 33726  loss: 1.2988  decode.loss_sem_p: 0.0432  decode.loss_sem_i: 0.5252  decode.loss_bd: 0.1938  decode.loss_sem_bd: 0.5366  decode.acc_seg: 98.3339
+2026/03/11 23:12:39 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 23:12:39 - mmengine - INFO - Epoch(train) [1][5000/17]  lr: 6.6328e-02  eta: 2:06:20  time: 2.5254  data_time: 0.7999  memory: 33730  loss: 1.2869  decode.loss_sem_p: 0.0434  decode.loss_sem_i: 0.5216  decode.loss_bd: 0.1895  decode.loss_sem_bd: 0.5324  decode.acc_seg: 98.5966
+2026/03/11 23:13:46 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:02  time: 1.2602  data_time: 1.2428  memory: 255  
+2026/03/11 23:14:31 - mmengine - INFO - per class results:
+2026/03/11 23:14:31 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 90.85 | 94.08 |
+|  water   | 96.92 | 98.85 |
+|   sky    | 97.07 |  98.8 |
++----------+-------+-------+
+2026/03/11 23:14:31 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.6800  mIoU: 94.9500  mAcc: 97.2400  data_time: 1.1064  time: 1.1253
+2026/03/11 23:16:35 - mmengine - INFO - Epoch(train) [1][5050/17]  lr: 6.5333e-02  eta: 2:04:12  time: 2.5431  data_time: 0.8686  memory: 33728  loss: 1.3038  decode.loss_sem_p: 0.0427  decode.loss_sem_i: 0.5238  decode.loss_bd: 0.1945  decode.loss_sem_bd: 0.5428  decode.acc_seg: 98.5229
+2026/03/11 23:18:39 - mmengine - INFO - Epoch(train) [1][5100/17]  lr: 6.4335e-02  eta: 2:02:04  time: 2.4579  data_time: 0.8057  memory: 33746  loss: 1.3020  decode.loss_sem_p: 0.0474  decode.loss_sem_i: 0.5196  decode.loss_bd: 0.2003  decode.loss_sem_bd: 0.5347  decode.acc_seg: 98.3998
+2026/03/11 23:20:45 - mmengine - INFO - Epoch(train) [1][5150/17]  lr: 6.3336e-02  eta: 1:59:58  time: 2.5477  data_time: 0.8736  memory: 33729  loss: 1.3013  decode.loss_sem_p: 0.0423  decode.loss_sem_i: 0.5233  decode.loss_bd: 0.1987  decode.loss_sem_bd: 0.5370  decode.acc_seg: 98.3203
+2026/03/11 23:22:51 - mmengine - INFO - Epoch(train) [1][5200/17]  lr: 6.2335e-02  eta: 1:57:52  time: 2.4810  data_time: 0.7967  memory: 33703  loss: 1.3155  decode.loss_sem_p: 0.0417  decode.loss_sem_i: 0.5362  decode.loss_bd: 0.1941  decode.loss_sem_bd: 0.5435  decode.acc_seg: 98.5247
+2026/03/11 23:24:57 - mmengine - INFO - Epoch(train) [1][5250/17]  lr: 6.1332e-02  eta: 1:55:45  time: 2.5714  data_time: 0.8423  memory: 33713  loss: 1.3066  decode.loss_sem_p: 0.0464  decode.loss_sem_i: 0.5178  decode.loss_bd: 0.2065  decode.loss_sem_bd: 0.5360  decode.acc_seg: 98.6189
+2026/03/11 23:27:03 - mmengine - INFO - Epoch(train) [1][5300/17]  lr: 6.0328e-02  eta: 1:53:39  time: 2.5184  data_time: 0.8439  memory: 33734  loss: 1.3195  decode.loss_sem_p: 0.0466  decode.loss_sem_i: 0.5342  decode.loss_bd: 0.2006  decode.loss_sem_bd: 0.5380  decode.acc_seg: 98.2918
+2026/03/11 23:29:09 - mmengine - INFO - Epoch(train) [1][5350/17]  lr: 5.9321e-02  eta: 1:51:32  time: 2.5469  data_time: 0.8270  memory: 33734  loss: 1.2965  decode.loss_sem_p: 0.0476  decode.loss_sem_i: 0.5111  decode.loss_bd: 0.2037  decode.loss_sem_bd: 0.5341  decode.acc_seg: 98.2466
+2026/03/11 23:31:14 - mmengine - INFO - Epoch(train) [1][5400/17]  lr: 5.8313e-02  eta: 1:49:25  time: 2.4730  data_time: 0.8323  memory: 33725  loss: 1.3090  decode.loss_sem_p: 0.0460  decode.loss_sem_i: 0.5309  decode.loss_bd: 0.1992  decode.loss_sem_bd: 0.5329  decode.acc_seg: 98.4356
+2026/03/11 23:33:20 - mmengine - INFO - Epoch(train) [1][5450/17]  lr: 5.7303e-02  eta: 1:47:19  time: 2.4650  data_time: 0.7272  memory: 33752  loss: 1.2951  decode.loss_sem_p: 0.0427  decode.loss_sem_i: 0.5262  decode.loss_bd: 0.1930  decode.loss_sem_bd: 0.5332  decode.acc_seg: 98.5672
+2026/03/11 23:35:26 - mmengine - INFO - Epoch(train) [1][5500/17]  lr: 5.6291e-02  eta: 1:45:13  time: 2.4997  data_time: 0.7991  memory: 33722  loss: 1.2742  decode.loss_sem_p: 0.0435  decode.loss_sem_i: 0.5097  decode.loss_bd: 0.1880  decode.loss_sem_bd: 0.5329  decode.acc_seg: 98.5517
+2026/03/11 23:36:36 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:04  time: 1.2862  data_time: 1.2647  memory: 255  
+2026/03/11 23:37:20 - mmengine - INFO - per class results:
+2026/03/11 23:37:20 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle |  91.5 | 94.28 |
+|  water   |  96.9 | 99.13 |
+|   sky    | 97.61 | 98.66 |
++----------+-------+-------+
+2026/03/11 23:37:20 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.8400  mIoU: 95.3300  mAcc: 97.3600  data_time: 1.1207  time: 1.1393
+2026/03/11 23:39:23 - mmengine - INFO - Epoch(train) [1][5550/17]  lr: 5.5276e-02  eta: 1:43:05  time: 2.5127  data_time: 0.7941  memory: 33719  loss: 1.3103  decode.loss_sem_p: 0.0466  decode.loss_sem_i: 0.5199  decode.loss_bd: 0.1991  decode.loss_sem_bd: 0.5447  decode.acc_seg: 98.6913
+2026/03/11 23:41:29 - mmengine - INFO - Epoch(train) [1][5600/17]  lr: 5.4260e-02  eta: 1:40:58  time: 2.4832  data_time: 0.8225  memory: 33713  loss: 1.3366  decode.loss_sem_p: 0.0486  decode.loss_sem_i: 0.5442  decode.loss_bd: 0.2088  decode.loss_sem_bd: 0.5350  decode.acc_seg: 97.3883
+2026/03/11 23:43:34 - mmengine - INFO - Epoch(train) [1][5650/17]  lr: 5.3242e-02  eta: 1:38:52  time: 2.4884  data_time: 0.8052  memory: 33713  loss: 1.2814  decode.loss_sem_p: 0.0418  decode.loss_sem_i: 0.5230  decode.loss_bd: 0.1830  decode.loss_sem_bd: 0.5337  decode.acc_seg: 98.6012
+2026/03/11 23:45:40 - mmengine - INFO - Epoch(train) [1][5700/17]  lr: 5.2221e-02  eta: 1:36:45  time: 2.4891  data_time: 0.8436  memory: 33721  loss: 1.2925  decode.loss_sem_p: 0.0394  decode.loss_sem_i: 0.5312  decode.loss_bd: 0.1801  decode.loss_sem_bd: 0.5417  decode.acc_seg: 98.4755
+2026/03/11 23:47:46 - mmengine - INFO - Epoch(train) [1][5750/17]  lr: 5.1198e-02  eta: 1:34:39  time: 2.5881  data_time: 0.8077  memory: 33735  loss: 1.2781  decode.loss_sem_p: 0.0411  decode.loss_sem_i: 0.5171  decode.loss_bd: 0.1847  decode.loss_sem_bd: 0.5351  decode.acc_seg: 98.6400
+2026/03/11 23:49:51 - mmengine - INFO - Epoch(train) [1][5800/17]  lr: 5.0173e-02  eta: 1:32:33  time: 2.5393  data_time: 0.8492  memory: 33701  loss: 1.2835  decode.loss_sem_p: 0.0404  decode.loss_sem_i: 0.5219  decode.loss_bd: 0.1858  decode.loss_sem_bd: 0.5353  decode.acc_seg: 98.5449
+2026/03/11 23:51:56 - mmengine - INFO - Epoch(train) [1][5850/17]  lr: 4.9146e-02  eta: 1:30:26  time: 2.4978  data_time: 0.8177  memory: 33719  loss: 1.3005  decode.loss_sem_p: 0.0395  decode.loss_sem_i: 0.5421  decode.loss_bd: 0.1837  decode.loss_sem_bd: 0.5352  decode.acc_seg: 98.5590
+2026/03/11 23:54:01 - mmengine - INFO - Epoch(train) [1][5900/17]  lr: 4.8116e-02  eta: 1:28:19  time: 2.5146  data_time: 0.8047  memory: 33711  loss: 1.2703  decode.loss_sem_p: 0.0373  decode.loss_sem_i: 0.5228  decode.loss_bd: 0.1766  decode.loss_sem_bd: 0.5335  decode.acc_seg: 98.7231
+2026/03/11 23:56:07 - mmengine - INFO - Epoch(train) [1][5950/17]  lr: 4.7083e-02  eta: 1:26:13  time: 2.5373  data_time: 0.8339  memory: 33713  loss: 1.2540  decode.loss_sem_p: 0.0370  decode.loss_sem_i: 0.5137  decode.loss_bd: 0.1743  decode.loss_sem_bd: 0.5290  decode.acc_seg: 98.8640
+2026/03/11 23:58:13 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/11 23:58:13 - mmengine - INFO - Epoch(train) [1][6000/17]  lr: 4.6049e-02  eta: 1:24:07  time: 2.5204  data_time: 0.8303  memory: 33723  loss: 1.2729  decode.loss_sem_p: 0.0385  decode.loss_sem_i: 0.5260  decode.loss_bd: 0.1749  decode.loss_sem_bd: 0.5335  decode.acc_seg: 98.5828
+2026/03/11 23:59:17 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:00:59  time: 1.1607  data_time: 1.1442  memory: 255  
+2026/03/12 00:00:02 - mmengine - INFO - per class results:
+2026/03/12 00:00:02 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 91.61 | 95.55 |
+|  water   | 97.18 | 98.86 |
+|   sky    | 97.21 | 98.09 |
++----------+-------+-------+
+2026/03/12 00:00:02 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.8600  mIoU: 95.3300  mAcc: 97.5000  data_time: 1.0683  time: 1.0884
+2026/03/12 00:02:05 - mmengine - INFO - Epoch(train) [1][6050/17]  lr: 4.5011e-02  eta: 1:21:59  time: 2.5019  data_time: 0.8281  memory: 33723  loss: 1.2956  decode.loss_sem_p: 0.0413  decode.loss_sem_i: 0.5325  decode.loss_bd: 0.1850  decode.loss_sem_bd: 0.5369  decode.acc_seg: 98.6987
+2026/03/12 00:04:10 - mmengine - INFO - Epoch(train) [1][6100/17]  lr: 4.3971e-02  eta: 1:19:53  time: 2.5552  data_time: 0.8770  memory: 33716  loss: 1.2745  decode.loss_sem_p: 0.0387  decode.loss_sem_i: 0.5285  decode.loss_bd: 0.1775  decode.loss_sem_bd: 0.5298  decode.acc_seg: 98.6188
+2026/03/12 00:06:15 - mmengine - INFO - Epoch(train) [1][6150/17]  lr: 4.2928e-02  eta: 1:17:47  time: 2.4984  data_time: 0.8177  memory: 33724  loss: 1.2767  decode.loss_sem_p: 0.0379  decode.loss_sem_i: 0.5270  decode.loss_bd: 0.1767  decode.loss_sem_bd: 0.5352  decode.acc_seg: 98.7154
+2026/03/12 00:08:21 - mmengine - INFO - Epoch(train) [1][6200/17]  lr: 4.1883e-02  eta: 1:15:40  time: 2.4896  data_time: 0.8162  memory: 33738  loss: 1.2761  decode.loss_sem_p: 0.0410  decode.loss_sem_i: 0.5190  decode.loss_bd: 0.1795  decode.loss_sem_bd: 0.5367  decode.acc_seg: 98.3557
+2026/03/12 00:10:27 - mmengine - INFO - Epoch(train) [1][6250/17]  lr: 4.0834e-02  eta: 1:13:34  time: 2.5731  data_time: 0.7797  memory: 33736  loss: 1.2808  decode.loss_sem_p: 0.0405  decode.loss_sem_i: 0.5227  decode.loss_bd: 0.1847  decode.loss_sem_bd: 0.5329  decode.acc_seg: 98.5512
+2026/03/12 00:12:31 - mmengine - INFO - Epoch(train) [1][6300/17]  lr: 3.9783e-02  eta: 1:11:27  time: 2.4647  data_time: 0.7324  memory: 33730  loss: 1.2873  decode.loss_sem_p: 0.0385  decode.loss_sem_i: 0.5293  decode.loss_bd: 0.1782  decode.loss_sem_bd: 0.5412  decode.acc_seg: 98.5983
+2026/03/12 00:14:35 - mmengine - INFO - Epoch(train) [1][6350/17]  lr: 3.8728e-02  eta: 1:09:21  time: 2.4184  data_time: 0.7943  memory: 33731  loss: 1.2803  decode.loss_sem_p: 0.0383  decode.loss_sem_i: 0.5305  decode.loss_bd: 0.1731  decode.loss_sem_bd: 0.5385  decode.acc_seg: 98.6283
+2026/03/12 00:16:40 - mmengine - INFO - Epoch(train) [1][6400/17]  lr: 3.7670e-02  eta: 1:07:15  time: 2.5039  data_time: 0.7901  memory: 33758  loss: 1.2757  decode.loss_sem_p: 0.0380  decode.loss_sem_i: 0.5276  decode.loss_bd: 0.1717  decode.loss_sem_bd: 0.5384  decode.acc_seg: 98.6732
+2026/03/12 00:18:46 - mmengine - INFO - Epoch(train) [1][6450/17]  lr: 3.6609e-02  eta: 1:05:08  time: 2.4885  data_time: 0.7859  memory: 33756  loss: 1.3325  decode.loss_sem_p: 0.0523  decode.loss_sem_i: 0.5294  decode.loss_bd: 0.2133  decode.loss_sem_bd: 0.5374  decode.acc_seg: 98.2249
+2026/03/12 00:20:50 - mmengine - INFO - Epoch(train) [1][6500/17]  lr: 3.5544e-02  eta: 1:03:02  time: 2.4841  data_time: 0.8359  memory: 33703  loss: 1.3364  decode.loss_sem_p: 0.0455  decode.loss_sem_i: 0.5470  decode.loss_bd: 0.1992  decode.loss_sem_bd: 0.5447  decode.acc_seg: 98.4998
+2026/03/12 00:22:06 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:10  time: 1.2519  data_time: 1.2316  memory: 255  
+2026/03/12 00:22:51 - mmengine - INFO - per class results:
+2026/03/12 00:22:51 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 89.72 | 95.18 |
+|  water   | 96.33 | 98.58 |
+|   sky    | 95.03 |  96.0 |
++----------+-------+-------+
+2026/03/12 00:22:51 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.0900  mIoU: 93.6900  mAcc: 96.5900  data_time: 1.1826  time: 1.2042
+2026/03/12 00:24:54 - mmengine - INFO - Epoch(train) [1][6550/17]  lr: 3.4476e-02  eta: 1:00:55  time: 2.4379  data_time: 0.8253  memory: 33735  loss: 1.2845  decode.loss_sem_p: 0.0443  decode.loss_sem_i: 0.5208  decode.loss_bd: 0.1894  decode.loss_sem_bd: 0.5299  decode.acc_seg: 98.3446
+2026/03/12 00:27:00 - mmengine - INFO - Epoch(train) [1][6600/17]  lr: 3.3405e-02  eta: 0:58:49  time: 2.5488  data_time: 0.8579  memory: 33718  loss: 1.2563  decode.loss_sem_p: 0.0382  decode.loss_sem_i: 0.5129  decode.loss_bd: 0.1730  decode.loss_sem_bd: 0.5323  decode.acc_seg: 98.8042
+2026/03/12 00:29:05 - mmengine - INFO - Epoch(train) [1][6650/17]  lr: 3.2329e-02  eta: 0:56:43  time: 2.5202  data_time: 0.8773  memory: 33723  loss: 1.2814  decode.loss_sem_p: 0.0382  decode.loss_sem_i: 0.5294  decode.loss_bd: 0.1757  decode.loss_sem_bd: 0.5381  decode.acc_seg: 98.7285
+2026/03/12 00:31:10 - mmengine - INFO - Epoch(train) [1][6700/17]  lr: 3.1249e-02  eta: 0:54:37  time: 2.5329  data_time: 0.8337  memory: 33707  loss: 1.2773  decode.loss_sem_p: 0.0365  decode.loss_sem_i: 0.5301  decode.loss_bd: 0.1681  decode.loss_sem_bd: 0.5426  decode.acc_seg: 98.6459
+2026/03/12 00:33:14 - mmengine - INFO - Epoch(train) [1][6750/17]  lr: 3.0165e-02  eta: 0:52:30  time: 2.4942  data_time: 0.8509  memory: 33724  loss: 1.2634  decode.loss_sem_p: 0.0370  decode.loss_sem_i: 0.5273  decode.loss_bd: 0.1640  decode.loss_sem_bd: 0.5351  decode.acc_seg: 98.7948
+2026/03/12 00:35:19 - mmengine - INFO - Epoch(train) [1][6800/17]  lr: 2.9077e-02  eta: 0:50:24  time: 2.5027  data_time: 0.8022  memory: 33728  loss: 1.2368  decode.loss_sem_p: 0.0361  decode.loss_sem_i: 0.5072  decode.loss_bd: 0.1636  decode.loss_sem_bd: 0.5299  decode.acc_seg: 98.9200
+2026/03/12 00:37:24 - mmengine - INFO - Epoch(train) [1][6850/17]  lr: 2.7985e-02  eta: 0:48:18  time: 2.4763  data_time: 0.8423  memory: 33734  loss: 1.2717  decode.loss_sem_p: 0.0380  decode.loss_sem_i: 0.5286  decode.loss_bd: 0.1693  decode.loss_sem_bd: 0.5358  decode.acc_seg: 98.7286
+2026/03/12 00:39:29 - mmengine - INFO - Epoch(train) [1][6900/17]  lr: 2.6887e-02  eta: 0:46:12  time: 2.5078  data_time: 0.8062  memory: 33734  loss: 1.2541  decode.loss_sem_p: 0.0343  decode.loss_sem_i: 0.5269  decode.loss_bd: 0.1595  decode.loss_sem_bd: 0.5334  decode.acc_seg: 98.8198
+2026/03/12 00:41:34 - mmengine - INFO - Epoch(train) [1][6950/17]  lr: 2.5785e-02  eta: 0:44:05  time: 2.4636  data_time: 0.8162  memory: 33718  loss: 1.2562  decode.loss_sem_p: 0.0326  decode.loss_sem_i: 0.5277  decode.loss_bd: 0.1601  decode.loss_sem_bd: 0.5358  decode.acc_seg: 98.8059
+2026/03/12 00:43:40 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/12 00:43:40 - mmengine - INFO - Epoch(train) [1][7000/17]  lr: 2.4677e-02  eta: 0:41:59  time: 2.5156  data_time: 0.8479  memory: 33748  loss: 1.2503  decode.loss_sem_p: 0.0347  decode.loss_sem_i: 0.5220  decode.loss_bd: 0.1614  decode.loss_sem_bd: 0.5322  decode.acc_seg: 98.7791
+2026/03/12 00:44:45 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:00:59  time: 1.1980  data_time: 1.1813  memory: 255  
+2026/03/12 00:45:29 - mmengine - INFO - per class results:
+2026/03/12 00:45:29 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle |  91.4 | 96.11 |
+|  water   | 96.82 | 98.07 |
+|   sky    | 97.66 | 98.83 |
++----------+-------+-------+
+2026/03/12 00:45:29 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 97.7900  mIoU: 95.2900  mAcc: 97.6700  data_time: 1.0692  time: 1.0883
+2026/03/12 00:47:33 - mmengine - INFO - Epoch(train) [1][7050/17]  lr: 2.3564e-02  eta: 0:39:53  time: 2.5329  data_time: 0.8105  memory: 33736  loss: 1.2779  decode.loss_sem_p: 0.0355  decode.loss_sem_i: 0.5350  decode.loss_bd: 0.1718  decode.loss_sem_bd: 0.5356  decode.acc_seg: 98.7819
+2026/03/12 00:49:38 - mmengine - INFO - Epoch(train) [1][7100/17]  lr: 2.2444e-02  eta: 0:37:47  time: 2.4924  data_time: 0.8212  memory: 33696  loss: 1.2478  decode.loss_sem_p: 0.0339  decode.loss_sem_i: 0.5232  decode.loss_bd: 0.1574  decode.loss_sem_bd: 0.5333  decode.acc_seg: 98.9106
+2026/03/12 00:51:44 - mmengine - INFO - Epoch(train) [1][7150/17]  lr: 2.1319e-02  eta: 0:35:41  time: 2.5609  data_time: 0.8847  memory: 33714  loss: 1.2601  decode.loss_sem_p: 0.0342  decode.loss_sem_i: 0.5245  decode.loss_bd: 0.1672  decode.loss_sem_bd: 0.5342  decode.acc_seg: 98.8107
+2026/03/12 00:53:50 - mmengine - INFO - Epoch(train) [1][7200/17]  lr: 2.0187e-02  eta: 0:33:35  time: 2.5452  data_time: 0.8070  memory: 33714  loss: 1.2512  decode.loss_sem_p: 0.0329  decode.loss_sem_i: 0.5247  decode.loss_bd: 0.1600  decode.loss_sem_bd: 0.5335  decode.acc_seg: 98.7888
+2026/03/12 00:55:55 - mmengine - INFO - Epoch(train) [1][7250/17]  lr: 1.9048e-02  eta: 0:31:29  time: 2.4896  data_time: 0.7964  memory: 33737  loss: 1.2555  decode.loss_sem_p: 0.0329  decode.loss_sem_i: 0.5261  decode.loss_bd: 0.1611  decode.loss_sem_bd: 0.5354  decode.acc_seg: 98.8417
+2026/03/12 00:58:00 - mmengine - INFO - Epoch(train) [1][7300/17]  lr: 1.7901e-02  eta: 0:29:23  time: 2.5584  data_time: 0.8800  memory: 33699  loss: 1.2594  decode.loss_sem_p: 0.0319  decode.loss_sem_i: 0.5284  decode.loss_bd: 0.1629  decode.loss_sem_bd: 0.5362  decode.acc_seg: 98.8346
+2026/03/12 01:00:04 - mmengine - INFO - Epoch(train) [1][7350/17]  lr: 1.6746e-02  eta: 0:27:17  time: 2.4992  data_time: 0.8426  memory: 33714  loss: 1.2441  decode.loss_sem_p: 0.0323  decode.loss_sem_i: 0.5209  decode.loss_bd: 0.1542  decode.loss_sem_bd: 0.5367  decode.acc_seg: 98.9284
+2026/03/12 01:02:11 - mmengine - INFO - Epoch(train) [1][7400/17]  lr: 1.5582e-02  eta: 0:25:11  time: 2.5106  data_time: 0.7735  memory: 33725  loss: 1.2571  decode.loss_sem_p: 0.0335  decode.loss_sem_i: 0.5293  decode.loss_bd: 0.1604  decode.loss_sem_bd: 0.5340  decode.acc_seg: 98.8594
+2026/03/12 01:04:16 - mmengine - INFO - Epoch(train) [1][7450/17]  lr: 1.4408e-02  eta: 0:23:05  time: 2.4564  data_time: 0.7847  memory: 33708  loss: 1.2416  decode.loss_sem_p: 0.0312  decode.loss_sem_i: 0.5244  decode.loss_bd: 0.1531  decode.loss_sem_bd: 0.5329  decode.acc_seg: 98.7615
+2026/03/12 01:06:22 - mmengine - INFO - Epoch(train) [1][7500/17]  lr: 1.3224e-02  eta: 0:20:59  time: 2.5149  data_time: 0.8366  memory: 33717  loss: 1.2525  decode.loss_sem_p: 0.0315  decode.loss_sem_i: 0.5325  decode.loss_bd: 0.1550  decode.loss_sem_bd: 0.5335  decode.acc_seg: 98.7899
+2026/03/12 01:07:33 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:06  time: 1.2572  data_time: 1.2391  memory: 255  
+2026/03/12 01:08:17 - mmengine - INFO - per class results:
+2026/03/12 01:08:17 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 92.71 | 96.69 |
+|  water   | 97.61 | 98.78 |
+|   sky    | 97.45 | 98.27 |
++----------+-------+-------+
+2026/03/12 01:08:17 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 98.1400  mIoU: 95.9200  mAcc: 97.9100  data_time: 1.1381  time: 1.1571
+2026/03/12 01:08:17 - mmengine - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase3/pidnets/best_mIoU_iter_500.pth is removed
+2026/03/12 01:08:18 - mmengine - INFO - The best checkpoint with 95.9200 mIoU at 7500 iter is saved to best_mIoU_iter_7500.pth.
+2026/03/12 01:10:22 - mmengine - INFO - Epoch(train) [1][7550/17]  lr: 1.2028e-02  eta: 0:18:53  time: 2.4620  data_time: 0.7820  memory: 33709  loss: 1.2413  decode.loss_sem_p: 0.0309  decode.loss_sem_i: 0.5275  decode.loss_bd: 0.1471  decode.loss_sem_bd: 0.5358  decode.acc_seg: 99.0442
+2026/03/12 01:12:27 - mmengine - INFO - Epoch(train) [1][7600/17]  lr: 1.0818e-02  eta: 0:16:47  time: 2.5009  data_time: 0.8306  memory: 33715  loss: 1.2439  decode.loss_sem_p: 0.0305  decode.loss_sem_i: 0.5228  decode.loss_bd: 0.1570  decode.loss_sem_bd: 0.5336  decode.acc_seg: 99.0133
+2026/03/12 01:14:32 - mmengine - INFO - Epoch(train) [1][7650/17]  lr: 9.5929e-03  eta: 0:14:41  time: 2.5008  data_time: 0.8001  memory: 33727  loss: 1.2442  decode.loss_sem_p: 0.0302  decode.loss_sem_i: 0.5264  decode.loss_bd: 0.1500  decode.loss_sem_bd: 0.5376  decode.acc_seg: 98.9241
+2026/03/12 01:16:37 - mmengine - INFO - Epoch(train) [1][7700/17]  lr: 8.3502e-03  eta: 0:12:35  time: 2.5702  data_time: 0.8540  memory: 33728  loss: 1.2385  decode.loss_sem_p: 0.0325  decode.loss_sem_i: 0.5208  decode.loss_bd: 0.1492  decode.loss_sem_bd: 0.5360  decode.acc_seg: 98.9595
+2026/03/12 01:18:43 - mmengine - INFO - Epoch(train) [1][7750/17]  lr: 7.0866e-03  eta: 0:10:29  time: 2.5094  data_time: 0.8587  memory: 33716  loss: 1.2561  decode.loss_sem_p: 0.0299  decode.loss_sem_i: 0.5377  decode.loss_bd: 0.1516  decode.loss_sem_bd: 0.5369  decode.acc_seg: 98.8459
+2026/03/12 01:20:48 - mmengine - INFO - Epoch(train) [1][7800/17]  lr: 5.7972e-03  eta: 0:08:23  time: 2.5070  data_time: 0.7747  memory: 33702  loss: 1.2386  decode.loss_sem_p: 0.0297  decode.loss_sem_i: 0.5272  decode.loss_bd: 0.1490  decode.loss_sem_bd: 0.5327  decode.acc_seg: 98.8869
+2026/03/12 01:22:53 - mmengine - INFO - Epoch(train) [1][7850/17]  lr: 4.4748e-03  eta: 0:06:17  time: 2.4344  data_time: 0.8251  memory: 33705  loss: 1.2342  decode.loss_sem_p: 0.0299  decode.loss_sem_i: 0.5266  decode.loss_bd: 0.1451  decode.loss_sem_bd: 0.5326  decode.acc_seg: 98.8551
+2026/03/12 01:24:58 - mmengine - INFO - Epoch(train) [1][7900/17]  lr: 3.1066e-03  eta: 0:04:11  time: 2.5507  data_time: 0.9142  memory: 33711  loss: 1.2402  decode.loss_sem_p: 0.0290  decode.loss_sem_i: 0.5299  decode.loss_bd: 0.1477  decode.loss_sem_bd: 0.5335  decode.acc_seg: 99.0172
+2026/03/12 01:27:03 - mmengine - INFO - Epoch(train) [1][7950/17]  lr: 1.6648e-03  eta: 0:02:05  time: 2.5095  data_time: 0.8607  memory: 33739  loss: 1.2405  decode.loss_sem_p: 0.0309  decode.loss_sem_i: 0.5277  decode.loss_bd: 0.1512  decode.loss_sem_bd: 0.5307  decode.acc_seg: 98.9269
+2026/03/12 01:29:08 - mmengine - INFO - Exp name: pidnets_768x384_lars_phase3_20260311_192457
+2026/03/12 01:29:08 - mmengine - INFO - Epoch(train) [1][8000/17]  lr: 0.0000e+00  eta: 0:00:00  time: 2.5196  data_time: 0.8347  memory: 33728  loss: 1.2381  decode.loss_sem_p: 0.0301  decode.loss_sem_i: 0.5292  decode.loss_bd: 0.1446  decode.loss_sem_bd: 0.5342  decode.acc_seg: 98.9744
+2026/03/12 01:29:08 - mmengine - INFO - Saving checkpoint at 8000 iterations
+2026/03/12 01:30:16 - mmengine - INFO - Epoch(val) [0][50/99]    eta: 0:01:01  time: 1.2494  data_time: 1.2247  memory: 255  
+2026/03/12 01:31:02 - mmengine - INFO - per class results:
+2026/03/12 01:31:02 - mmengine - INFO - 
++----------+-------+-------+
+|  Class   |  IoU  |  Acc  |
++----------+-------+-------+
+| obstacle | 92.85 | 96.39 |
+|  water   | 97.62 | 98.92 |
+|   sky    | 97.62 | 98.46 |
++----------+-------+-------+
+2026/03/12 01:31:02 - mmengine - INFO - Epoch(val) [0][99/99]    aAcc: 98.1900  mIoU: 96.0300  mAcc: 97.9200  data_time: 1.1020  time: 1.1218
+2026/03/12 01:31:02 - mmengine - INFO - The previous best checkpoint /home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/outputs/phase3/pidnets/best_mIoU_iter_7500.pth is removed
+2026/03/12 01:31:03 - mmengine - INFO - The best checkpoint with 96.0300 mIoU at 8000 iter is saved to best_mIoU_iter_8000.pth.
