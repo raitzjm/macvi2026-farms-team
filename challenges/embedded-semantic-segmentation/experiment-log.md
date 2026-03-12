@@ -422,17 +422,17 @@ Each entry follows this structure:
 - **ID**: EXP-019
 - **Date**: 2026-03-11 19:00 UTC
 - **Phase**: Phase 3 — augmentation-focused training
-- **Status**: PLANNED
+- **Status**: COMPLETED
 - **Branch/Commit**: exp/phase3-augmentation @ 2d1602f
 - **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_phase3.py
 - **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
 - **Resolution**: 768×384
-- **Iters**: 8000 (eval every 500; save best mIoU)
+- **Iters**: 8000 (eval every 500; save best mIoU; best at iter 8000)
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD, poly, warmup 1500 iters)
-- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets
-- **Results (val)**: TBD
-- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%.
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets (run id: xzutz1ny)
+- **Results (val)**: mIoU=96.03% (best @ iter 8000); per-class: obstacle=92.85%, water=97.62%, sky=97.62%; F1=TBD (see post-export eval); Q=TBD (server submission pending)
+- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%. Best val mIoU checkpoint: outputs/phase3/pidnets/best_mIoU_iter_8000.pth. Val mIoU progression peaked late (95.92% @ iter 7500, 96.03% @ iter 8000), surpassing EXP-018 best (95.44%). F1/Q pending export_and_eval.py run.
 
 ---
 
