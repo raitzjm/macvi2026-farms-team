@@ -1,5 +1,5 @@
 """
-Phase 2.5 ONNX export and evaluation script (mmseg 1.2.2 API).
+Phase 3 ONNX export and evaluation script (mmseg 1.2.2 API).
 
 Preprocessing matches challenge server (minus quantization on RVC4):
   keep-ratio bilinear resize → center reflect-pad to 384×768 → ImageNet normalize
@@ -8,7 +8,7 @@ Preprocessing matches challenge server (minus quantization on RVC4):
 Pipeline per model (default):
   1. Load PyTorch checkpoint, run inference at training dtype (logits+bilinear) → mIoU + F1
      (upper bound reference; not exported — supports fp32/fp16/bf16/mixed precision)
-  2. Export argmax ONNX at training dtype (fp32/fp16/bf16) → outputs/phase2_5/{model}/{model}_argmax.onnx
+  2. Export argmax ONNX at training dtype (fp32/fp16/bf16) → outputs/phase3/{model}/{model}_argmax.onnx
   3. Sanity-check: pixel agreement between PyTorch argmax and ONNX argmax on dummy input
   4. Run argmax ONNX on val set → mIoU + F1 + FPS  (server-matching)
 
@@ -21,11 +21,11 @@ With --eval-only: skip steps 1-3, run step 4 from existing argmax ONNX.
 With --eval-only --quant: run step 4 + step 6 (INT8 ONNX must already exist).
 
 Usage (from repo root, macvi2 env active):
-    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py
-    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --models stdc2
-    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --quant
-    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --eval-only
-    python challenges/embedded-semantic-segmentation/phase2_5/scripts/export_and_eval.py --eval-only --quant --models pidnets segnext_t
+    python challenges/embedded-semantic-segmentation/phase3/scripts/export_and_eval.py
+    python challenges/embedded-semantic-segmentation/phase3/scripts/export_and_eval.py --models pidnets
+    python challenges/embedded-semantic-segmentation/phase3/scripts/export_and_eval.py --quant
+    python challenges/embedded-semantic-segmentation/phase3/scripts/export_and_eval.py --eval-only
+    python challenges/embedded-semantic-segmentation/phase3/scripts/export_and_eval.py --eval-only --quant --models pidnets
 """
 
 import argparse
@@ -46,14 +46,15 @@ from scipy import ndimage
 # ── Paths ──────────────────────────────────────────────────────────────────────
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 CHALLENGE_DIR = os.path.join(REPO_ROOT, 'challenges', 'embedded-semantic-segmentation')
-PHASE2_DIR = os.path.join(CHALLENGE_DIR, 'phase2_5')
-CONFIGS_DIR = os.path.join(PHASE2_DIR, 'configs')
-OUTPUTS_DIR = os.path.join(CHALLENGE_DIR, 'outputs', 'phase2_5')
+PHASE3_DIR = os.path.join(CHALLENGE_DIR, 'phase3')
+CONFIGS_DIR = os.path.join(PHASE3_DIR, 'configs')
+ARTIFACTS_DIR = os.path.join(PHASE3_DIR, 'artifacts')
+OUTPUTS_DIR = os.path.join(CHALLENGE_DIR, 'outputs', 'phase3')
 
 VAL_IMG_DIR  = '/home/farms/lars_linked/val/images'
 VAL_SEG_DIR  = '/home/farms/lars_linked/val/semantic_masks'
-PAN_MASK_DIR = '/home/farms/data/lars_dataset/ann_dir/val/panoptic_masks'
-PAN_JSON     = '/home/farms/data/lars_dataset/ann_dir/val/panoptic_annotations.json'
+PAN_MASK_DIR = '/home/farms/data/datasets/lars_dataset/ann_dir/val/panoptic_masks'
+PAN_JSON     = '/home/farms/data/datasets/lars_dataset/ann_dir/val/panoptic_annotations.json'
 
 MODEL_H, MODEL_W = 384, 768
 CALIB_SAMPLES = 50
@@ -73,11 +74,13 @@ def _best_ckpt(model_name):
 
 MODELS = {
     'stdc2': dict(
-        config=os.path.join(CONFIGS_DIR, 'stdc2_768x384_lars_phase2_5.py'),
+        config=os.path.join(CONFIGS_DIR, 'stdc2_768x384_lars_phase3.py'),
+        ckpt=os.path.join(ARTIFACTS_DIR, 'stdc2', 'best_mIoU_iter_5000.pth'),
         syncbn=True, ham_fix=False, align_corners=True,
     ),
     'pidnets': dict(
-        config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase2_5.py'),
+        config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase3.py'),
+        ckpt=os.path.join(ARTIFACTS_DIR, 'pidnets', 'best_mIoU_iter_8000.pth'),
         syncbn=True, ham_fix=False, align_corners=True,
     ),
 }
@@ -592,7 +595,7 @@ def main():
 
     print(f'\n{"="*110}')
     if has_int8:
-        print('  PHASE 2 SUMMARY  —  fp32 argmax | INT8 argmax (approx. quantization)')
+        print('  PHASE 3 SUMMARY  —  fp32 argmax | INT8 argmax (approx. quantization)')
         print(f'{"="*110}')
         hdr = (f"{'Model':<22} {'FP32 mIoU':>10} {'FP32 F1':>8} {'FP32 Q':>7}"
                f" {'INT8 mIoU':>10} {'INT8 F1':>8} {'INT8 Q':>7} {'ΔmIoU':>7} {'ΔF1':>6}")
@@ -612,9 +615,9 @@ def main():
                   f" {i8_m:>9.2f}% {i8_f:>7.2f}% {i8_q:>6.2f}%"
                   f" {i8_m-fp_m:>+6.2f}% {i8_f-fp_f:>+5.2f}%")
     else:
-        title = ('  PHASE 2 SUMMARY  —  PT float32 | fp32 argmax ONNX'
+        title = ('  PHASE 3 SUMMARY  —  PT float32 | fp32 argmax ONNX'
                  if has_pt else
-                 '  PHASE 2 SUMMARY  —  fp32 argmax ONNX (server-matching)')
+                 '  PHASE 3 SUMMARY  —  fp32 argmax ONNX (server-matching)')
         print(title)
         print(f'{"="*110}')
         if has_pt:

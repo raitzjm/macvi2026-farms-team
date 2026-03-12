@@ -34,6 +34,7 @@ Each entry follows this structure:
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
 | EXP-004 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 73.64% | 92.02% | — | — | 67529e2 |
+| EXP-019 | PIDNet-S (Phase 3 CopyPaste+EnhPMD) | LaRS+ext | 768×384 | CopyPasteObstacles, EnhPMD, GenerateEdgeMasked | 73.29% (ONNX FP32) | 91.40% (ONNX) | — | — | c7e28b1 |
 
 ---
 
@@ -431,8 +432,12 @@ Each entry follows this structure:
 - **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
 - **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD, poly, warmup 1500 iters)
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets (run id: xzutz1ny)
-- **Results (val)**: mIoU=96.03% (best @ iter 8000); per-class: obstacle=92.85%, water=97.62%, sky=97.62%; F1=TBD (see post-export eval); Q=TBD (server submission pending)
-- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%. Best val mIoU checkpoint: outputs/phase3/pidnets/best_mIoU_iter_8000.pth. Val mIoU progression peaked late (95.92% @ iter 7500, 96.03% @ iter 8000), surpassing EXP-018 best (95.44%). F1/Q pending export_and_eval.py run.
+- **Results (val — export_and_eval.py, keep-ratio + centered reflect-pad)**:
+  - PyTorch: mIoU=**91.48%**, F1=**73.43%**, Q=**67.17%** | Pr=79.84%, Re=67.98% | IoU obs/wat/sky: 87.89% / 97.15% / 89.39%
+  - ONNX (FP32): mIoU=**91.40%**, F1=**73.29%**, Q=**66.99%** | PyTorch→ONNX: ΔmIoU=−0.07%, ΔF1=−0.14%
+  - Training val mIoU (mmseg evaluator): 96.03% @ iter 8000 (per-class: obstacle=92.85%, water=97.62%, sky=97.62%)
+  - Server Q: TBD (submission pending)
+- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%. Best val mIoU checkpoint: phase3/artifacts/pidnets/best_mIoU_iter_8000.pth (committed to LFS). Val mIoU progression peaked late (95.92% @ iter 7500, 96.03% @ iter 8000), surpassing EXP-018 best (95.44%). Server-matching ONNX Q=66.99% is −4.04% vs Phase 2 EXP-008 (71.03%) despite higher training mIoU — CopyPaste augmentation may have degraded obstacle F1 under server-matching eval. Server submission pending to confirm actual impact. See eval_metrics.md Phase 3 section.
 
 ---
 
