@@ -161,4 +161,10 @@ Phase 3 vs Phase 2 delta (ONNX, server-matching preprocessing):
 |-------|-----------|-----------|-----|-------------|--------------|-------|------------|------------|-----|
 | pidnets | 71.03% | 66.99% | **−4.04%** | 93.25% | 91.40% | −1.85% | 76.17% | 73.29% | −2.88% |
 
+## Phase 3 — INT8 ONNX (onnxruntime static quantization, QUInt8, 50-image calibration)
+
+| Model | INT8 mIoU | INT8 F1 | INT8 Q | ΔmIoU | ΔF1 | ΔQ | INT8 FPS | INT8-stable? |
+|-------|-----------|---------|--------|-------|-----|----|----------|--------------|
+| pidnets | 90.99% | 73.23% | 66.64% | −0.41% | −0.05% | −0.35% | 24.4 | ✓ |
+
 Note: Phase 3 training mIoU (96.03% @ iter 8000) is measured by the mmseg training evaluator which uses a different pipeline than the server-matching export_and_eval.py eval above. The local server-matching Q (66.99%) is below Phase 2 EXP-008 (71.03%), suggesting the CopyPaste augmentation may have reduced obstacle F1 despite higher training mIoU. Server submission pending to confirm.
