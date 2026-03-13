@@ -468,4 +468,4 @@ Each entry follows this structure:
 - **Method**: Manual SmoothQuant transformation (alpha=0.5)
 - **Results (val — export_and_eval.py)**:
   - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
-- **Notes**: PIDNet-S (EXP-018) control run. Results identical to EXP-023.
+- **Notes**: PIDNet-S (EXP-018) control run. Results identical to QEXP-003.
