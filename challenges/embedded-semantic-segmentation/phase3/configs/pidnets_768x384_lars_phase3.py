@@ -1,29 +1,31 @@
 """
-PIDNet-S @ 768×384 — LaRS — Phase 3 augmentation training (EXP-019)
+PIDNet-S @ 768×384 — LaRS — Phase 3 augmentation training (EXP-020)
 mmsegmentation 1.2.2 + mmcv 2.1.0 + PyTorch 2.1.2+cu121
 Conda env: macvi2  |  /home/farms/miniforge3/envs/macvi2/
 
 Phase 3 purpose: augmentation-focused training with CopyPasteObstacles +
 EnhancedPhotoMetricDistortion + GenerateEdgeMasked (Option 1 fix, issue #28).
-GenerateEdgeMasked makes keep_ratio=True safe for PIDNet-S by zeroing edge
-targets in reflect-padded regions.
+
+EXP-020: definitive PIDNet-S run with extended schedule to overcome 
+"augmentation shock" observed in EXP-019.
 
 Batch size / LR: identical to Phase 2 EXP-008 and Phase 2.5.
   Hardware:    2× RTX A6000 48 GB (DDP, 2 GPUs)
   samples_per_gpu=160, total_bs=320, lr=0.133 (SGD linear-scaled from ref).
-  Warmup extended to 1500 iters to absorb augmented variance (was 1000).
+  Warmup extended to 2500 iters (was 1500).
 
 Schedule:
-  8000 iters (extended from 5000 — augmented data needs more steps).
+  15000 iters (extended from 8000).
   Eval every 500 iters; save best mIoU.
 
-WandB run name: phase3_pidnets
+WandB run name: phase3_pidnets_020
 
 Baseline to beat:
-  EXP-008 (Phase 2): local val Q=71.03%, server Q=49.5
+  EXP-019 (Phase 3): server Q=41.62%, server F1=45.91%
 
 Run:
   source challenges/embedded-semantic-segmentation/phase3/scripts/setup_wandb.sh
+  # Use --work-dir outputs/phase3/pidnets_020 to avoid overriding EXP-019
   bash challenges/embedded-semantic-segmentation/phase3/scripts/run_phase3.sh pidnets
 """
 
@@ -47,7 +49,7 @@ vis_backends = [
         init_kwargs=dict(
             entity='little_farms',
             project='embedded_segmentation_macvi2026',
-            name='phase3_pidnets',
+            name='phase3_pidnets_020',
         )),
 ]
 visualizer = dict(
@@ -148,11 +150,11 @@ optim_wrapper = dict(
     optimizer=dict(type='SGD', lr=0.133, momentum=0.9, weight_decay=0.0005))
 
 # ── Schedule ──────────────────────────────────────────────────────────────────
-# 8k iters; warmup extended to 1500 to absorb augmented variance.
-iters = 8000
+# 15k iters; warmup extended to 2500 to provide longer runway for adaptation.
+iters = 15000
 param_scheduler = [
-    dict(type='LinearLR', start_factor=1e-3, begin=0, end=1500, by_epoch=False),
-    dict(type='PolyLR', eta_min=0.0, power=0.9, begin=1500, end=iters, by_epoch=False),
+    dict(type='LinearLR', start_factor=1e-3, begin=0, end=2500, by_epoch=False),
+    dict(type='PolyLR', eta_min=0.0, power=0.9, begin=2500, end=iters, by_epoch=False),
 ]
 
 train_cfg = dict(type='IterBasedTrainLoop', max_iters=iters, val_interval=500)
@@ -164,7 +166,7 @@ default_hooks = dict(
     checkpoint=dict(
         type='CheckpointHook',
         by_epoch=False,
-        interval=4000,       # save checkpoint every 4000 iters
+        interval=5000,       # save checkpoint every 5000 iters
         save_best='mIoU',
         rule='greater'),
 )
