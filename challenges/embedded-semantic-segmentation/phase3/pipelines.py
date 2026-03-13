@@ -28,6 +28,8 @@ Image paths are resolved from images.txt in the harmonized dataset dir
 
 import os
 import random
+import time
+import multiprocessing
 # sqlite3 is imported lazily inside CopyPasteObstacles._load_candidates()
 # to avoid a libstdc++ version conflict when torchrun spawns worker processes
 # before the conda LD_LIBRARY_PATH is fully resolved.
@@ -37,9 +39,22 @@ import numpy as np
 import torch
 import mmcv
 from mmengine.dist import master_only
+from mmengine.logging import MMLogger
 from mmseg.datasets.transforms import GenerateEdge, PhotoMetricDistortion
 from mmseg.registry import MODELS, TRANSFORMS, VISUALIZERS
 from mmseg.visualization import SegLocalVisualizer
+
+# ── Global shared manager for CopyPaste cache ────────────────────────────────
+# Initialized on first import in the main process.
+_manager = None
+_shared_cache = None
+
+def _get_shared_cache():
+    global _manager, _shared_cache
+    if _shared_cache is None:
+        _manager = multiprocessing.Manager()
+        _shared_cache = _manager.dict()
+    return _shared_cache
 
 
 # ── ReflectPad (Phase 2.5, unchanged) ─────────────────────────────────────────
@@ -170,7 +185,8 @@ class CopyPasteObstacles:
 
     def __init__(self, db_path, n_paste=(1, 3), prob_apply=0.7,
                  scale_range=(0.5, 1.5), prefer_waterline_prob=0.3,
-                 boundary_blur_radius=2, match_brightness=True):
+                 boundary_blur_radius=2, match_brightness=True,
+                 cache_candidates=True):
         self.db_path = db_path
         self.n_paste = n_paste
         self.prob_apply = prob_apply
@@ -178,6 +194,7 @@ class CopyPasteObstacles:
         self.prefer_waterline_prob = prefer_waterline_prob
         self.boundary_blur_radius = boundary_blur_radius
         self.match_brightness = match_brightness
+        self.cache_candidates = cache_candidates
         self._candidates = None   # list of (img_path, mask_path, x1, y1, x2, y2, tier)
         self._weights = None      # np.ndarray, normalised sampling weights
 
@@ -200,6 +217,7 @@ class CopyPasteObstacles:
     def _load_candidates(self):
         """Load all candidates from DB into memory on first call."""
         import sqlite3  # lazy import — avoids libstdc++ conflict at module load time
+        logger = MMLogger.get_current_instance()
         conn = sqlite3.connect(self.db_path)
         rows = conn.execute(
             'SELECT dataset, filename, x1, y1, x2, y2, area_native, size_tier '
@@ -233,6 +251,32 @@ class CopyPasteObstacles:
         self._candidates = candidates
         self._weights = weights_arr
 
+        # Pre-load candidates into shared RAM cache if requested
+        if self.cache_candidates:
+            cache = _get_shared_cache()
+            # We use a lock-like check: only first worker to see empty cache populates it
+            if len(cache) == 0:
+                logger.info(f'Populating CopyPaste shared RAM cache ({len(candidates)} candidates)...')
+                start_time = time.time()
+                # To avoid OOM during loading, we populate carefully
+                for i, (img_path, mask_path, x1, y1, x2, y2, _) in enumerate(candidates):
+                    if i % 5000 == 0 and i > 0:
+                        logger.info(f'Cached {i}/{len(candidates)} candidates...')
+                    
+                    # Store as numpy arrays to avoid re-decoding
+                    src_img = cv2.imread(img_path)
+                    src_mask_img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+                    if src_img is not None and src_mask_img is None:
+                        # Corner case: image exists but mask doesn't?
+                        continue
+                    
+                    # Store only the crop to save RAM
+                    crop_img = src_img[y1:y2, x1:x2].copy()
+                    crop_mask = (src_mask_img[y1:y2, x1:x2] == 0).astype(np.uint8).copy()
+                    cache[i] = (crop_img, crop_mask)
+                
+                logger.info(f'CopyPaste cache populated in {time.time() - start_time:.1f}s.')
+
     def _estimate_waterline(self, seg_mask):
         """Return approximate waterline row (top of water region)."""
         water_rows = np.where((seg_mask == 1).mean(axis=1) > 0.1)[0]
@@ -257,17 +301,22 @@ class CopyPasteObstacles:
         waterline_row = self._estimate_waterline(seg)
         idxs = np.random.choice(len(self._candidates), size=n, replace=True, p=self._weights)
 
+        cache = _get_shared_cache() if self.cache_candidates else {}
+
         for idx in idxs:
-            img_path, mask_path, x1, y1, x2, y2, size_tier = self._candidates[idx]
-
-            src_img = cv2.imread(img_path)
-            src_mask_img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-            if src_img is None or src_mask_img is None:
-                continue
-
-            # Obstacle mask: class 0 in the harmonized masks = obstacle
-            crop_img = src_img[y1:y2, x1:x2]
-            crop_mask = (src_mask_img[y1:y2, x1:x2] == 0).astype(np.uint8)
+            if idx in cache:
+                crop_img, crop_mask = cache[idx]
+                # Deep copy to avoid modifying shared memory if we do in-place ops later
+                crop_img = crop_img.copy()
+                crop_mask = crop_mask.copy()
+            else:
+                img_path, mask_path, x1, y1, x2, y2, size_tier = self._candidates[idx]
+                src_img = cv2.imread(img_path)
+                src_mask_img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+                if src_img is None or src_mask_img is None:
+                    continue
+                crop_img = src_img[y1:y2, x1:x2]
+                crop_mask = (src_mask_img[y1:y2, x1:x2] == 0).astype(np.uint8)
 
             if crop_img.size == 0 or crop_mask.size == 0:
                 continue
