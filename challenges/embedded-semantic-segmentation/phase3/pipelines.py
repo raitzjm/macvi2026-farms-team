@@ -44,16 +44,12 @@ from mmseg.datasets.transforms import GenerateEdge, PhotoMetricDistortion
 from mmseg.registry import MODELS, TRANSFORMS, VISUALIZERS
 from mmseg.visualization import SegLocalVisualizer
 
-# ── Global shared manager for CopyPaste cache ────────────────────────────────
-# Initialized on first import in the main process.
-_manager = None
-_shared_cache = None
+# ── Global shared cache for CopyPaste ────────────────────────────────────────
+# Populated in the main process before workers are forked to leverage OS
+# Copy-on-Write (CoW). This avoids multiprocessing.Manager IPC overhead.
+_shared_cache = {}
 
 def _get_shared_cache():
-    global _manager, _shared_cache
-    if _shared_cache is None:
-        _manager = multiprocessing.Manager()
-        _shared_cache = _manager.dict()
     return _shared_cache
 
 
@@ -254,20 +250,19 @@ class CopyPasteObstacles:
         # Pre-load candidates into shared RAM cache if requested
         if self.cache_candidates:
             cache = _get_shared_cache()
-            # We use a lock-like check: only first worker to see empty cache populates it
+            # In mmseg with fork start method, the main process imports the module
+            # and may initialize the dataset. If workers are forked AFTER
+            # this, they will share the memory via Copy-on-Write.
             if len(cache) == 0:
-                logger.info(f'Populating CopyPaste shared RAM cache ({len(candidates)} candidates)...')
+                logger.info(f'Populating CopyPaste RAM cache ({len(candidates)} candidates)...')
                 start_time = time.time()
-                # To avoid OOM during loading, we populate carefully
                 for i, (img_path, mask_path, x1, y1, x2, y2, _) in enumerate(candidates):
-                    if i % 5000 == 0 and i > 0:
+                    if i % 10000 == 0 and i > 0:
                         logger.info(f'Cached {i}/{len(candidates)} candidates...')
                     
-                    # Store as numpy arrays to avoid re-decoding
                     src_img = cv2.imread(img_path)
                     src_mask_img = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-                    if src_img is not None and src_mask_img is None:
-                        # Corner case: image exists but mask doesn't?
+                    if src_img is None or src_mask_img is None:
                         continue
                     
                     # Store only the crop to save RAM
