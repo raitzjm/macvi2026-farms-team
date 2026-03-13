@@ -52,8 +52,8 @@ OUTPUTS_DIR = os.path.join(CHALLENGE_DIR, 'outputs', 'phase2_5')
 
 VAL_IMG_DIR  = '/home/farms/lars_linked/val/images'
 VAL_SEG_DIR  = '/home/farms/lars_linked/val/semantic_masks'
-PAN_MASK_DIR = '/home/farms/data/lars_dataset/ann_dir/val/panoptic_masks'
-PAN_JSON     = '/home/farms/data/lars_dataset/ann_dir/val/panoptic_annotations.json'
+PAN_MASK_DIR = '/home/farms/data/datasets/lars_dataset/ann_dir/val/panoptic_masks'
+PAN_JSON     = '/home/farms/data/datasets/lars_dataset/ann_dir/val/panoptic_annotations.json'
 
 MODEL_H, MODEL_W = 384, 768
 CALIB_SAMPLES = 50
@@ -79,6 +79,14 @@ MODELS = {
     'pidnets': dict(
         config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase2_5.py'),
         syncbn=True, ham_fix=False, align_corners=True,
+    ),
+    'segnext_t': dict(
+        config=os.path.join(CHALLENGE_DIR, 'phase2/configs/segnext_t_768x384_lars_phase2.py'),
+        syncbn=False, ham_fix=True, align_corners=False,
+    ),
+    'segnext_t_uperhead': dict(
+        config=os.path.join(CHALLENGE_DIR, 'phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py'),
+        syncbn=False, ham_fix=False, align_corners=False,
     ),
 }
 
@@ -561,6 +569,7 @@ def main():
                         help='Skip model load and ONNX export; use existing argmax ONNX')
     parser.add_argument('--quant', action='store_true',
                         help='Also run static INT8 quantization + eval (approx. server quant)')
+    parser.add_argument('--ckpt', type=str, help='Manual checkpoint path')
     args = parser.parse_args()
 
     print(f'Platform: {_platform_info()}')
@@ -579,7 +588,12 @@ def main():
         if name not in MODELS:
             print(f'Unknown model: {name}')
             continue
-        r = run_model(name, MODELS[name], pan_data,
+        
+        cfg = MODELS[name]
+        if args.ckpt:
+            cfg['ckpt'] = args.ckpt
+            
+        r = run_model(name, cfg, pan_data,
                       eval_only=args.eval_only, quant=args.quant)
         if r is not None:
             all_results.append(r)
