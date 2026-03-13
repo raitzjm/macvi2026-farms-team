@@ -415,3 +415,57 @@ Each entry follows this structure:
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase1_segformer_mit-b2
 - **Results (val)**: F1=73.64% (PyTorch), ONNX delta=0.00%; mIoU=92.02% (best iter 1000)
 - **Notes**: Converged early at iter 1000; plateau from 1000→1500. Highest F1 of Phase 1 but above 30 FPS limit (accuracy upper-bound reference). Logits ONNX committed to LFS. See phase1_report.md for convergence analysis.
+
+---
+
+## QEXP-001
+- **ID**: QEXP-001
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (catastrophic)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5, skip-connection free mapping)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (smoothed): mIoU=**87.36%**, F1=**62.69%**, Q=**54.77%**
+  - INT8 (ORT static): mIoU=**17.84%**, F1=0.34% | ΔmIoU=-69.34% vs ONNX
+- **Notes**: Attempted to recover SegNeXt-T INT8 performance. SmoothQuant alpha=0.5 applied to safe transitions (backbone Mlp fc1, stage transitions, stem). INT8 improved from 0.86% (baseline) to 17.84% but remains unusable. Higher alphas (0.7, 0.9) and lower (0.2, 0.1, 0.05, 0.01) tested; 0.5 was best but insufficient. Outliers likely in large-kernel DW convs.
+
+---
+
+## QEXP-002
+- **ID**: QEXP-002
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (catastrophic)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5, skip-connection free mapping)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (smoothed): mIoU=**85.28%**, F1=**69.60%**, Q=**59.36%**
+  - INT8 (ORT static): mIoU=**9.11%**, F1=1.68% | ΔmIoU=-76.16%
+- **Notes**: MSCAN-T + UPerHead version. More sensitive to smoothing than HAM version. INT8 drop remains catastrophic.
+
+---
+
+## QEXP-003
+- **ID**: QEXP-003
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (regression)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
+- **Notes**: PIDNet-S (EXP-008) control run. SmoothQuant introduced severe degradation in an already-stable model.
+
+---
+
+## QEXP-004
+- **ID**: QEXP-004
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (regression)
+- **Config**: challenges/embedded-semantic-segmentation/phase2_5/configs/pidnets_768x384_lars_phase2_5.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
+- **Notes**: PIDNet-S (EXP-018) control run. Results identical to EXP-023.
