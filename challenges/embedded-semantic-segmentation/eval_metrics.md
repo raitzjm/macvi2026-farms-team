@@ -134,3 +134,37 @@ PyTorch upper bound (Phase 2.5):
 | pidnets | 89.84% | 71.90% | 64.60% | −0.14% | −0.04% | −0.13% | 14.0 | ✓ |
 
 Both Phase 2.5 models are INT8-stable (≤0.13% Q drop). STDC2 gains +1.99% Q from pipeline fixes; PIDNet-S loses −6.30% Q — pipeline fixes had an adverse effect on PIDNet-S (see issue #28 for analysis).
+
+---
+
+## Phase 3 — FP32 ONNX (2026-03-12)
+
+Augmentation-focused training: CopyPasteObstacles + EnhancedPhotoMetricDistortion + GenerateEdgeMasked.
+Script: `phase3/scripts/export_and_eval.py`
+Platform: NVIDIA GeForce RTX 3050 Laptop GPU, CUDA 12.1, ORT 1.24.2 (CPUExecutionProvider — FPS is local CPU ORT, not representative of server)
+
+| Model | EXP | Checkpoint | mIoU | F1 | Q | Pr | Re | IoU-obs | IoU-wat | IoU-sky | FPS |
+|-------|-----|------------|------|----|---|----|----|---------|---------|---------|-----|
+| pidnets | EXP-019 | best_mIoU_iter_8000 | 91.40% | 73.29% | 66.99% | 79.60% | 67.90% | 87.73% | 97.13% | 89.35% | 10.0* |
+
+*FPS measured on RTX 3050 Laptop (different machine than A6000 training machine); server FPS estimated ~67 FPS on RVC4 based on Phase 2 EXP-008 (same PIDNet-S architecture).
+
+PyTorch upper bound (Phase 3):
+
+| Model | PT mIoU | PT F1 | PT Q | ΔmIoU vs ONNX | ΔF1 vs ONNX |
+|-------|---------|-------|------|---------------|-------------|
+| pidnets | 91.48% | 73.43% | 67.17% | −0.07% | −0.14% |
+
+Phase 3 vs Phase 2 delta (ONNX, server-matching preprocessing):
+
+| Model | Phase 2 Q | Phase 3 Q | ΔQ | Phase 2 mIoU | Phase 3 mIoU | ΔmIoU | Phase 2 F1 | Phase 3 F1 | ΔF1 |
+|-------|-----------|-----------|-----|-------------|--------------|-------|------------|------------|-----|
+| pidnets | 71.03% | 66.99% | **−4.04%** | 93.25% | 91.40% | −1.85% | 76.17% | 73.29% | −2.88% |
+
+## Phase 3 — INT8 ONNX (onnxruntime static quantization, QUInt8, 50-image calibration)
+
+| Model | INT8 mIoU | INT8 F1 | INT8 Q | ΔmIoU | ΔF1 | ΔQ | INT8 FPS | INT8-stable? |
+|-------|-----------|---------|--------|-------|-----|----|----------|--------------|
+| pidnets | 90.99% | 73.23% | 66.64% | −0.41% | −0.05% | −0.35% | 24.4 | ✓ |
+
+Note: Phase 3 training mIoU (96.03% @ iter 8000) is reported by the mmseg training evaluator. The local server-matching Q (66.99%) evaluated via export_and_eval.py is below Phase 2 EXP-008 (71.03%), suggesting the CopyPaste augmentation may have reduced obstacle F1 despite higher training mIoU. Server submission pending to confirm.
