@@ -469,3 +469,57 @@ Each entry follows this structure:
 - **Results (val — export_and_eval.py)**:
   - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
 - **Notes**: PIDNet-S (EXP-018) control run. Results identical to QEXP-003.
+
+---
+
+## QEXP-005
+- **ID**: QEXP-005
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (massive recovery)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segnext_t_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (refined): mIoU=**63.89%**
+  - INT8 (ORT static): mIoU=**44.29%**, Q=**16.82%** | ΔmIoU=+43.43% vs baseline
+- **Notes**: Successfully recovered SegNeXt-T from 8-bit failure. Most effective technique tested.
+
+---
+
+## QEXP-006
+- **ID**: QEXP-006
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (partial recovery)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segnext_t_uperhead_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (refined): mIoU=**63.84%**
+  - INT8 (ORT static): mIoU=**36.54%**, Q=**7.43%**
+- **Notes**: Significant recovery for UPerHead version, though less than HAM version.
+
+---
+
+## QEXP-007
+- **ID**: QEXP-007
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (stable)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**69.28%**, Q=**14.97%**
+- **Notes**: Maintained high stability of PIDNet-S while slightly refining weights.
+
+---
+
+## QEXP-008
+- **ID**: QEXP-008
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (stable)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_p2_5_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**67.43%**, Q=**19.80%**
+- **Notes**: Maintained stability of PIDNet-S P2.5 variant.

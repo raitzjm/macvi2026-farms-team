@@ -88,6 +88,10 @@ MODELS = {
         config=os.path.join(CHALLENGE_DIR, 'phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py'),
         syncbn=False, ham_fix=False, align_corners=False,
     ),
+    'pidnets_p2_5': dict(
+        config=os.path.join(CHALLENGE_DIR, 'phase2_5/configs/pidnets_768x384_lars_phase2_5.py'),
+        syncbn=True, ham_fix=False, align_corners=True,
+    ),
 }
 
 NUM_CLASSES = 3
