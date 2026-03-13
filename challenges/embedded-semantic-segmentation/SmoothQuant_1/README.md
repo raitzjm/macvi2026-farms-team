@@ -25,10 +25,17 @@ Manual SmoothQuant transformation (alpha=0.5). Applied to safe layer transitions
 **Conclusion:** SmoothQuant alone cannot rescue MSCAN outlier activations or stable
 PIDNet-S models. Proceed to QAT (see QAT_1/).
 
-## Scripts
+## Scripts & Configs
 
 - `../phase2_5/scripts/smoothquant_recovery.py` — manual SmoothQuant implementation
   with explicit layer mapping for MSCAN and PIDNet architectures.
+- `../phase2_5/scripts/export_and_eval.py` — ONNX export + INT8 evaluation (used with `--quant` flag after smoothing)
+
+**Base model configs** (loaded by `smoothquant_recovery.py` to reconstruct each model):
+- `../phase2/configs/segnext_t_768x384_lars_phase2.py` (QEXP-001)
+- `../phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py` (QEXP-002)
+- `../phase2/configs/pidnets_768x384_lars_phase2.py` (QEXP-003)
+- `../phase2_5/configs/pidnets_768x384_lars_phase2_5.py` (QEXP-004)
 
 ## Full Results
 

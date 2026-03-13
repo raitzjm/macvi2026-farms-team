@@ -25,13 +25,20 @@ wrapper. Fine-tuning on LaRS training set using Phase 2.5/3 pipeline logic.
 PIDNet-S remained stable. QAT is the recommended quantization technique for
 MSCAN-based architectures in this project.
 
-## Scripts
+## Scripts & Configs
 
+**QAT training scripts:**
 - `../phase3/scripts/prepare_qat_model.py` — wraps model in FakeQuant modules
 - `../phase3/scripts/train_qat.py` — QAT fine-tuning loop
 - `../phase3/scripts/run_qat.sh` — end-to-end QAT pipeline script
 - `../phase3/scripts/unwrap_qat_ckpt.py` — removes FakeQuant wrappers for export
 - `../phase2_5/scripts/export_and_eval.py` — ONNX export + INT8 evaluation (used with `--quant` flag to measure INT8 recovery)
+
+**QAT configs** (each inherits `_base_` from `phase2_5/configs/_base_/lars_dataset.py` and `phase2/configs/_base_/runtime.py`):
+- `../phase3/configs/segnext_t_768x384_lars_qat.py` (QEXP-005)
+- `../phase3/configs/segnext_t_uperhead_768x384_lars_qat.py` (QEXP-006)
+- `../phase3/configs/pidnets_768x384_lars_qat.py` (QEXP-007)
+- `../phase3/configs/pidnets_p2_5_768x384_lars_qat.py` (QEXP-008)
 
 ## Relationship to SmoothQuant_1
 
