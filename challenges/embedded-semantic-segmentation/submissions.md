@@ -13,3 +13,4 @@ FPS requirement: ≥30 FPS to be eligible for ranking
 | #16738 | 2026-03-10 | PIDNet-S | EXP-018 | 38.9 | 61.1 | 36.1 | 59.3 | 44.9 | 86.5 | TBD | TBD | Phase 2.5 experiment; precision collapse (36.1%), FP explosion (8633 vs 4028 baseline); recall gain doesn't compensate | [analysis](submissions/16738_pidnets_exp018/analysis.md) |
 | #16820 | 2026-03-12 | STDC2 SGD | EXP-017 | 44.8 | 65.8 | 49.2 | 47.3 | 48.3 | 92.9 | TBD | TBD | TBD | [analysis](submissions/16820_stdc2_exp017/analysis.md) |
 | #16864 | 2026-03-12 | PIDNet-S | EXP-019 | 41.6 | 64.2 | 39.6 | 54.6 | 45.9 | 90.7 | TBD | TBD | TBD | [analysis](submissions/16864_pidnets_exp019/analysis.md) |
+| #16909 | 2026-03-13 | PIDNet-S | EXP-020 | TBD | TBD | TBD | TBD | TBD | TBD | 16.2 | TBD | Phase 3 definitive run, 15k iters, shared RAM CopyPaste; local val Q=70.51% (ONNX FP32=70.28%); INT8-stable (ΔF1=+0.51%) | [analysis](submissions/16909_pidnets_exp020/analysis.md) |
