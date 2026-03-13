@@ -31,6 +31,7 @@ MSCAN-based architectures in this project.
 - `../phase3/scripts/train_qat.py` — QAT fine-tuning loop
 - `../phase3/scripts/run_qat.sh` — end-to-end QAT pipeline script
 - `../phase3/scripts/unwrap_qat_ckpt.py` — removes FakeQuant wrappers for export
+- `../phase2_5/scripts/export_and_eval.py` — ONNX export + INT8 evaluation (used with `--quant` flag to measure INT8 recovery)
 
 ## Relationship to SmoothQuant_1
 
