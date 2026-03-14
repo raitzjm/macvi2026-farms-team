@@ -36,7 +36,7 @@ Each entry follows this structure:
 | EXP-004 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 73.64% | 92.02% | — | — | 67529e2 |
 | EXP-019 | PIDNet-S (Phase 3 CopyPaste+EnhPMD) | LaRS+ext | 768×384 | CopyPasteObstacles, EnhPMD, GenerateEdgeMasked | 73.29% (ONNX FP32) | 91.40% (ONNX) | 73.23% (INT8 stable ✓) | — | c7e28b1 |
 | EXP-020 | PIDNet-S (Phase 3 Definitive) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, GenerateEdgeMasked | 75.78% (ONNX FP32) | 92.74% (ONNX) | 76.29% (INT8 stable ✓) | 16.2 | b44b828 |
-| EXP-021 | PIDChad-S (AFFM+FPPM, Phase 3) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, LSJ(0.1,2.0), GenerateEdgeMasked | — (training) | — | — | — | 093bd4eb |
+| EXP-021 | PIDChad-S (AFFM+FPPM, Phase 3) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, LSJ(0.1,2.0), GenerateEdgeMasked | 96.56% @23500 | TBD (local) | TBD | TBD | 093bd4eb |
 
 ---
 
@@ -577,9 +577,14 @@ Each entry follows this structure:
 - **INT8 smoke test**: PASSED — ONNX→INT8 ΔmIoU=-0.12%, ΔQ=-0.19% (<<3% threshold)
   - ONNX export fix: replaced F.adaptive_avg_pool2d with explicit nn.AvgPool2d in FPPM
     (PyTorch 2.1.2 symbolic fails for non-factor output sizes; kernel sizes precomputed for 12×24 feature map)
-- **Full training**: IN PROGRESS — launched 2026-03-14 04:57 UTC, ETA ~19h
+- **Full training**: COMPLETED — 2026-03-14 20:04 UTC (~15h wall time)
   - WandB run: phase3_pidchad_s_021
-- **Results (val)**: — (in progress)
+- **Results (val — training pipeline, local val set)**:
+  - Best mIoU: **96.56%** @ iter 23500 (obstacle=93.83%, water=97.86%, sky=97.97%)
+  - Final mIoU (iter 25000): 96.50% (obstacle=93.71%, water=97.77%, sky=98.01%)
+  - Best loss: 1.3868 @ iter 23500
+- **Results (export/server)**: pending local export_and_eval.py — see submissions.md for server Q score
+- **Artifact**: phase3/artifacts/pidchad_s_021/ (pidchad_s_021.pth in LFS, config.py, train.log, report.md)
 
 ---
 
