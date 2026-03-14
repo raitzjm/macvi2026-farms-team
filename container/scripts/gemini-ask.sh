@@ -47,7 +47,7 @@ trap 'rm -f "$TMPEVENTS"' EXIT
 
 # Launch gemini in background, stream-json events to temp file
 gemini --yolo \
-    -m gemini-3.1-pro-preview \
+    -m "Auto (Gemini 3)" \
     --output-format stream-json \
     -p "$FULL_PROMPT" \
     > "$TMPEVENTS" 2>&1 &
