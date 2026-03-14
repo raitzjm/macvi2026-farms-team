@@ -34,8 +34,8 @@ EXP-020 served as the definitive augmentation run, rectifying the "augmentation 
 
 **Local Eval (LaRS Val Proxy):**
 - **FP32 ONNX:** mIoU = 92.74%, F1 = 75.78%, Q = 70.28%
-- **INT8 (ORT Static):** mIoU = 92.32%, F1 = 76.29%, Q = 70.44%
-- *INT8 Stability:* Excellent (ΔmIoU = -0.42%, ΔF1 = +0.51%). Maintains ~14-16 FPS locally.
+- **INT8 (ORT Static):** mIoU = 92.33%, F1 = 76.35%, Q = 70.49%
+- *INT8 Stability:* Excellent (ΔmIoU = -0.41%, ΔF1 = +0.56%). Maintains ~17-22 FPS locally.
 
 **Server Results (Submission #16909):**
 - **mIoU:** 94.36% (vs 92.82% in EXP-008)
@@ -73,9 +73,9 @@ A persistent challenge remains the discrepancy between local LaRS validation met
 
 | Metric | EXP-020 Local INT8 | EXP-020 Server | Gap (Absolute) |
 |--------|--------------------|----------------|----------------|
-| mIoU   | 92.32%             | 94.36%         | +2.04%         |
-| F1     | 76.29%             | 55.22%         | -21.07%        |
-| Q      | 70.44%             | 52.11%         | -18.33%        |
+| mIoU   | 92.33%             | 94.36%         | +2.03%         |
+| F1     | 76.35%             | 55.22%         | -21.13%        |
+| Q      | 70.49%             | 52.11%         | -18.38%        |
 
 *Analysis:*
 - The server test set has a significantly harsher evaluation for object detection (F1 drops by ~21%). 
