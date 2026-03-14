@@ -36,6 +36,7 @@ Each entry follows this structure:
 | EXP-004 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 73.64% | 92.02% | — | — | 67529e2 |
 | EXP-019 | PIDNet-S (Phase 3 CopyPaste+EnhPMD) | LaRS+ext | 768×384 | CopyPasteObstacles, EnhPMD, GenerateEdgeMasked | 73.29% (ONNX FP32) | 91.40% (ONNX) | 73.23% (INT8 stable ✓) | — | c7e28b1 |
 | EXP-020 | PIDNet-S (Phase 3 Definitive) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, GenerateEdgeMasked | 75.78% (ONNX FP32) | 92.74% (ONNX) | 76.29% (INT8 stable ✓) | 16.2 | b44b828 |
+| EXP-021 | PIDChad-S (AFFM+FPPM, Phase 3) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, LSJ(0.1,2.0), GenerateEdgeMasked | — (in progress) | — | — | — | 44f11c35 |
 
 ---
 
@@ -553,6 +554,26 @@ Each entry follows this structure:
 - **Results (val — export_and_eval.py)**:
   - INT8 (ORT static): mIoU=**69.28%**, Q=**14.97%**
 - **Notes**: Maintained high stability of PIDNet-S while slightly refining weights.
+
+---
+
+## EXP-021
+- **ID**: EXP-021
+- **Date**: 2026-03-14 04:00 UTC
+- **Phase**: Phase 3 — structural enhancement (Issue #52)
+- **Status**: IN PROGRESS
+- **Branch/Commit**: exp/phase3-pidchad-s @ 44f11c35
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidchad_s_021_768x384_lars_phase3.py
+- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
+- **Resolution**: 768×384
+- **Iters**: 25000 (eval every 500; save best mIoU; extended from EXP-020's 15k)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD; same as EXP-020; OOM probe PASSED)
+- **Architecture**: PIDChad-S — PIDNet-S + AFFM (I-branch context gates P-branch before LightBag) + FPPM (parallel pooling at [1,2,3,6,12], replaces PAPPM)
+- **Augmentation**: CopyPasteObstacles (RAM CoW cache), EnhancedPhotoMetricDistortion, LSJ (0.1, 2.0) (was 0.5, 2.0), GenerateEdgeMasked
+- **Loss**: CrossEntropyLoss (P-branch, w=0.4) + OhemCrossEntropy (I-branch, w=1.0, class_weight=[1.5,1.0,1.0]) + BoundaryLoss (w=25.0) + OhemCrossEntropy (bd-cond, w=1.0, class_weight=[1.5,1.0,1.0])
+- **Schedule**: warmup 5000 iters (was 2500), PolyLR 5k→25k
+- **Results (val)**: see phase report (INT8 smoke test pending)
 
 ---
 
