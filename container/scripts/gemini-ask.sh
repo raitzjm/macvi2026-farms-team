@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 # gemini-ask.sh — delegate a task to Gemini as a sub-agent
 #
-# Usage: gemini-ask.sh [--silence-timeout N] "prompt"
+# Usage: gemini-ask.sh [--silence-timeout N] [--auto] "prompt"
+#
+# Options:
+#   --auto              Use "Auto (Gemini 3)" model instead of the default
+#                       gemini-3.1-pro-preview. Prefer this for lightweight
+#                       tasks (short lookups, summaries, simple Q&A) where
+#                       Pro is overkill.
+#   --silence-timeout N Seconds of silence before declaring a hang (default 300)
 #
 # Exit codes:
 #   0 = success
@@ -12,12 +19,17 @@
 set -uo pipefail
 
 SILENCE_TIMEOUT=300
+GEMINI_MODEL="gemini-3.1-pro-preview"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --silence-timeout)
             SILENCE_TIMEOUT="$2"
             shift 2
+            ;;
+        --auto)
+            GEMINI_MODEL="Auto (Gemini 3)"
+            shift
             ;;
         --) shift; break ;;
         -*) echo "Unknown option: $1" >&2; exit 1 ;;
@@ -47,7 +59,7 @@ trap 'rm -f "$TMPEVENTS"' EXIT
 
 # Launch gemini in background, stream-json events to temp file
 gemini --yolo \
-    -m "Auto (Gemini 3)" \
+    -m "$GEMINI_MODEL" \
     --output-format stream-json \
     -p "$FULL_PROMPT" \
     > "$TMPEVENTS" 2>&1 &

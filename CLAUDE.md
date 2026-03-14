@@ -115,13 +115,19 @@ via CLAUDE.md context, ignore this section entirely — it does not apply to you
 **Read-only / analysis (no file modifications):**
 ```bash
 bash container/scripts/gemini-ask.sh "task description"
-# optional: --silence-timeout N (default 30s) to tune hang detection
+# optional flags:
+#   --auto              use Auto (Gemini 3) instead of the default gemini-3.1-pro-preview
+#   --silence-timeout N seconds of silence before declaring a hang (default 300)
 ```
+
+**Choosing the model:**
+- Default (`gemini-3.1-pro-preview`): use for complex reasoning, large context, deep code analysis, multi-step tasks.
+- `--auto` (`Auto (Gemini 3)`): use for lightweight tasks where Pro is overkill — short lookups, quick summaries, simple Q&A, single-file reads.
 
 **File-modifying tasks requiring isolation:**
 Spawn a Haiku agent with `isolation: "worktree"`. The Haiku agent is a
 passthrough only — it must not make decisions. Its sole job:
-1. Run `bash container/scripts/gemini-ask.sh "task"`
+1. Run `bash container/scripts/gemini-ask.sh [--auto] "task"`
 2. Relay the full output and exit code verbatim back to the orchestrator
 
 The orchestrator then decides what to do based on the exit code and output.
