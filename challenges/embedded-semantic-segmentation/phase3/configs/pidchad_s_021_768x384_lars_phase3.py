@@ -152,9 +152,11 @@ model = dict(
         act_cfg=dict(type='ReLU', inplace=True),
         align_corners=True,
         loss_decode=[
-            # P-branch semantic loss (obstacle upweighted 1.5×)
-            dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4,
-                 class_weight=[1.5, 1.0, 1.0]),
+            # P-branch semantic loss (no class_weight: mmseg CrossEntropyLoss
+            # avg_factor computation is buggy with ignore_index>num_classes when
+            # class_weight is set — it attempts class_weight[255] → IndexError.
+            # The two OhemCrossEntropy losses carry the class weighting instead.)
+            dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4),
             # I-branch OHEM loss (obstacle upweighted 1.5×)
             dict(type='OhemCrossEntropy', thres=0.9, min_kept=32768, loss_weight=1.0,
                  class_weight=[1.5, 1.0, 1.0]),
