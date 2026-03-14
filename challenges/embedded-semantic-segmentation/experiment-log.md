@@ -34,6 +34,8 @@ Each entry follows this structure:
 | EXP-002 | BiSeNetV2 | LaRS | 768×384 | reflect pad, keep_ratio | 60.84% (PyTorch) / 60.81% (ONNX) | 86.56% | — | — | 67529e2 |
 | EXP-003 | SegNeXt-T | LaRS | 768×384 | reflect pad, keep_ratio | 72.86% | 89.81% | — | — | 67529e2 |
 | EXP-004 | SegFormer MiT-B2 | LaRS | 768×384 | reflect pad, keep_ratio | 73.64% | 92.02% | — | — | 67529e2 |
+| EXP-019 | PIDNet-S (Phase 3 CopyPaste+EnhPMD) | LaRS+ext | 768×384 | CopyPasteObstacles, EnhPMD, GenerateEdgeMasked | 73.29% (ONNX FP32) | 91.40% (ONNX) | 73.23% (INT8 stable ✓) | — | c7e28b1 |
+| EXP-020 | PIDNet-S (Phase 3 Definitive) | LaRS+ext | 768×384 | CopyPaste (RAM cache), EnhPMD, GenerateEdgeMasked | 75.78% (ONNX FP32) | 92.74% (ONNX) | 76.29% (INT8 stable ✓) | 16.2 | b44b828 |
 
 ---
 
@@ -429,6 +431,47 @@ Each entry follows this structure:
   - PyTorch (smoothed): mIoU=**87.36%**, F1=**62.69%**, Q=**54.77%**
   - INT8 (ORT static): mIoU=**17.84%**, F1=0.34% | ΔmIoU=-69.34% vs ONNX
 - **Notes**: Attempted to recover SegNeXt-T INT8 performance. SmoothQuant alpha=0.5 applied to safe transitions (backbone Mlp fc1, stage transitions, stem). INT8 improved from 0.86% (baseline) to 17.84% but remains unusable. Higher alphas (0.7, 0.9) and lower (0.2, 0.1, 0.05, 0.01) tested; 0.5 was best but insufficient. Outliers likely in large-kernel DW convs.
+
+---
+
+## EXP-020
+- **ID**: EXP-020
+- **Date**: 2026-03-13 00:52 UTC
+- **Phase**: Phase 3 — augmentation-focused training
+- **Status**: COMPLETED
+- **Branch/Commit**: exp/phase3-augmentation @ b44b828
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_phase3.py
+- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
+- **Resolution**: 768×384
+- **Iters**: 15000 (eval every 500; save best mIoU; best at iter 15000)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD, poly, warmup 2500 iters)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets_020 (run id: ljmfv0ls)
+- **Results (val — export_and_eval.py, keep-ratio + centered reflect-pad)**:
+  - PyTorch: mIoU=**92.82%**, F1=**75.97%**, Q=**70.51%** | Pr=85.34%, Re=68.45% | IoU obs/wat/sky: 89.82% / 97.83% / 90.80%
+  - ONNX (FP32): mIoU=**92.74%**, F1=**75.78%**, Q=**70.28%** | PyTorch→ONNX: ΔmIoU=−0.08%, ΔF1=−0.19%
+  - INT8 (ORT static): mIoU=**92.32%**, F1=**76.29%**, Q=**70.44%** | ONNX→INT8: ΔmIoU=−0.42%, ΔF1=+0.51% — **INT8-STABLE ✓**
+  - Training val mIoU (mmseg evaluator): 96.99% @ iter 15000 (per-class: obstacle=94.62%, water=98.18%, sky=98.17%)
+  - FPS: 16.2 (ONNX FP32) / 14.1 (ONNX INT8) on RTX A6000
+- **Notes**: Definitive PIDNet-S run with extended 15k schedule and 2.5k warmup to overcome "augmentation shock". Implemented shared RAM cache for CopyPasteObstacles, reducing `data_time` from ~0.85s to ~0.53s. Achieved significantly higher obstacle IoU (94.62% vs 92.85% in EXP-019) and F1. INT8 stability is excellent.
+
+---
+
+## EXP-021
+- **ID**: EXP-021
+- **Date**: 2026-03-13 11:00 UTC
+- **Phase**: Phase 3 — augmentation-focused training
+- **Status**: PLANNED
+- **Branch/Commit**: exp/phase3-augmentation
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/stdc2_768x384_lars_phase3.py
+- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
+- **Resolution**: 768×384
+- **Iters**: 8000 (eval every 500; save best mIoU)
+- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
+- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.267 (SGD, poly, warmup 300 iters)
+- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_stdc2
+- **Results (val)**: TBD
+- **Notes**: Same CopyPaste + EnhancedPhotoMetricDistortion augmentations. No GenerateEdgeMasked (STDC2 doesn't use GenerateEdge). Increased schedule to 8k iters based on PIDNet-S convergence findings. Baseline to beat: EXP-017 Q=64.49%.
 
 ---
 

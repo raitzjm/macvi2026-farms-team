@@ -8,6 +8,21 @@ Our job: train model -> export ONNX -> submit ONNX to challenge server.
 Winner: highest F1 detection score (FPS tiebreaker). Must achieve >=30 FPS at 768x384.
 Challenge page: https://macvi.org/workshop/cvpr/challenges/usv_seg_emb
 
+## Submission Results
+
+Server result files (frames.csv, segments.json, summary.json) are downloaded from the
+challenge platform after each submission and stored at:
+  `~/data/submission_results/<submission_id>_results/`
+
+This path is a read-only mount inside the container (passed via `--data-dir` to run.sh).
+When tracking a new submission, copy the result files into:
+  `challenges/embedded-semantic-segmentation/submissions/<id>_<model>_<exp>/results/`
+
+The `summary.json` fields map to submissions.md columns as follows:
+- Q → Q score  |  WE_acc → μ (waterline estimation accuracy)
+- Pr, Re, F1 → detection metrics  |  mIoU → segmentation quality
+- FPS is NOT in summary.json — leave as TBD unless provided separately
+
 ## Dataset
 - LaRS: /home/farms/data/lars_dataset/ (train: 2605, val: 198, test: 1205 images)
 - Test set has NO segmentation masks
