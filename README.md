@@ -13,8 +13,6 @@ Codebase for the FARMS team competing in the [MaCVi 2026](https://macvi.org/work
 Model is trained in PyTorch/mmsegmentation, exported to ONNX, and submitted to the challenge server which handles INT8 quantization (Qualcomm SNPE) and deployment (Luxonis RVC4).
 Target: ≥30 FPS at 768×384, maximizing F1 detection score.
 
-**Note on Evaluation:** To ensure fair comparison across phases, models are evaluated locally using an export and evaluation script (e.g., `export_and_eval.py`) that strictly mimics the challenge server's discrete ONNX argmax upsampling and metric aggregation (mean of per-image IoUs). This local evaluation uses the **LaRS val set** (as we do not have access to the ground-truth segmentation masks for the test set used by the actual server). Consequently, metrics produced by this script will always be structurally lower and harsher than the continuous global mIoU reported by the `mmseg` training evaluator logs.
-
 ## Repository Structure
 
 ```
