@@ -4,12 +4,16 @@ Architecture changes vs PIDNet-S:
   1. AFFM  — Attention-based Feature Fusion Module: I-branch context gates the
              P-branch before LightBag fusion. Suppresses water-reflection FPs
              by letting global context veto local texture predictions.
-  2. FPPM  — Fast Pyramid Pooling Module: parallel AdaptiveAvgPool2d at grid
+  2. FPPM  — Fast Pyramid Pooling Module: parallel AvgPool2d branches at grid
              sizes (1, 2, 3, 6, 12) replaces the cascaded PAPPM. Wider global
              anchor (scale-12) improves waterline estimation (WE_IoU).
 
-Both modules use only 1×1 Conv, BN, ReLU/Sigmoid, AdaptiveAvgPool2d —
+Both modules use only 1×1 Conv, BN, ReLU/Sigmoid, AvgPool2d —
 all proven INT8-safe ops (no LayerNorm, GELU, or Softmax).
+
+ONNX note: FPPM uses explicit nn.AvgPool2d (not F.adaptive_avg_pool2d) with
+kernel sizes precomputed for fixed 384×768 input (feature map = 12×24 at 1/32).
+This avoids the PyTorch 2.1.2 ONNX symbolic failure for non-factor output sizes.
 
 INT8 safety check is mandatory before full training (Step 4 in EXP-021 plan).
 """
@@ -87,14 +91,21 @@ class FPPM(nn.Module):
     including global) provides a stronger vertical anchor for waterline
     estimation.
 
-    All ops are INT8-safe: AdaptiveAvgPool2d + Conv1×1 + BN + ReLU.
+    All ops are INT8-safe: AvgPool2d + Conv1×1 + BN + ReLU.
+
+    ONNX compatibility: uses explicit nn.AvgPool2d (not F.adaptive_avg_pool2d)
+    with kernel sizes precomputed for feature_hw. PyTorch 2.1.2's ONNX symbolic
+    for adaptive_avg_pool2d fails when output size does not evenly divide input
+    size (e.g. scale=12 → output (12,12) from input (12,24), giving kernel
+    w_stride=2 which ONNX cannot express as symmetric GlobalAveragePool).
 
     Args:
         in_channels (int): Input feature channels (channels×16 = 512 for PIDNet-S).
         branch_channels (int): Channels per pyramid branch (ppm_channels = 96).
         out_channels (int): Output channels (channels×4 = 128 for PIDNet-S).
-        scales (list[int]): Grid sizes for AdaptiveAvgPool2d.
-                            Default: [1, 2, 3, 6, 12].
+        scales (list[int]): Grid output sizes per branch. Default: [1, 2, 3, 6, 12].
+        feature_hw (tuple[int,int]): Spatial size of x at FPPM input (H, W).
+                                     For 384×768 at stride 32: (12, 24).
         norm_cfg (dict): Normalization config.
         act_cfg (dict): Activation config.
     """
@@ -104,12 +115,24 @@ class FPPM(nn.Module):
                  branch_channels: int,
                  out_channels: int,
                  scales: List[int] = [1, 2, 3, 6, 12],
+                 feature_hw: Tuple[int, int] = (12, 24),
                  norm_cfg: Dict = dict(type='SyncBN', requires_grad=True),
                  act_cfg: Dict = dict(type='ReLU', inplace=True)):
         super().__init__()
         self.scales = scales
+        feat_h, feat_w = feature_hw
 
-        # One branch per scale: AdaptiveAvgPool2d → BN → ReLU → conv1×1 (pre-activation)
+        # Build explicit poolers: AdaptiveAvgPool2d for scale=1 (→ GlobalAveragePool in ONNX),
+        # explicit AvgPool2d for all others (kernel = feat // scale, evenly divides by design).
+        self.poolers = ModuleList()
+        for s in scales:
+            if s == 1:
+                self.poolers.append(nn.AdaptiveAvgPool2d(1))
+            else:
+                kh, kw = feat_h // s, feat_w // s
+                self.poolers.append(nn.AvgPool2d(kernel_size=(kh, kw), stride=(kh, kw)))
+
+        # One conv branch per scale: BN → ReLU → conv1×1 (pre-activation)
         self.branches = ModuleList()
         for _ in scales:
             self.branches.append(
@@ -134,8 +157,8 @@ class FPPM(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         h, w = x.shape[2:]
         branch_outs = []
-        for scale, branch in zip(self.scales, self.branches):
-            pooled = F.adaptive_avg_pool2d(x, (scale, scale))
+        for pooler, branch in zip(self.poolers, self.branches):
+            pooled = pooler(x)
             feat = branch(pooled)
             feat = F.interpolate(feat, size=(h, w), mode='bilinear', align_corners=False)
             branch_outs.append(feat)
@@ -174,12 +197,15 @@ class PIDChadNet(PIDNet):
         channels = kwargs.get('channels', 64)
         ppm_channels = kwargs.get('ppm_channels', 96)
 
-        # Replace PAPPM with FPPM (same in/out channel signature)
+        # Replace PAPPM with FPPM (same in/out channel signature).
+        # feature_hw=(12,24): FPPM input is at stride 32 for 384×768 input.
+        # Must match training resolution — do not change without recomputing kernel sizes.
         self.spp = FPPM(
             in_channels=channels * 16,
             branch_channels=ppm_channels,
             out_channels=channels * 4,
             scales=fppm_scales,
+            feature_hw=(12, 24),
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
 
