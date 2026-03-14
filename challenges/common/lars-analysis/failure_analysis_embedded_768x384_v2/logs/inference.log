@@ -1,0 +1,91 @@
+2026-03-11 19:22:51,928 INFO === Phase 2/2.5 failure analysis — inference start ===
+2026-03-11 19:22:51,928 INFO Models: ['segformer_p2', 'pidnets_p2', 'pidnets_p25', 'segnext_t_p2', 'segnext_t_uperhead_p2', 'segnext_s_p2', 'stdc2_p2', 'stdc2_p25', 'bisenetv2_p2']
+2026-03-11 19:22:51,928 INFO Val images: /home/farms/data/datasets/lars_dataset/img_dir/val/images
+2026-03-11 19:22:51,928 INFO Val masks:  /home/farms/data/datasets/lars_dataset/ann_dir/val/semantic_masks
+2026-03-11 19:22:51,928 INFO Output CSV: /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/per_image_metrics.csv
+2026-03-11 19:22:51,928 INFO ORT providers: ['CUDAExecutionProvider', 'CPUExecutionProvider']
+2026-03-11 19:22:51,928 INFO Loading segformer_p2 from /home/farms/data/onnx_exports/phase2/segformer_mit-b2/segformer_mit-b2_argmax.onnx
+2026-03-11 19:22:52,294 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:22:52,294 INFO   198 images found
+2026-03-11 19:22:52,652 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.978  t=358ms
+2026-03-11 19:23:11,123 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.972  t=366ms
+2026-03-11 19:23:30,956 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.979  t=393ms
+2026-03-11 19:23:48,585 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.982  t=483ms
+2026-03-11 19:24:06,250 INFO   segformer_p2 done — 198 images in 74.0s (374ms/img)
+2026-03-11 19:24:06,273 INFO Loading pidnets_p2 from /home/farms/data/onnx_exports/phase2/pidnets/pidnets_argmax.onnx
+2026-03-11 19:24:06,333 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:24:06,334 INFO   198 images found
+2026-03-11 19:24:06,426 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.979  t=92ms
+2026-03-11 19:24:10,689 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.972  t=34ms
+2026-03-11 19:24:14,728 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.982  t=71ms
+2026-03-11 19:24:18,470 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.980  t=84ms
+2026-03-11 19:24:21,470 INFO   pidnets_p2 done — 198 images in 15.1s (76ms/img)
+2026-03-11 19:24:21,472 INFO Loading pidnets_p25 from /home/farms/data/onnx_exports/phase2_5/phase2_5/pidnets/pidnets_argmax.onnx
+2026-03-11 19:24:21,547 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:24:21,547 INFO   198 images found
+2026-03-11 19:24:21,649 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.977  t=102ms
+2026-03-11 19:24:25,895 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.954  t=47ms
+2026-03-11 19:24:29,665 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.978  t=44ms
+2026-03-11 19:24:32,562 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.975  t=43ms
+2026-03-11 19:24:34,880 INFO   pidnets_p25 done — 198 images in 13.3s (67ms/img)
+2026-03-11 19:24:34,882 INFO Loading segnext_t_p2 from /home/farms/data/onnx_exports/phase2/segnext_t/segnext_t_argmax.onnx
+2026-03-11 19:24:34,978 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:24:34,979 INFO   198 images found
+2026-03-11 19:24:35,134 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.977  t=155ms
+2026-03-11 19:24:41,758 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.966  t=105ms
+2026-03-11 19:24:48,499 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.980  t=95ms
+2026-03-11 19:24:54,763 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.979  t=94ms
+2026-03-11 19:24:59,816 INFO   segnext_t_p2 done — 198 images in 24.8s (125ms/img)
+2026-03-11 19:24:59,823 INFO Loading segnext_t_uperhead_p2 from /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/onnx_exports/segnext_t_uperhead/segnext_t_uperhead_argmax.onnx
+2026-03-11 19:24:59,900 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:24:59,900 INFO   198 images found
+2026-03-11 19:25:00,187 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.982  t=286ms
+2026-03-11 19:25:15,636 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.964  t=287ms
+2026-03-11 19:25:32,325 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.982  t=366ms
+2026-03-11 19:25:49,097 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.981  t=307ms
+2026-03-11 19:26:07,322 INFO   segnext_t_uperhead_p2 done — 198 images in 67.4s (341ms/img)
+2026-03-11 19:26:07,343 INFO Loading segnext_s_p2 from /home/farms/data/onnx_exports/phase2/segnext_s/segnext_s_argmax.onnx
+2026-03-11 19:26:07,551 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:26:07,551 INFO   198 images found
+2026-03-11 19:26:07,889 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.973  t=338ms
+2026-03-11 19:26:24,392 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.973  t=301ms
+2026-03-11 19:26:42,293 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.982  t=393ms
+2026-03-11 19:26:52,516 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.980  t=180ms
+2026-03-11 19:27:01,301 INFO   segnext_s_p2 done — 198 images in 53.8s (271ms/img)
+2026-03-11 19:27:01,312 INFO Loading stdc2_p2 from /home/farms/data/onnx_exports/phase2/stdc2/stdc2_argmax.onnx
+2026-03-11 19:27:01,379 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:27:01,379 INFO   198 images found
+2026-03-11 19:27:01,490 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.974  t=111ms
+2026-03-11 19:27:05,470 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.966  t=55ms
+2026-03-11 19:27:09,342 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.973  t=62ms
+2026-03-11 19:27:12,682 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.970  t=63ms
+2026-03-11 19:27:15,886 INFO   stdc2_p2 done — 198 images in 14.5s (73ms/img)
+2026-03-11 19:27:15,889 INFO Loading stdc2_p25 from /home/farms/data/onnx_exports/phase2_5/phase2_5/stdc2/stdc2_argmax.onnx
+2026-03-11 19:27:15,956 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:27:15,956 INFO   198 images found
+2026-03-11 19:27:16,046 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.975  t=90ms
+2026-03-11 19:27:19,955 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.957  t=54ms
+2026-03-11 19:27:23,883 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.978  t=64ms
+2026-03-11 19:27:27,654 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.975  t=84ms
+2026-03-11 19:27:30,812 INFO   stdc2_p25 done — 198 images in 14.9s (75ms/img)
+2026-03-11 19:27:30,816 INFO Loading bisenetv2_p2 from /home/farms/data/onnx_exports/phase2/bisenetv2/bisenetv2_argmax.onnx
+2026-03-11 19:27:30,847 INFO   Execution provider: CPUExecutionProvider
+2026-03-11 19:27:30,847 INFO   198 images found
+2026-03-11 19:27:30,939 INFO   [  1/198] davimar_seq_08_00008.jpg  mIoU=0.973  t=92ms
+2026-03-11 19:27:34,929 INFO   [ 50/198] inhouse_seq_245_00010.jpg  mIoU=0.952  t=54ms
+2026-03-11 19:27:39,058 INFO   [100/198] orca_flow_10_00200.jpg  mIoU=0.980  t=66ms
+2026-03-11 19:27:42,392 INFO   [150/198] yt028_02_00060.jpg  mIoU=0.979  t=63ms
+2026-03-11 19:27:45,730 INFO   bisenetv2_p2 done — 198 images in 14.9s (75ms/img)
+2026-03-11 19:27:45,753 INFO Saved 198 rows to /home/farms/macvi2026-farms-team/challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/per_image_metrics.csv
+2026-03-11 19:27:45,753 INFO 
+=== Aggregate mIoU check ===
+2026-03-11 19:27:45,753 INFO   segformer_p2                    mean mIoU = 94.35%
+2026-03-11 19:27:45,753 INFO   pidnets_p2                      mean mIoU = 94.22%
+2026-03-11 19:27:45,753 INFO   pidnets_p25                     mean mIoU = 91.73%
+2026-03-11 19:27:45,753 INFO   segnext_t_p2                    mean mIoU = 93.41%
+2026-03-11 19:27:45,753 INFO   segnext_t_uperhead_p2           mean mIoU = 93.81%
+2026-03-11 19:27:45,753 INFO   segnext_s_p2                    mean mIoU = 93.72%
+2026-03-11 19:27:45,754 INFO   stdc2_p2                        mean mIoU = 91.50%
+2026-03-11 19:27:45,754 INFO   stdc2_p25                       mean mIoU = 92.50%
+2026-03-11 19:27:45,754 INFO   bisenetv2_p2                    mean mIoU = 92.25%
+2026-03-11 19:27:45,754 INFO === Done ===

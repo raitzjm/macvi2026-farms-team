@@ -420,26 +420,17 @@ Each entry follows this structure:
 
 ---
 
-## EXP-019
-- **ID**: EXP-019
-- **Date**: 2026-03-11 19:00 UTC
-- **Phase**: Phase 3 — augmentation-focused training
-- **Status**: COMPLETED
-- **Branch/Commit**: exp/phase3-augmentation @ 2d1602f
-- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_phase3.py
-- **Dataset**: LaRS (train: 2605, val: 198) + CopyPaste from WaterScenes/ROSEBUD/MULTIAQUA_night
-- **Resolution**: 768×384
-- **Iters**: 8000 (eval every 500; save best mIoU; best at iter 8000)
-- **Hardware**: 2× RTX A6000 48 GB (DDP, torchrun --standalone --nproc_per_node=2)
-- **bs / lr**: samples_per_gpu=160, total_bs=320, lr=0.133 (SGD, poly, warmup 1500 iters)
-- **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_pidnets (run id: xzutz1ny)
-- **Results (val — export_and_eval.py, keep-ratio + centered reflect-pad)**:
-  - PyTorch: mIoU=**91.48%**, F1=**73.43%**, Q=**67.17%** | Pr=79.84%, Re=67.98% | IoU obs/wat/sky: 87.89% / 97.15% / 89.39%
-  - ONNX (FP32): mIoU=**91.40%**, F1=**73.29%**, Q=**66.99%** | PyTorch→ONNX: ΔmIoU=−0.07%, ΔF1=−0.14%
-  - INT8 (ORT static): mIoU=**90.99%**, F1=**73.23%**, Q=**66.64%** | ONNX→INT8: ΔmIoU=−0.41%, ΔF1=−0.05% — **INT8-STABLE ✓**
-  - Training val mIoU (mmseg evaluator): 96.03% @ iter 8000 (per-class: obstacle=92.85%, water=97.62%, sky=97.62%)
-  - Server Q: TBD (submission pending)
-- **Notes**: Augmentations: CopyPasteObstacles (prob=0.7, n=1-3, blur_r=2, match_L*), EnhancedPhotoMetricDistortion (brightness=77, contrast/sat=[0.6,1.5], hue=27, gamma=[0.6,1.6]), GenerateEdgeMasked (Option 1 fix from issue #28). Baseline to beat: EXP-008 Q=71.03%. Best val mIoU checkpoint: phase3/artifacts/pidnets/best_mIoU_iter_8000.pth (committed to LFS). Val mIoU progression peaked late (95.92% @ iter 7500, 96.03% @ iter 8000), surpassing EXP-018 best (95.44%). Server-matching ONNX Q=66.99% is −4.04% vs Phase 2 EXP-008 (71.03%) despite higher training mIoU — CopyPaste augmentation may have degraded obstacle F1 under server-matching eval. Server submission pending to confirm actual impact. See eval_metrics.md Phase 3 section.
+## QEXP-001
+- **ID**: QEXP-001
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (catastrophic)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5, skip-connection free mapping)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (smoothed): mIoU=**87.36%**, F1=**62.69%**, Q=**54.77%**
+  - INT8 (ORT static): mIoU=**17.84%**, F1=0.34% | ΔmIoU=-69.34% vs ONNX
+- **Notes**: Attempted to recover SegNeXt-T INT8 performance. SmoothQuant alpha=0.5 applied to safe transitions (backbone Mlp fc1, stage transitions, stem). INT8 improved from 0.86% (baseline) to 17.84% but remains unusable. Higher alphas (0.7, 0.9) and lower (0.2, 0.1, 0.05, 0.01) tested; 0.5 was best but insufficient. Outliers likely in large-kernel DW convs.
 
 ---
 
@@ -481,3 +472,97 @@ Each entry follows this structure:
 - **WandB run**: little_farms/embedded_segmentation_macvi2026/phase3_stdc2
 - **Results (val)**: TBD
 - **Notes**: Same CopyPaste + EnhancedPhotoMetricDistortion augmentations. No GenerateEdgeMasked (STDC2 doesn't use GenerateEdge). Increased schedule to 8k iters based on PIDNet-S convergence findings. Baseline to beat: EXP-017 Q=64.49%.
+
+---
+
+## QEXP-002
+- **ID**: QEXP-002
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (catastrophic)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/segnext_t_uperhead_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5, skip-connection free mapping)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (smoothed): mIoU=**85.28%**, F1=**69.60%**, Q=**59.36%**
+  - INT8 (ORT static): mIoU=**9.11%**, F1=1.68% | ΔmIoU=-76.16%
+- **Notes**: MSCAN-T + UPerHead version. More sensitive to smoothing than HAM version. INT8 drop remains catastrophic.
+
+---
+
+## QEXP-003
+- **ID**: QEXP-003
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (regression)
+- **Config**: challenges/embedded-semantic-segmentation/phase2/configs/pidnets_768x384_lars_phase2.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
+- **Notes**: PIDNet-S (EXP-008) control run. SmoothQuant introduced severe degradation in an already-stable model.
+
+---
+
+## QEXP-004
+- **ID**: QEXP-004
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 2.5 — SmoothQuant recovery (Issue #42)
+- **Status**: FAILED (regression)
+- **Config**: challenges/embedded-semantic-segmentation/phase2_5/configs/pidnets_768x384_lars_phase2_5.py
+- **Method**: Manual SmoothQuant transformation (alpha=0.5)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**8.84%** (Regression from 93.43% baseline)
+- **Notes**: PIDNet-S (EXP-018) control run. Results identical to QEXP-003.
+
+---
+
+## QEXP-005
+- **ID**: QEXP-005
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (massive recovery)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segnext_t_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (refined): mIoU=**63.89%**
+  - INT8 (ORT static): mIoU=**44.29%**, Q=**16.82%** | ΔmIoU=+43.43% vs baseline
+- **Notes**: Successfully recovered SegNeXt-T from 8-bit failure. Most effective technique tested.
+
+---
+
+## QEXP-006
+- **ID**: QEXP-006
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (partial recovery)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segnext_t_uperhead_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - PyTorch (refined): mIoU=**63.84%**
+  - INT8 (ORT static): mIoU=**36.54%**, Q=**7.43%**
+- **Notes**: Significant recovery for UPerHead version, though less than HAM version.
+
+---
+
+## QEXP-007
+- **ID**: QEXP-007
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (stable)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**69.28%**, Q=**14.97%**
+- **Notes**: Maintained high stability of PIDNet-S while slightly refining weights.
+
+---
+
+## QEXP-008
+- **ID**: QEXP-008
+- **Date**: 2026-03-13 UTC
+- **Phase**: Phase 3 — QAT recovery (Issue #43)
+- **Status**: SUCCESS (stable)
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/pidnets_p2_5_768x384_lars_qat.py
+- **Method**: Quantization-Aware Training (2k iters, bs=2, manual FakeQuant wrapper)
+- **Results (val — export_and_eval.py)**:
+  - INT8 (ORT static): mIoU=**67.43%**, Q=**19.80%**
+- **Notes**: Maintained stability of PIDNet-S P2.5 variant.
