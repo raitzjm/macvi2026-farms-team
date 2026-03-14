@@ -134,3 +134,35 @@ PyTorch upper bound (Phase 2.5):
 | pidnets | 89.84% | 71.90% | 64.60% | −0.14% | −0.04% | −0.13% | 14.0 | ✓ |
 
 Both Phase 2.5 models are INT8-stable (≤0.13% Q drop). STDC2 gains +1.99% Q from pipeline fixes; PIDNet-S loses −6.30% Q — pipeline fixes had an adverse effect on PIDNet-S (see issue #28 for analysis).
+
+---
+
+## Phase 3 — FP32 ONNX (2026-03-14)
+
+Platform: NVIDIA GeForce RTX 3050 Laptop GPU, CUDA 12.1, ORT 1.24.2 (CPUExecutionProvider — FPS is CPU inference, not GPU)
+Script: `phase3/scripts/export_and_eval.py`
+
+| Model | EXP | Checkpoint | mIoU | F1 | Q | Pr | Re | IoU-obs | IoU-wat | IoU-sky | FPS |
+|-------|-----|------------|------|----|---|----|----|---------|---------|---------|-----|
+| pidnets | EXP-020 | pidnets_020.pth | 92.74% | 75.78% | 70.28% | 85.00% | 68.37% | 89.64% | 97.81% | 90.77% | 17.8 |
+| pidchad_s_021 | EXP-021 | pidchad_s_021.pth | 91.64% | 75.94% | 69.60% | 83.77% | 69.45% | 89.00% | 97.68% | 88.25% | 18.3 |
+
+PyTorch upper bound (Phase 3):
+
+| Model | PT mIoU | PT F1 | PT Q | ΔmIoU vs ONNX | ΔF1 vs ONNX |
+|-------|---------|-------|------|---------------|-------------|
+| pidnets | 92.82% | 75.97% | 70.51% | −0.08% | −0.18% |
+| pidchad_s_021 | 91.70% | 76.30% | 69.97% | −0.06% | −0.36% |
+
+ONNX delta is ≤0.08% mIoU — export is accurate.
+
+## Phase 3 — INT8 ONNX (onnxruntime static quantization, QUInt8, 50-image calibration)
+
+| Model | INT8 mIoU | INT8 F1 | INT8 Q | ΔmIoU | ΔF1 | ΔQ | INT8 FPS | INT8-stable? |
+|-------|-----------|---------|--------|-------|-----|----|----------|--------------|
+| pidnets | 92.33% | 76.35% | 70.49% | −0.41% | +0.56% | +0.21% | 21.5 | ✓ |
+| pidchad_s_021 | 91.65% | 75.73% | 69.40% | +0.00% | −0.22% | −0.19% | 23.6 | ✓ |
+
+Both Phase 3 models are INT8-stable. PIDNet-S (EXP-020) leads with Q=70.28% FP32 / 70.49% INT8.
+PIDChad-S (EXP-021) AFFM+FPPM structural changes regressed mIoU by −1.10% and sky IoU by −2.55%
+vs EXP-020, without meaningful F1 improvement. More aggressive LSJ (0.1–2.0) may also contribute.

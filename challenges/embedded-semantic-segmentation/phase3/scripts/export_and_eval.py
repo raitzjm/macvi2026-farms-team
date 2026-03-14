@@ -80,7 +80,7 @@ MODELS = {
     ),
     'pidnets': dict(
         config=os.path.join(CONFIGS_DIR, 'pidnets_768x384_lars_phase3.py'),
-        ckpt=os.path.join(ARTIFACTS_DIR, 'pidnets', 'best_mIoU_iter_8000.pth'),
+        ckpt=os.path.join(ARTIFACTS_DIR, 'pidnets_020', 'pidnets_020.pth'),
         syncbn=True, ham_fix=False, align_corners=True,
     ),
     'pidchad_s_021': dict(
