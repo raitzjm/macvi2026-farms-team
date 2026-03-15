@@ -14,3 +14,4 @@ FPS requirement: ≥30 FPS to be eligible for ranking
 | #16820 | 2026-03-12 | STDC2 SGD | EXP-017 | 44.8 | 65.8 | 49.2 | 47.3 | 48.3 | 92.9 | TBD | TBD | TBD | [analysis](submissions/16820_stdc2_exp017/analysis.md) |
 | #16864 | 2026-03-12 | PIDNet-S | EXP-019 | 41.6 | 64.2 | 39.6 | 54.6 | 45.9 | 90.7 | TBD | TBD | TBD | [analysis](submissions/16864_pidnets_exp019/analysis.md) |
 | #16909 | 2026-03-13 | PIDNet-S | EXP-020 | 52.1 | 67.8 | 54.1 | 56.4 | 55.2 | 94.4 | TBD | TBD | Phase 3 definitive, 15k iters, CopyPaste augmentation; new best Q (+2.6 vs EXP-008 baseline) | [analysis](submissions/16909_pidnets_exp020/analysis.md) |
+| #16943 | 2026-03-14 | PIDChad-S | EXP-021 | 46.4 | 66.1 | 46.3 | 54.2 | 50.0 | 92.9 | TBD | TBD | Phase 3 PIDChad-S (AFFM+FPPM); Q regressed −5.7 vs EXP-020; precision collapse (46.3% vs 54.1%) | [analysis](submissions/16943_pidchad_s_exp021/analysis.md) |

@@ -54,6 +54,8 @@ Thumbs.db
 !challenges/embedded-semantic-segmentation/phase2/**/*.pth
 !challenges/embedded-semantic-segmentation/phase2/**/*.log
 !challenges/embedded-semantic-segmentation/phase2_5/**/*.pth
+!challenges/embedded-semantic-segmentation/phase3/artifacts/**/*.pth
+!challenges/embedded-semantic-segmentation/phase3/artifacts/**/*.log
 
 # WandB local run cache (written to WANDB_DIR; never commit)
 wandb/

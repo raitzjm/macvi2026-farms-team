@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # gemini-ask.sh — delegate a task to Gemini as a sub-agent
 #
-# Usage: gemini-ask.sh [--silence-timeout N] [--auto] "prompt"
+# Usage: gemini-ask.sh [--silence-timeout N] [--auto] [--flash] "prompt"
 #
 # Options:
 #   --auto              Use "Auto (Gemini 3)" model instead of the default
 #                       gemini-3.1-pro-preview. Prefer this for lightweight
 #                       tasks (short lookups, summaries, simple Q&A) where
 #                       Pro is overkill.
+#   --flash             Use "gemini-3-flash-preview" model. Prefer this for
+#                       log parsing, metric extraction, and other fast
+#                       structured reads where Pro is overkill.
 #   --silence-timeout N Seconds of silence before declaring a hang (default 300)
 #
 # Exit codes:
@@ -29,6 +32,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --auto)
             GEMINI_MODEL="Auto (Gemini 3)"
+            shift
+            ;;
+        --flash)
+            GEMINI_MODEL="gemini-3-flash-preview"
             shift
             ;;
         --) shift; break ;;
