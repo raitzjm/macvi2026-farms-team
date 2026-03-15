@@ -19,7 +19,7 @@ Key objectives:
 - **Augmentation Pipeline:** 
   - `CopyPasteObstacles` (n_paste=1-3, prob_apply=0.7) implemented with a shared RAM cache to minimize data loading bottlenecks (`data_time` reduced from ~0.85s to ~0.53s).
   - `EnhancedPhotoMetricDistortion` for color/lighting robustness.
-  - Aggressive Large Scale Jittering (LSJ) added in later experiments to capture small-scale signal.
+  - Large Scale Jittering (LSJ): EXP-020 used (0.5, 2.0); EXP-021 used aggressive (0.1, 2.0) to target tiny obstacle recall.
   - `GenerateEdgeMasked` to resolve edge target conflicts in reflect-padded regions.
 - **Hardware:** 2× NVIDIA RTX A6000 48 GB GPUs (DDP, `torchrun --standalone --nproc_per_node=2`)
 - **Resolution:** 768×384 (Keep-ratio + centered reflect-pad matching server preprocessing).
@@ -38,9 +38,9 @@ EXP-020 served as the definitive augmentation run, rectifying the "augmentation 
 - *INT8 Stability:* Excellent (ΔmIoU = -0.41%, ΔF1 = +0.56%). Maintains ~17-22 FPS locally.
 
 **Server Results (Submission #16909):**
-- **mIoU:** 94.36% (vs 92.82% in EXP-008)
-- **F1:** 55.22% (vs 53.28% in EXP-008)
-- **Q Score:** 52.11 (vs 49.46 in EXP-008)
+- **mIoU:** 94.36% (vs 92.82% server in EXP-008)
+- **F1:** 55.22% (vs 53.28% server in EXP-008)
+- **Q Score:** 52.11 (vs 49.46 server in EXP-008)
 - **Precision:** 54.10%, **Recall:** 56.39%
 - **Errors:** FP = 3939, FN = 3590
 
@@ -83,7 +83,7 @@ A persistent challenge remains the discrepancy between local LaRS validation met
 - However, server mIoU actually *exceeded* local mIoU for EXP-020, suggesting our padding/preprocessing pipeline is highly accurate and generalizing well to the test set's background distributions.
 
 ## 7. Progression Table
-Q score progression across Phase 2 and Phase 3 submissions (Server Metrics):
+Q score progression for PIDNet-S variants across Phase 2 and Phase 3 (Server Metrics):
 
 | Submission | EXP     | Model       | Notes                                      | Q Score | mIoU  | F1    |
 |------------|---------|-------------|--------------------------------------------|---------|-------|-------|
