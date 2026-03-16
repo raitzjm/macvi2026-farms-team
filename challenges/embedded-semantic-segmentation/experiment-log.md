@@ -605,7 +605,7 @@ Each entry follows this structure:
 - **ID**: EXP-022
 - **Date**: 2026-03-16 UTC
 - **Phase**: Phase 3 — Architecture experiment (Issue #54)
-- **Status**: RUNNING
+- **Status**: COMPLETED
 - **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segchad_022_768x384_lars_phase3.py
 - **Dataset**: LaRS (train=2605, val=198), 768×384
 - **Schedule**: 24000 iters, eval every 500 iters, save best mIoU
@@ -613,6 +613,12 @@ Each entry follows this structure:
 - **Architecture**: SegChad — ConvNeXt-V2 Femto backbone + 3-stream D/P/I decoder, PAG fusion, boundary-guided aggregation
 - **Augmentation**: Moderate LSJ (0.5, 2.0), CopyPasteObstacles, EnhancedPhotoMetricDistortion, ReflectPad
 - **Loss**: CrossEntropyLoss (main, w=1.0) + boundary BCE (w=10.0, generated internally)
-- **WandB run**: phase3_segchad_022
+- **WandB run**: phase3_segchad_022 (run id: fwcpkbxy)
 - **Git commit**: a08e05c0ebad4fb8e048c3767e33087bdd1d43ff
-- **Results**: pending
+- **Full training**: COMPLETED — 2026-03-16 08:16 UTC (~7.5h wall time)
+- **Results (val — training pipeline, local val set)**:
+  - Best mIoU: **97.13%** @ iter 17000 (obstacle=94.87%, water=98.30%, sky=98.23%)
+  - Best aAcc: 98.70%, best mAcc: 98.55%
+  - Final mIoU (iter 24000): 97.12% (plateaued ~97.10-97.13% from iter 17000 onward)
+- **Results (export/server)**: pending local export_and_eval.py — see submissions.md for server Q score
+- **Artifact**: phase3/artifacts/segchad_022/ (segchad_022.pth in LFS, config.py, train.log)
