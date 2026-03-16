@@ -139,7 +139,7 @@ segchad_train_pipeline = [
 # 48GB GPU → conservative BS=16 per GPU to accommodate decoder overhead.
 # LAPTOP SMOKE TEST: override to batch_size=1 via --cfg-options train_dataloader.batch_size=1
 train_dataloader = dict(
-    batch_size=16,
+    batch_size=32,
     dataset=dict(pipeline=segchad_train_pipeline))
 
 # ── Model (SegChad: ConvNeXt-V2 Femto + 3-stream decoder) ────────────────────
@@ -194,7 +194,7 @@ model = dict(
 # AdamW LR does NOT scale with batch size — keep fixed.
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='AdamW', lr=1e-4, weight_decay=0.05),
+    optimizer=dict(type='AdamW', lr=1.5e-4, weight_decay=0.05),
     paramwise_cfg=dict(
         custom_keys={
             'backbone': dict(lr_mult=0.1, decay_mult=1.0),
