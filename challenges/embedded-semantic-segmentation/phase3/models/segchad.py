@@ -496,7 +496,7 @@ class SegChadHead(BaseDecodeHead):
                  decoder_mid_channels: int = 128,
                  decoder_out_channels: int = 64,
                  boundary_loss_weight: float = 10.0,
-                 boundary_width: int = 4,
+                 boundary_width: int = 2,
                  norm_cfg=dict(type='SyncBN', requires_grad=True),
                  align_corners: bool = False,
                  **kwargs):

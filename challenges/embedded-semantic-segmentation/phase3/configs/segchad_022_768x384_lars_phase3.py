@@ -171,8 +171,11 @@ model = dict(
         i_channels=256,         # I-branch output channels
         decoder_mid_channels=128,
         decoder_out_channels=64,
-        boundary_loss_weight=10.0,  # moderate (NOT 25.0 from EXP-021)
-        boundary_width=4,
+        boundary_loss_weight=10.0,  # moderate (NOT 25.0 from EXP-021); class-balanced
+                                    # BCE internally reduces magnitude so 10.0 is needed
+                                    # (comparable to PIDNet's proven 20.0)
+        boundary_width=2,           # 5-pixel kernel (was 4→9px which could swallow
+                                    # small distant obstacles — critical for F1)
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=[
