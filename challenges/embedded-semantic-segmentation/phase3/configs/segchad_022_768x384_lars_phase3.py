@@ -34,8 +34,10 @@ Hardware: 2x RTX A6000 48 GB (DDP)
   # Well within the 5-hour budget
 
 Schedule:
-  12000 iters, eval every 500 iters, save best mIoU.
-  Linear warmup (1000 iters) + cosine annealing.
+  24000 iters, eval every 500 iters, save best mIoU.
+  Linear warmup (1000 iters) + cosine annealing over 23k iters.
+  Extended from 12k: cosine LR reaches ~0 at end so extending post-hoc is
+  ineffective; decoder has ~18 randomly init'd layers needing convergence time.
 
 WandB run name: phase3_segchad_022
 
@@ -198,11 +200,22 @@ optim_wrapper = dict(
             'backbone': dict(lr_mult=0.1, decay_mult=1.0),
         }))
 
-# ── Schedule (12k iters, cosine annealing) ───────────────────────────────────
-# With strong pretrained ConvNeXt features + AdamW, 12k iters converges well.
-# Linear warmup (1000 iters) + cosine annealing to 0.
-# Estimated training time: 10-13 min on 2x A6000 at ~15-20 it/s.
-iters = 12000
+# ── Schedule (24k iters, cosine annealing) ───────────────────────────────────
+# 24k chosen over 12k because: cosine LR reaches ~zero at end of schedule, so
+# extending past max_iters is ineffective (LR stays at eta_min=1e-6). The decoder
+# has ~18 randomly initialized conv layers — more than PIDNet-S's ~6 — and may
+# need more iters to converge. 24k is still ~20-25 min on 2x A6000 (well within
+# 5h budget). best_mIoU checkpoint is saved throughout so early convergence is fine.
+# Linear warmup (1000 iters) + cosine annealing over remaining 23k iters.
+#
+# SERVER AGENT — BS calibration:
+#   1. Run OOM probe: torchrun --nproc_per_node=2 ... --cfg-options train_cfg.max_iters=5
+#   2. Try samples_per_gpu=16 (current), then 24, then 32 — use max that fits OOM-free
+#   3. LR: keep lr=1e-4 fixed for total_bs up to ~64 (AdamW is BS-insensitive in this
+#      range with 2605 training images + aggressive augmentation). If total_bs >64,
+#      consider a mild bump to lr=1.5e-4 — but do not apply linear scaling (that is
+#      SGD-only per CLAUDE.md). Update the batch_size comment below with final value.
+iters = 24000
 param_scheduler = [
     dict(type='LinearLR', start_factor=1e-3, begin=0, end=1000, by_epoch=False),
     dict(type='CosineAnnealingLR', eta_min=1e-6, begin=1000, end=iters,
@@ -218,7 +231,7 @@ default_hooks = dict(
     checkpoint=dict(
         type='CheckpointHook',
         by_epoch=False,
-        interval=3000,        # save checkpoint every 3000 iters
+        interval=4000,        # save checkpoint every 4000 iters (6 saves over 24k)
         save_best='mIoU',
         rule='greater'),
 )
