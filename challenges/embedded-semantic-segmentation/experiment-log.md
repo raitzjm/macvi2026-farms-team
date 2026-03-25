@@ -620,5 +620,12 @@ Each entry follows this structure:
   - Best mIoU: **97.13%** @ iter 17000 (obstacle=94.87%, water=98.30%, sky=98.23%)
   - Best aAcc: 98.70%, best mAcc: 98.55%
   - Final mIoU (iter 24000): 97.12% (plateaued ~97.10-97.13% from iter 17000 onward)
-- **Results (export/server)**: pending local export_and_eval.py — see submissions.md for server Q score
+- **Results (export/server — local, export_and_eval.py)**:
+  - FP32 ONNX: mIoU=**93.15%**, F1=**80.03%**, Q=**74.55%** (best local FP32 Q of any experiment)
+  - INT8 (ORT static): mIoU=**90.27%**, F1=**74.94%**, Q=**67.65%** — ΔQ=−6.90%
+- **Server result**: CATASTROPHIC FAILURE — ranked among lowest on leaderboard.
+  Exact Q score unavailable (submission results deleted before archival).
+  Root cause: ConvNeXt-V2 LayerNorm + GRN incompatible with Qualcomm SNPE INT8 on RVC4.
+  ORT INT8 is not a reliable proxy for SNPE INT8 for non-BatchNorm architectures.
+- **QAT attempt (QEXP-009)**: 2k iters, AdamW lr=1e-5 — worsened INT8 to ΔQ=−15.24%. QAT cannot fix SNPE op coverage gaps.
 - **Artifact**: phase3/artifacts/segchad_022/ (segchad_022.pth in LFS, config.py, train.log)

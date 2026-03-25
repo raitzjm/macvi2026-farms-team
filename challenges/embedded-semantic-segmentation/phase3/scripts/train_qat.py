@@ -8,7 +8,6 @@ import os.path as osp
 
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
-from mmrazor.utils import register_all_modules
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a razor model')
@@ -31,7 +30,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    register_all_modules(False)
 
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
