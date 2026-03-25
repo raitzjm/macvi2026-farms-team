@@ -88,6 +88,16 @@ MODELS = {
         ckpt=None,   # resolved dynamically via _best_ckpt()
         syncbn=True, ham_fix=False, align_corners=True,
     ),
+    'segchad_022': dict(
+        config=os.path.join(CONFIGS_DIR, 'segchad_022_768x384_lars_phase3.py'),
+        ckpt=None,   # resolved dynamically via _best_ckpt()
+        syncbn=True, ham_fix=False, align_corners=False,
+    ),
+    'segchad_022_qat': dict(
+        config=os.path.join(CONFIGS_DIR, 'segchad_022_768x384_lars_phase3.py'),
+        ckpt=os.path.join(OUTPUTS_DIR, 'segchad_022', 'best_mIoU_iter_1500_unwrapped.pth'),
+        syncbn=True, ham_fix=False, align_corners=False,
+    ),
 }
 
 NUM_CLASSES = 3

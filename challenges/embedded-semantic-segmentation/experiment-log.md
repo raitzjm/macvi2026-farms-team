@@ -598,3 +598,34 @@ Each entry follows this structure:
 - **Results (val — export_and_eval.py)**:
   - INT8 (ORT static): mIoU=**67.43%**, Q=**19.80%**
 - **Notes**: Maintained stability of PIDNet-S P2.5 variant.
+
+---
+
+## EXP-022
+- **ID**: EXP-022
+- **Date**: 2026-03-16 UTC
+- **Phase**: Phase 3 — Architecture experiment (Issue #54)
+- **Status**: COMPLETED
+- **Config**: challenges/embedded-semantic-segmentation/phase3/configs/segchad_022_768x384_lars_phase3.py
+- **Dataset**: LaRS (train=2605, val=198), 768×384
+- **Schedule**: 24000 iters, eval every 500 iters, save best mIoU
+- **bs / lr**: samples_per_gpu=32, total_bs=64, lr=1.5e-4 (AdamW; mild bump for total_bs=64)
+- **Architecture**: SegChad — ConvNeXt-V2 Femto backbone + 3-stream D/P/I decoder, PAG fusion, boundary-guided aggregation
+- **Augmentation**: Moderate LSJ (0.5, 2.0), CopyPasteObstacles, EnhancedPhotoMetricDistortion, ReflectPad
+- **Loss**: CrossEntropyLoss (main, w=1.0) + boundary BCE (w=10.0, generated internally)
+- **WandB run**: phase3_segchad_022 (run id: fwcpkbxy)
+- **Git commit**: a08e05c0ebad4fb8e048c3767e33087bdd1d43ff
+- **Full training**: COMPLETED — 2026-03-16 08:16 UTC (~7.5h wall time)
+- **Results (val — training pipeline, local val set)**:
+  - Best mIoU: **97.13%** @ iter 17000 (obstacle=94.87%, water=98.30%, sky=98.23%)
+  - Best aAcc: 98.70%, best mAcc: 98.55%
+  - Final mIoU (iter 24000): 97.12% (plateaued ~97.10-97.13% from iter 17000 onward)
+- **Results (export/server — local, export_and_eval.py)**:
+  - FP32 ONNX: mIoU=**93.15%**, F1=**80.03%**, Q=**74.55%** (best local FP32 Q of any experiment)
+  - INT8 (ORT static): mIoU=**90.27%**, F1=**74.94%**, Q=**67.65%** — ΔQ=−6.90%
+- **Server result**: CATASTROPHIC FAILURE — ranked among lowest on leaderboard.
+  Exact Q score unavailable (submission results deleted before archival).
+  Root cause: ConvNeXt-V2 LayerNorm + GRN incompatible with Qualcomm SNPE INT8 on RVC4.
+  ORT INT8 is not a reliable proxy for SNPE INT8 for non-BatchNorm architectures.
+- **QAT attempt (QEXP-009)**: 2k iters, AdamW lr=1e-5 — worsened INT8 to ΔQ=−15.24%. QAT cannot fix SNPE op coverage gaps.
+- **Artifact**: phase3/artifacts/segchad_022/ (segchad_022.pth in LFS, config.py, train.log)

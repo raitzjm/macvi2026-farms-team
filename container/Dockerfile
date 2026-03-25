@@ -207,6 +207,9 @@ RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
 RUN /home/farms/miniforge3/envs/macvi2/bin/pip install \
         wandb==0.25.0 onnx==1.20.1 onnxruntime==1.24.2
 
+# --- timm (ConvNeXt-V2 backbone for SegChad EXP-022) ---
+RUN /home/farms/miniforge3/envs/macvi2/bin/pip install timm
+
 # --- wandb validation.py patch ---
 # wandb 0.25.0 rejects keys starting with "wandb_" (new key format) because
 # the 40-char minimum check fires after stripping the "wandb_" prefix.

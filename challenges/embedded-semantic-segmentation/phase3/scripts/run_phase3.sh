@@ -6,7 +6,7 @@
 #   bash challenges/embedded-semantic-segmentation/phase3/scripts/run_phase3.sh <model>
 #
 # <model> is one of:
-#   pidnets | stdc2
+#   pidnets | stdc2 | pidchad_s_021 | segchad_022
 #
 # The script:
 #   1. Rebuilds the LaRS symlink tree if not present
