@@ -1,4 +1,4 @@
-# Phase 2 — mmseg 1.2.2 Migration + Full Baseline Training
+# Phase 2 — mmseg 1.2.2 Migration + Full Baseline Training (COMPLETE)
 
 ## Environment
 - Conda env: `macvi2` at `/home/farms/miniforge3/envs/macvi2/`
@@ -87,19 +87,15 @@ Images appear in WandB "Media" tab per run at every val interval (every 250 iter
 | BiSeNetV2 | 128 | 256 | 0.80 (CORRECTED — Phase 1 used 3.2, wrong) | SGD |
 | PIDNet-S | 160 | 320 | 0.133 (0.01×160/12; REVISED 2026-03-04; 0.267 caused 9% oscillations) | SGD |
 
-## New Models (added late to Phase 2)
-| Model | samples_per_gpu | total_bs | LR | Optimizer | Notes |
-|---|---|---|---|---|---|
-| SegNeXt-S | 40 | 80 | 6e-5 | AdamW | OOM@56 → 40/GPU (20% reduction from ~50 boundary); CALIBRATED 2026-03-04 |
-| UNet-s5-d16 | 16 | 32 | 6e-5 (fixed; AdamW) | AdamW | Trains from scratch; CALIBRATED 2026-03-04: OOM@~19 → bs=16 (82%); bs=18→44.4GB |
-| PIDNet-M | 80 | 160 | 0.0667 (SGD, 0.01×80/12) | SGD | PIDNet-M OOM-probe: 120→46GB,140→OOM; conservative bs=80 (73.5% VRAM); actual DDP training mem: 35.3 GB ✓; CALIBRATED 2026-03-07 |
+## Additional Models (added during Phase 2)
+| Model | samples_per_gpu | total_bs | LR | Optimizer |
+|---|---|---|---|---|
+| SegNeXt-S | 40 | 80 | 6e-5 | AdamW |
+| UNet-s5-d16 | 16 | 32 | 6e-5 | AdamW |
+| PIDNet-M | 80 | 160 | 0.0667 | SGD |
 
-Ref for SegNeXt-S: upstream mscan-s_1xb16-adamw-160k_ade20k (same backbone, larger dims).
-Ref for UNet: switched to AdamW (user request 2026-03-04). Starting estimate bs=4/GPU; calibrate before first run.
-Update configs + issue after calibration.
+AdamW variants of SGD models also trained (`stdc2_adamw`, `bisenetv2_adamw`, `pidnets_adamw`):
+5k iters, LR=6e-5, LinearLR warmup + PolyLR. Separate config files.
 
-## AdamW Variants of SGD Models (additional Phase 2 experiments)
-Same architecture as corresponding SGD runs; separate config files (do NOT override SGD configs).
-All AdamW variants: 5k iters, LR=6e-5, LinearLR (start_factor=1e-6, 500 iters) + PolyLR (power=1.0).
-Configs: `stdc2_adamw`, `bisenetv2_adamw`, `pidnets_adamw`. Calibrate BS before each run.
+See `../eval_metrics.md` for all Phase 2 results.
 
