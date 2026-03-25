@@ -67,14 +67,14 @@ Training was performed on 2$\times$ NVIDIA RTX A6000 (48\,GB) with DDP. On the c
   \node[box, fill=yellow!12, right=0.25cm of input] (geom) {Geometric\\Augmentation};
   \node[box, fill=orange!18, right=0.25cm of geom] (cp) {\textbf{Copy-Paste}\\Obstacles};
   \node[box, fill=red!12, right=0.25cm of cp] (photo) {Photometric\\Distortion};
-  \node[box, fill=cyan!12, below=0.55cm of $(geom)!0.5!(cp)$] (model) {PIDNet-S};
+  \node[box, fill=cyan!12, below=0.55cm of $(cp)!0.5!(photo)$] (model) {PIDNet-S};
   \node[box, fill=purple!12, right=0.25cm of model] (out) {3-Class\\Output};
   \node[dbbox, above=0.35cm of cp] (db) {External crops\\WS+RB+MA};
   \draw[arr] (input) -- (geom);
   \draw[arr] (geom) -- (cp);
   \draw[arr] (cp) -- (photo);
   \draw[arr] (db) -- (cp);
-  \draw[arr] (photo) |- (model);
+  \draw[arr] (photo) -- (model);
   \draw[arr] (model) -- (out);
 \end{tikzpicture}%
 }
