@@ -1,4 +1,4 @@
-# Phase 2.5 — Pipeline Fix Verification (COMPLETE)
+# Phase 2.5 — Pipeline Fix Verification: keep_ratio + val de-padding (COMPLETE)
 
 ## Purpose
 Controlled re-training of 2 INT8-stable models (PIDNet-S, STDC2) with all

@@ -49,6 +49,7 @@ The `summary.json` fields map to submissions.md columns as follows:
 
 ## WandB Experiment Tracking
 
+- **Package**: `wandb==0.25.0` (pinned — required for `wandb_` key prefix patch)
 - **API key**: `~/data/wandb_key.txt` (read-only mount — never commit). Load via
   `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
 - **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
@@ -66,8 +67,8 @@ The challenge server preprocesses images before feeding them to our ONNX:
 4. Normalize with ImageNet mean/std (mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
 
 **Required mmseg pipeline settings:**
-- Test: `Resize(keep_ratio=True)` + `Pad(padding_mode='reflect')` with centering
-- Train: `Pad(padding_mode='reflect')` (centering not needed in train)
+- Test: `dict(type='Resize', keep_ratio=True)` + `dict(type='Pad', size=crop_size, padding_mode='reflect')` with centering
+- Train: `dict(type='Pad', size=crop_size, padding_mode='reflect')` — `padding_mode='reflect'` is mirror padding; default `pad_val=0` is wrong
 
 ## Config Philosophy
 
@@ -127,18 +128,18 @@ SegNeXt models (EXP-006/010/015) committed to LFS for reference only — INT8 ca
 failure (MSCAN large-kernel depthwise attention). See `eval_metrics.md` for full results.
 
 ## Current Status
-All training phases complete. Team placed **top 3** on the challenge leaderboard.
-Best submission: EXP-020 PIDNet-S (Q=52.1, mIoU=94.4%, F1=55.2%).
+All training phases complete. Best submission: EXP-020 PIDNet-S (Q=52.1, mIoU=94.4%,
+F1=55.2%). Placed top 3 among ≥30 FPS entries on the challenge leaderboard.
 Now preparing the challenge report for CVPR 2026.
 
 ## Key Reports & Documents
 | Document | Path | Description |
 |----------|------|-------------|
 | Phase 1 Report | `phase1/phase1_report.md` | Baseline validation (4 models, 1.5k iters), preprocessing checks, architecture rankings |
+| Phase 2 Results | `eval_metrics.md` | FP32 & INT8 ONNX evaluation results for all Phase 2 models |
 | Phase 3 Report | `phase3/phase3_report.md` | CopyPaste augmentation, PIDChad-S, SegChad experiments and server results |
 | Submissions Tracker | `submissions.md` | All challenge submissions with Q, mIoU, F1, FPS, and analysis links |
 | Experiment Log | `experiment-log.md` | Append-only log of all training runs (EXP-001 through EXP-022) |
-| Eval Metrics | `eval_metrics.md` | Phase 2 FP32 & INT8 ONNX evaluation results for all models |
 | Reference Baselines | `reference_baselines.md` | Published challenge baseline results for comparison |
 | LaRS Analysis | `../common/lars-analysis/` | Failure analysis, spatial/whole-image OOD reports (PDFs) |
 | External Data Analysis | `../common/external-dataset-analysis/` | WaterScenes, ROSEBUD, MULTIAQUA_night analysis |
