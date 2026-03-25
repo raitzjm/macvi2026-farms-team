@@ -33,7 +33,7 @@
 
 \vspace{0.3em}
 \noindent\textbf{Architecture.}
-We use PIDNet-S~\cite{xu2023pidnet} (\href{https://github.com/XuJiacong/PIDNet}{github.com/XuJiacong/PIDNet}), a lightweight three-branch (Proportional--Integral--Derivative) network with 32 base channels, PPM pooling (96~channels), and a PIDHead decoder (128~channels, 3~classes). The backbone is initialized from ImageNet-1K pretrained weights. We made no architectural modifications---PIDNet-S was selected specifically because its BatchNorm + Conv + ReLU composition quantizes cleanly under Qualcomm SNPE INT8 on the RVC4, unlike transformer-based alternatives (SegFormer, SegNeXt) which we found to suffer catastrophic INT8 degradation during our evaluation phase.
+We use PIDNet-S~\cite{xu2023pidnet} (\href{https://github.com/XuJiacong/PIDNet}{github.com/XuJiacong/PIDNet}), a lightweight three-branch (Proportional--Integral--Derivative) network with 32 base channels, PPM pooling (96~channels), and a PIDHead decoder (128~channels, 3~classes). The backbone is initialized from ImageNet-1K pretrained weights. We made no architectural modifications---PIDNet-S was selected specifically because its BatchNorm + Conv + ReLU composition quantizes cleanly under the server's INT8 quantization pipeline on the Luxonis RVC4, unlike transformer-based alternatives (SegFormer, SegNeXt) which we found to suffer catastrophic INT8 degradation during our evaluation phase.
 
 \vspace{0.3em}
 \noindent\textbf{Training.}
@@ -50,7 +50,7 @@ LaRS~\cite{zust2023lars} (train: 2{,}605 images) for training; ImageNet-1K for b
 
 \vspace{0.3em}
 \noindent\textbf{Hardware \& inference speed.}
-Training was performed on 2$\times$ NVIDIA RTX A6000 (48\,GB) with DDP. On the challenge server (Luxonis RVC4, Qualcomm SNPE INT8), our model achieves 67.7\,FPS.
+Training was performed on 2$\times$ NVIDIA RTX A6000 (48\,GB) with DDP. On the challenge server (Luxonis RVC4, INT8 quantization), our model achieves 67.7\,FPS.
 
 % Optional figure — can be removed to save space
 \begin{figure}[t]
