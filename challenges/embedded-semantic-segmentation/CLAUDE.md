@@ -49,23 +49,15 @@ The `summary.json` fields map to submissions.md columns as follows:
 
 ## WandB Experiment Tracking
 
-- **Package**: `wandb==0.25.0` installed in `macvi` env (`pip install wandb==0.25.0`)
-- **API key**: stored at `~/data/wandb_key.txt` (read-only mount — never commit)
-  - Key format starts with `wandb_` (new format) — requires the validation.py patch above
-  - Load via `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
-    or inline: `export WANDB_API_KEY=$(tr -d '[:space:]' < ~/data/wandb_key.txt)`
+- **API key**: `~/data/wandb_key.txt` (read-only mount — never commit). Load via
+  `source challenges/embedded-semantic-segmentation/phase1/scripts/setup_wandb.sh`
 - **Entity/Project**: `little_farms` / `embedded_segmentation_macvi2026`
-- **Run naming**: `{phase}_{model_name}` — e.g. `phase1_stdc2`, `phase2_segformer_mit-b2`
-- **Failed runs**: if a training run fails and must be restarted, **delete the failed run
-  from WandB first** (`gh` or the WandB UI) before relaunching, so the project stays clean.
-  Use `wandb run delete <run-id>` or delete via the WandB web UI under the project page.
-- **WANDB_DIR env var**: MUST be set to a directory that is NOT on `PYTHONPATH`
-  (e.g. `outputs/phase1`). If `wandb/` ends up on `PYTHONPATH`, Python imports the wandb
-  cache directory instead of the wandb package — silently breaking all imports. The run
-  scripts set this correctly; check if adding new scripts.
-- For Phase 1 hook config and Phase 2 WandbVisBackend setup, use the `/setup-wandb` skill.
+- **Run naming**: `{phase}_{model_name}` (e.g. `phase3_pidnets_exp020`)
+- **WANDB_DIR**: must NOT be on `PYTHONPATH` — run scripts handle this
+- **Failed runs**: delete from WandB before relaunching to keep project clean
+- For setup, use the `/setup-wandb` skill.
 
-## Preprocessing Requirements (CRITICAL — must match challenge server exactly)
+## Preprocessing Requirements (CRITICAL — must match challenge server)
 
 The challenge server preprocesses images before feeding them to our ONNX:
 1. Resize with **bilinear interpolation, aspect ratio preserved** → fits within 384×768
@@ -73,57 +65,25 @@ The challenge server preprocesses images before feeding them to our ONNX:
 3. Fill remaining space with **mirror padding** (not zero padding)
 4. Normalize with ImageNet mean/std (mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
 
-All three points must be matched in training pipelines. The fun experiments got this wrong
-(used keep_ratio=False + zero padding), causing a train/test mismatch.
+**Required mmseg pipeline settings:**
+- Test: `Resize(keep_ratio=True)` + `Pad(padding_mode='reflect')` with centering
+- Train: `Pad(padding_mode='reflect')` (centering not needed in train)
 
-**Required mmseg pipeline settings for every Phase 1+ config:**
-- Test pipeline: `dict(type='Resize', keep_ratio=True)` inside MultiScaleFlipAug
-- Train + test Pad op: `dict(type='Pad', size=crop_size, padding_mode='reflect')`
-  (`padding_mode='reflect'` is mirror padding; default `pad_val=0` is wrong)
-- Centering is handled automatically by mmseg when keep_ratio=True + Pad are combined
+## Config Philosophy
 
-## Config Philosophy (applies to all phases)
-
-Architecture-specific settings — optimizer type, base LR, loss functions, head config,
-auxiliary heads — are left **untouched** per model (inherited from the upstream LaRS or
-ADE20K reference config). These are tuned for each architecture and must not be
-homogenised across models.
-
-Shared settings — resolution, preprocessing pipeline, schedule length, eval frequency,
-dataset paths — are **standardised** across all models in each phase.
-
-**Runner type**: all mmseg-macvi LaRS configs use `IterBasedRunner` (iter-based, not
-epoch-based). This is the mmseg 0.30.0 default and applies to all Phase 1 models.
-
-**LR scaling when changing batch size** from the upstream reference:
-- SGD optimisers (STDC2, BiSeNetV2): apply the linear scaling rule —
-  `new_lr = base_lr × (new_bs / reference_bs)`. Skipping this for large batch
-  size increases leaves SGD steps too small and weakens results artificially.
-- AdamW optimisers (SegNeXt-T, SegFormer): keep LR fixed regardless of batch size.
-- Reference values and rationale are documented in issue #9.
-- Document both batch_size and lr in a comment in the config so Phase 2 can replicate
-  the exact (bs, lr) pair.
-
-**SyncBN for DDP**: models using BatchNorm must switch to `SyncBN` when training with DDP
-(multiple GPUs), so BN statistics are synchronized across GPUs rather than computed
-independently per device. This applies to STDC2 and BiSeNetV2. Models using LayerNorm
-(SegNeXt-T, SegFormer) are unaffected. Set `norm_cfg = dict(type='SyncBN', requires_grad=True)`
-in the model config. This setting is pinned — carry it into Phase 2.
-
-**Batch size strategy**: at the start of Phase 1, calibrate the maximum batch size that
-fits on the training GPU without OOM. Document this value in the config comment. This
-becomes the pinned batch size — reuse the exact same value in Phase 2 for the consistency
-check to remain valid. Do not change it between phases.
+- **Architecture-specific** (optimizer, LR, losses, heads): left untouched per model
+- **Shared** (resolution, pipeline, schedule, dataset paths): standardised across models
+- **LR scaling**: SGD uses linear scaling rule; AdamW keeps LR fixed. See issue #9.
+- **SyncBN**: required for BatchNorm models (STDC2, BiSeNetV2) when training with DDP
+- **Runner type**: `IterBasedRunner` (mmseg 0.30.0) / iter-based (mmseg 1.2.2)
 
 ## Experiment Phases
-Phase 1: COMPLETE. Short validation runs (1.5k iters, 4 models). Preprocessing validated,
-          rankings confirmed. Full methodology and results in `phase1/phase1_report.md`.
-Phase 2: ACTIVE. Full training on mmseg 1.2.2 (unified stack). See `phase2/CLAUDE.md` for
-          model list, batch sizes, configs, and training details.
-Phase 3: Training tricks (4-class training, loss tuning, architecture experiments).
-Phase 4: External data (conditional, only if distribution analysis shows gaps).
-
-Phases can be modified, reordered, added, or skipped as the project evolves.
+Phase 1: COMPLETE. Short validation runs (1.5k iters, 4 models). Preprocessing validated.
+Phase 2: COMPLETE. Full training on mmseg 1.2.2 (7 models, INT8 eval). See `phase2/CLAUDE.md`.
+Phase 2.5: COMPLETE. Pipeline fix verification (keep_ratio, de-padding). See `phase2_5/CLAUDE.md`.
+Phase 3: COMPLETE. CopyPaste augmentation + architecture experiments (PIDChad-S, SegChad).
+          Best result: EXP-020 PIDNet-S, Q=52.1 (server). See `phase3/phase3_report.md`.
+Phase 4: Not pursued (external data used as augmentation source in Phase 3 instead).
 
 ## ONNX Export Requirements
 - Output: argmaxed class map, shape 1×1×384×768, dtype int64
@@ -163,26 +123,27 @@ Best checkpoints for INT8-stable models are committed to Git LFS under
 | segnext_s (EXP-010) | best_mIoU_iter_4750.pth | 92.40% | 72.33% | 66.83% | ✗ (−82%) |
 | segnext_t (EXP-006) | best_mIoU_iter_4250.pth | 91.79% | 71.74% | 65.85% | ✗ (−67%) |
 
-SegNeXt checkpoints (EXP-006, EXP-010, EXP-015) are committed to LFS at the owner's
-explicit request for future reference, despite INT8 catastrophic failure (MSCAN backbone
-large-kernel depthwise attention is the root cause — not fixable by head replacement alone).
-Do not commit SegNeXt ONNXes to LFS unless explicitly requested.
-
-EXP-015 (MSCAN-T + UPerHead + BoundaryLoss): FP32 Q=74.18% (best of all models, highest F1 at 80.21%).
-Replacing LightHamHead with UPerHead improves FP32 F1 by +8.5% but does NOT fix INT8 sensitivity.
-
-See `eval_metrics.md` for full Phase 2 eval results.
+SegNeXt models (EXP-006/010/015) committed to LFS for reference only — INT8 catastrophic
+failure (MSCAN large-kernel depthwise attention). See `eval_metrics.md` for full results.
 
 ## Current Status
-Phase 1 COMPLETE (branch: exp/phase1-baselines). All 4 models done. See experiment-log.md.
-Final mIoU: SegFormer 97.00%, STDC2 95.76%, SegNeXt-T 95.61%, BiSeNetV2 92.55%.
-Models running sequentially: STDC2 → BiSeNetV2 → SegNeXt-T → SegFormer MiT-B2.
-See issue #9 for task tracking and run decisions.
+All training phases complete. Team placed **top 3** on the challenge leaderboard.
+Best submission: EXP-020 PIDNet-S (Q=52.1, mIoU=94.4%, F1=55.2%).
+Now preparing the challenge report for CVPR 2026.
 
-## Published Baselines
-See `reference_baselines.md` for the full table of challenge-published baseline results.
+## Key Reports & Documents
+| Document | Path | Description |
+|----------|------|-------------|
+| Phase 1 Report | `phase1/phase1_report.md` | Baseline validation (4 models, 1.5k iters), preprocessing checks, architecture rankings |
+| Phase 3 Report | `phase3/phase3_report.md` | CopyPaste augmentation, PIDChad-S, SegChad experiments and server results |
+| Submissions Tracker | `submissions.md` | All challenge submissions with Q, mIoU, F1, FPS, and analysis links |
+| Experiment Log | `experiment-log.md` | Append-only log of all training runs (EXP-001 through EXP-022) |
+| Eval Metrics | `eval_metrics.md` | Phase 2 FP32 & INT8 ONNX evaluation results for all models |
+| Reference Baselines | `reference_baselines.md` | Published challenge baseline results for comparison |
+| LaRS Analysis | `../common/lars-analysis/` | Failure analysis, spatial/whole-image OOD reports (PDFs) |
+| External Data Analysis | `../common/external-dataset-analysis/` | WaterScenes, ROSEBUD, MULTIAQUA_night analysis |
+| Preliminary Strategy | `../../docs/Embedded_Semantic_Seg_Challenge_MaCVi2026_Preliminary_Report.pdf` | Initial strategy report |
 
 ## Key References
 - Challenge: macvi.org/workshop/cvpr/challenges/usv_seg_emb
 - Starter repo: github.com/lojzezust/mmsegmentation-macvi
-- Strategy report: docs/MaCVi2026_Preliminary_Report.pdf
