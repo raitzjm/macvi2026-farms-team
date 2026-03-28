@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # gemini-ask.sh — delegate a task to Gemini as a sub-agent
 #
-# Usage: gemini-ask.sh [--silence-timeout N] [--auto] [--flash] "prompt"
+# Usage: gemini-ask.sh [--silence-timeout N] [--pro|--auto|--flash] "prompt"
 #
 # Options:
-#   --auto              Use "Auto (Gemini 3)" model instead of the default
-#                       gemini-3.1-pro-preview. Prefer this for lightweight
-#                       tasks (short lookups, summaries, simple Q&A) where
-#                       Pro is overkill.
-#   --flash             Use "gemini-3-flash-preview" model. Prefer this for
-#                       log parsing, metric extraction, and other fast
-#                       structured reads where Pro is overkill.
+#   --pro               Use gemini-3.1-pro-preview (explicit; same as default).
+#   --auto              Use the Gemini CLI default model (omits -m flag entirely).
+#                       Prefer this for lightweight tasks (short lookups,
+#                       summaries, simple Q&A) where Pro is overkill.
+#   --flash             Use "gemini-3-flash-preview". Prefer this for log
+#                       parsing, metric extraction, and other fast structured
+#                       reads where Pro is overkill.
 #   --silence-timeout N Seconds of silence before declaring a hang (default 300)
 #
 # Exit codes:
@@ -23,6 +23,7 @@ set -uo pipefail
 
 SILENCE_TIMEOUT=300
 GEMINI_MODEL="gemini-3.1-pro-preview"
+GEMINI_AUTO=0
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -30,8 +31,12 @@ while [[ $# -gt 0 ]]; do
             SILENCE_TIMEOUT="$2"
             shift 2
             ;;
+        --pro)
+            GEMINI_MODEL="gemini-3.1-pro-preview"
+            shift
+            ;;
         --auto)
-            GEMINI_MODEL="Auto (Gemini 3)"
+            GEMINI_AUTO=1
             shift
             ;;
         --flash)
@@ -65,11 +70,19 @@ TMPEVENTS=$(mktemp /tmp/gemini-ask-XXXXXX.jsonl)
 trap 'rm -f "$TMPEVENTS"' EXIT
 
 # Launch gemini in background, stream-json events to temp file
-gemini --yolo \
-    -m "$GEMINI_MODEL" \
-    --output-format stream-json \
-    -p "$FULL_PROMPT" \
-    > "$TMPEVENTS" 2>&1 &
+# --auto omits -m to let the CLI use its own default model
+if [[ "$GEMINI_AUTO" -eq 1 ]]; then
+    gemini --yolo \
+        --output-format stream-json \
+        -p "$FULL_PROMPT" \
+        > "$TMPEVENTS" 2>&1 &
+else
+    gemini --yolo \
+        -m "$GEMINI_MODEL" \
+        --output-format stream-json \
+        -p "$FULL_PROMPT" \
+        > "$TMPEVENTS" 2>&1 &
+fi
 GEMINI_PID=$!
 
 # Hang detection: two-phase approach to avoid false positives from buffering.

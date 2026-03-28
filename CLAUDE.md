@@ -116,18 +116,21 @@ via CLAUDE.md context, ignore this section entirely — it does not apply to you
 ```bash
 bash container/scripts/gemini-ask.sh "task description"
 # optional flags:
-#   --auto              use Auto (Gemini 3) instead of the default gemini-3.1-pro-preview
+#   --pro               explicitly use gemini-3.1-pro-preview (same as default)
+#   --auto              use the Gemini CLI default model (omits -m flag)
+#   --flash             use gemini-3-flash-preview
 #   --silence-timeout N seconds of silence before declaring a hang (default 300)
 ```
 
 **Choosing the model:**
-- Default (`gemini-3.1-pro-preview`): use for complex reasoning, large context, deep code analysis, multi-step tasks.
-- `--auto` (`Auto (Gemini 3)`): use for lightweight tasks where Pro is overkill — short lookups, quick summaries, simple Q&A, single-file reads.
+- Default / `--pro` (`gemini-3.1-pro-preview`): use for complex reasoning, large context, deep code analysis, multi-step tasks.
+- `--auto` (Gemini CLI default, no `-m` flag): use for lightweight tasks where Pro is overkill — short lookups, quick summaries, simple Q&A, single-file reads.
+- `--flash` (`gemini-3-flash-preview`): use for fast structured reads — log parsing, metric extraction, large output summarization.
 
 **File-modifying tasks requiring isolation:**
 Spawn a Haiku agent with `isolation: "worktree"`. The Haiku agent is a
 passthrough only — it must not make decisions. Its sole job:
-1. Run `bash container/scripts/gemini-ask.sh [--auto] "task"`
+1. Run `bash container/scripts/gemini-ask.sh [--pro|--auto|--flash] "task"`
 2. Relay the full output and exit code verbatim back to the orchestrator
 
 The orchestrator then decides what to do based on the exit code and output.
