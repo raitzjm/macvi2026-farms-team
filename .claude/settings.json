@@ -2,5 +2,8 @@
   "attribution": {
     "commit": "",
     "pr": ""
+  },
+  "enabledPlugins": {
+    "github@claude-plugins-official": false
   }
 }
