@@ -4,6 +4,8 @@
     "pr": ""
   },
   "enabledPlugins": {
-    "github@claude-plugins-official": false
+    "github@claude-plugins-official": false,
+    "pyright-lsp@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true
   }
 }
