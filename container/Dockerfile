@@ -79,11 +79,11 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 #Claude Code
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# Gemini CLI
+# Gemini CLI + Pyright (Python language server for Claude Code pyright-lsp plugin)
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash  && \
         /bin/bash -c "source $HOME/.nvm/nvm.sh && \
         nvm install --lts && \
-        npm install -g @google/gemini-cli"
+        npm install -g @google/gemini-cli pyright"
 
 
 # =============================================================================
