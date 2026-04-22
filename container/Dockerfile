@@ -19,7 +19,7 @@ RUN apt-get update && apt upgrade -y && \
     python3 \
     python3-pip \
     python3-venv \
-    # Required by opencv-python (pulled in by mmsegmentation-macvi)
+    # Required at runtime by opencv-python (installed by per-challenge bootstrap scripts)
     libxcb1 \
     libxcb-xinerama0 \
     libgl1 \
@@ -102,7 +102,6 @@ RUN curl -fsSL \
         -o /tmp/miniforge.sh && \
     bash /tmp/miniforge.sh -b -p /home/farms/miniforge3 && \
     rm /tmp/miniforge.sh
-
 
 # Set workspace directory
 ENV MACVI_WS="/home/${USERNAME}/macvi2026-farms-team"
