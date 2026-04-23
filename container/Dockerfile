@@ -1,4 +1,9 @@
-FROM docker.io/nvidia/cuda:12.6.3-devel-ubuntu24.04
+FROM docker.io/ubuntu:24.04
+
+# No CUDA in the base image. Each challenge's env manages its own CUDA —
+# either via conda-forge packages (cuda-nvcc, cudatoolkit, cudnn) or via
+# prebuilt wheels that bundle the runtime (e.g. PyTorch cuXYZ wheels).
+# The NVIDIA driver is injected at runtime by nvidia-container-toolkit.
 
 
 

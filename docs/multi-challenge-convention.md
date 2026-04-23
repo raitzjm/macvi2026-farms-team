@@ -59,6 +59,27 @@ in the challenge folder. Environments are:
 Bootstrap scripts are committed to the repo. If placed under `challenges/`, they
 are gitignored-except (tracked) — no special .gitignore entry needed.
 
+## CUDA is env-scoped, not base-image-scoped
+
+The base image is vanilla Ubuntu 24.04 — no system CUDA, no `nvcc`, no
+`/usr/local/cuda`. Each env is responsible for the CUDA stack it needs:
+
+- **Prebuilt wheels (common):** PyTorch `cuXYZ` wheels, mmcv prebuilt wheels,
+  `onnxruntime-gpu`, etc. bundle the CUDA runtime libs they need. The env just
+  pip-installs them — nothing else required.
+- **Source builds:** If an env needs to compile CUDA code (e.g. custom ops),
+  install `cuda-nvcc`, `cudatoolkit`, `cudnn` from conda-forge into the env.
+  Do this in the bootstrap script, pinned to the CUDA version your framework
+  expects.
+
+Two envs in the same container can use different CUDA versions — they don't
+interact. The NVIDIA driver is injected at runtime by `nvidia-container-toolkit`
+from the host, independent of whatever CUDA userspace the env ships.
+
+Why this matters: when we add a new challenge, we don't touch the Dockerfile
+to change the CUDA version. The bootstrap script is the single source of truth
+for the challenge's CUDA stack.
+
 ## Grandfathered: MaCVi 2026
 
 The MaCVi 2026 embedded semantic segmentation challenge predates this convention
