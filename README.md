@@ -63,10 +63,11 @@ All training and experimentation is done inside the container.
 # Minimal — manual training work, no agentic features
 ./container/scripts/run.sh --data-dir /path/to/datasets
 
-# Full setup — agentic work with Claude Code
+# Full setup — agentic work with Claude Code, Codex, or Gemini
 ./container/scripts/run.sh \
   --data-dir /path/to/datasets \
-  --ssh-dir ~/.ssh
+  --ssh-dir ~/.ssh \
+  --codex-dir ~/.codex
 
 # Podman
 ./container/scripts/run.sh --podman --data-dir /path/to/datasets
@@ -81,16 +82,17 @@ All training and experimentation is done inside the container.
 | `--ssh-dir DIR` | — | SSH directory; mounted read-only at `/home/farms/.ssh/` |
 | `--claude-dir DIR` | — | Claude Code config and memory directory |
 | `--gemini-dir DIR` | — | Gemini CLI config directory; mounted at `/home/farms/.gemini/` |
+| `--codex-dir DIR` | — | Codex CLI config directory; mounted at `/home/farms/.codex/` |
 | `--gitconfig FILE` | — | Git user config (name, email) |
 
 The container mounts the repository at `/home/farms/macvi2026-farms-team/`.
 Datasets are mounted at `/home/farms/data/` and are **read-only**.
 
-### Agentic work (Claude Code)
+### Agentic work
 
 The following mounts and environment variable are only needed when running
-Claude Code inside the container for AI-assisted work. They are not required
-for manually running training scripts.
+AI assistants inside the container for assisted development work. They are not
+required for manually running training scripts.
 
 | What | How | Why |
 |------|-----|-----|
@@ -98,6 +100,7 @@ for manually running training scripts.
 | `--ssh-dir` | Mounts `~/.ssh` read-only | Needed for git operations over SSH (push, pull, clone). Without it, git remotes must use HTTPS with a token. |
 | `--gitconfig` | Mounts `~/.gitconfig` read-only | Provides git author name and email so commits are attributed correctly. Already has a sensible default (`~/.gitconfig`). |
 | `--gemini-dir` | Mounts `~/.gemini` into the container | Required for Gemini CLI authentication and to persist Gemini config across sessions. |
+| `--codex-dir` | Mounts `~/.codex` into the container | Required for Codex CLI authentication, local settings, and session persistence across container recreations. |
 | `MACVI_GH_TOKEN` | Passed as `GH_TOKEN` env var | GitHub CLI (`gh`) uses this to manage issues, PRs, and comments. Required for any agent GitHub interaction. |
 
 Set the token before running:
@@ -109,24 +112,8 @@ export MACVI_GH_TOKEN=<your_github_pat>
 
 ### Gemini CLI integration
 
-Gemini CLI is installed in the container and can be used as a sub-agent from Claude
-Code via `container/scripts/gemini-ask.sh`.
-
-**When to use it:** delegate tasks where Gemini's strengths help — large-context
-document summarisation, second-opinion analysis, or offloading work when Claude
-hits a context limit.
-
-**Usage (from inside the container):**
-
-```bash
-/home/farms/macvi2026-farms-team/container/scripts/gemini-ask.sh "Your task prompt here"
-
-# Extend the silence timeout for long-running tasks
-/home/farms/macvi2026-farms-team/container/scripts/gemini-ask.sh \
-  --silence-timeout 600 "Your task prompt here"
-```
-
-Exit codes: `0` success, `2` quota/rate-limit exceeded, `3` hung (process killed), `1` other error.
+Gemini CLI is installed in the container and can be used as a sub-agent via
+`container/scripts/gemini-ask.sh`.
 
 **Context loading:** `.gemini/settings.json` configures Gemini CLI to automatically
 load `GEMINI.md` and `AGENTS.md` files from the project tree at session start,
@@ -141,6 +128,23 @@ To authenticate Gemini CLI, mount your host `~/.gemini` directory:
   --data-dir /path/to/datasets \
   --ssh-dir ~/.ssh \
   --gemini-dir ~/.gemini
+```
+
+### Codex CLI integration
+
+OpenAI Codex CLI is installed in the container and can be used as a sub-agent
+via `container/scripts/codex-ask.sh`.
+
+Codex loads `AGENTS.md` natively as the project instruction file. `CLAUDE.md`
+is kept as a stub for Claude Code compatibility.
+
+To authenticate Codex CLI and persist sessions, mount your host `~/.codex` directory:
+
+```bash
+./container/scripts/run.sh \
+  --data-dir /path/to/datasets \
+  --ssh-dir ~/.ssh \
+  --codex-dir ~/.codex
 ```
 
 ## Model Weights (Git LFS)

@@ -92,7 +92,7 @@ When the user asks to change a workflow, convention, or practice:
 2. If permanent, update the relevant AGENTS.md file(s) to reflect the new practice
 3. If one-time, proceed without modifying AGENTS.md
 
-## Gemini Delegation (Claude orchestrators only — Gemini must ignore this section)
+## Gemini Delegation (Orchestrators only — Gemini must ignore this section)
 
 These instructions apply only to Claude agents. If you are Gemini reading this
 via AGENTS.md context, ignore this section entirely — it does not apply to you.
