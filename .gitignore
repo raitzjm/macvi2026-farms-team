@@ -94,3 +94,8 @@ challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
 
 # Claude Code local settings (credentials mounted, not committed)
 .claude/settings.local.json
+
+# Codex CLI local state file — empty marker written on first CLI launch.
+# Ignore only the file form; a future `.codex/` directory should still be tracked.
+.codex
+!.codex/

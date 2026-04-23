@@ -17,7 +17,8 @@ Target: ≥30 FPS at 768×384, maximizing F1 detection score.
 
 ```
 macvi2026-farms-team/
-├── CLAUDE.md                          # Global rules and practices for AI agents
+├── AGENTS.md                          # Global rules and practices for AI agents (canonical)
+├── CLAUDE.md                          # One-line stub importing AGENTS.md (for Claude Code)
 ├── README.md                          # This file
 ├── .gitignore
 ├── .claude/skills/                    # Agent skills (setup-wandb, launch-training, etc.)
@@ -29,7 +30,8 @@ macvi2026-farms-team/
 ├── challenges/
 │   ├── common/lars-analysis/          # LaRS dataset analysis scripts
 │   └── embedded-semantic-segmentation/
-│       ├── CLAUDE.md                  # Challenge-specific context for agents
+│       ├── AGENTS.md                  # Challenge-specific context for agents (canonical)
+│       ├── CLAUDE.md                  # Stub importing AGENTS.md (for Claude Code)
 │       ├── experiment-log.md          # Training experiment log (append-only)
 │       ├── eval_metrics.md            # Phase 2 evaluation results
 │       ├── submissions.md             # Challenge submission tracker
@@ -127,8 +129,10 @@ hits a context limit.
 Exit codes: `0` success, `2` quota/rate-limit exceeded, `3` hung (process killed), `1` other error.
 
 **Context loading:** `.gemini/settings.json` configures Gemini CLI to automatically
-load `GEMINI.md` and `CLAUDE.md` files from the project tree at session start,
+load `GEMINI.md` and `AGENTS.md` files from the project tree at session start,
 so project rules and context are always in scope without passing them in every prompt.
+`AGENTS.md` is the canonical context file for all three agents (Claude via a
+`CLAUDE.md` stub that imports it, Codex natively, Gemini via the setting above).
 
 To authenticate Gemini CLI, mount your host `~/.gemini` directory:
 
@@ -163,7 +167,7 @@ python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.
 ## Workflow
 
 - ML conda environments: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2, mmseg 1.2.2)
-- All agents follow the rules in `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
+- All agents follow the rules in `AGENTS.md` (global) and the relevant `challenges/*/AGENTS.md`.
 - Experiments are logged in `challenges/embedded-semantic-segmentation/experiment-log.md`.
 - Tasks are tracked via [GitHub Issues](https://github.com/raitzjm/macvi2026-farms-team/issues).
 - Agent activity is always tagged `[Agent - <Model Name>]` in commits and issue comments.
