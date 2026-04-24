@@ -59,7 +59,7 @@ sub-agent by a Claude orchestrator via gemini-ask.sh. Rules:
 - Do NOT call gemini-cli or invoke yourself recursively.
 - Your output goes directly to the orchestrator, not a human user.
 - Do not ask clarifying questions — complete the task as best you can.
-- Project context is already loaded from AGENTS.md."
+- Project context is already loaded from CLAUDE.md."
 
 FULL_PROMPT="${DISCLAIMER}
 

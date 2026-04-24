@@ -88,6 +88,7 @@ RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g @google/gemini-cli"
 
 # OpenCode — multi-model AI coding agent
 RUN curl -fsSL https://opencode.ai/install | bash
+ENV PATH="/home/farms/.opencode/bin:$PATH"
 
 # Pyright — Python language server for Claude Code pyright-lsp plugin
 # Not available in Ubuntu 22.04 apt repos; installed via npm.
