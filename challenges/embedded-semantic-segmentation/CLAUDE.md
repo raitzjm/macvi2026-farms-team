@@ -26,8 +26,9 @@ scripts (NOT baked into the image):
 - `bootstrap-macvi.sh`  — mmseg 0.30.0 fork, Phase 1.
 - `bootstrap-macvi2.sh` — mmseg 1.2.2 stock, Phase 2+.
 
-Envs live at `/home/farms/miniforge3/envs/macvi{,2}/` and are ephemeral per
-container. Run the bootstrap script once after each fresh container.
+Envs are created at `challenges/embedded-semantic-segmentation/envs/macvi{,2}/`
+(gitignored). Since this path is inside the mounted repo volume, the env
+persists across container recreations — run the bootstrap script once only.
 
 Full dependency details and patch list: `docs/environment.md`.
 

@@ -183,17 +183,19 @@ Best checkpoints for INT8-stable models are committed via Git LFS under
 See [`eval_metrics.md`](challenges/embedded-semantic-segmentation/eval_metrics.md) for the
 full results table including INT8 impact analysis.
 
-To use a checkpoint, run the export script:
+To use a checkpoint, first bootstrap the `macvi2` env (once), then run the export script:
 ```bash
-python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py \
+bash challenges/embedded-semantic-segmentation/bootstrap-macvi2.sh
+conda run -p challenges/embedded-semantic-segmentation/envs/macvi2 \
+  python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py \
   --models pidnets   # or stdc2, bisenetv2
 ```
 
 ## Workflow
 
-- Each challenge has its own bootstrap script(s) — run once to create the conda env inside the container.
+- Each challenge has its own bootstrap script(s) — run once; the env is created in the challenge directory (part of the mounted repo) and persists across container recreations.
 - ML envs for MaCVi 2026: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2+, mmseg 1.2.2).
 - All agents follow `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
 - Experiments are logged in `challenges/embedded-semantic-segmentation/experiment-log.md`.
 - Tasks are tracked via [GitHub Issues](https://github.com/raitzjm/macvi2026-farms-team/issues).
-- Agent activity is always tagged `[Agent - <Model Name>]` in commits and issue comments.
+- Agent commits have `[agent]` in the subject; issue comments begin with `[Agent - <Model Name>]`.

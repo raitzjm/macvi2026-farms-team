@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
 # =============================================================================
-# bootstrap-macvi.sh — recreate the `macvi` conda env (Phase 1)
+# bootstrap-macvi.sh — create the `macvi` conda env (Phase 1)
 #
-# Creates: /home/farms/miniforge3/envs/macvi/
+# Creates: <challenge-dir>/envs/macvi/  (gitignored, persistent via repo mount)
 # Stack:   Python 3.11, PyTorch 2.1.2+cu121, mmcv-full 1.7.2,
 #          mmsegmentation 0.30.0 (mmsegmentation-macvi fork), wandb 0.25.0
 #
-# IMPORTANT — envs are EPHEMERAL per container.
-# If the container is removed and recreated (docker run / podman run on a fresh
-# container), run this script again to restore the env.
+# Run once. Because the challenge directory is part of the mounted repo volume,
+# the env survives container recreations — no need to re-run on restart.
 #
 # Original pinned recipe: git show macvi-embedded-semantic-segmentation-2026:container/Dockerfile
 # =============================================================================
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONDA=/home/farms/miniforge3/bin/conda
-PIP=/home/farms/miniforge3/envs/macvi/bin/pip
-PYTHON=/home/farms/miniforge3/envs/macvi/bin/python
-ENV_DIR=/home/farms/miniforge3/envs/macvi
-MMSEG_SRC=/home/farms/macvi2026-farms-team/challenges/embedded-semantic-segmentation/mmsegmentation-macvi
+ENV_DIR="${SCRIPT_DIR}/envs/macvi"
+PIP="${ENV_DIR}/bin/pip"
+PYTHON="${ENV_DIR}/bin/python"
+MMSEG_SRC="${SCRIPT_DIR}/mmsegmentation-macvi"
 FUNCTIONS_PY="${ENV_DIR}/lib/python3.11/site-packages/mmcv/parallel/_functions.py"
 DISTRIBUTED_PY="${ENV_DIR}/lib/python3.11/site-packages/mmcv/parallel/distributed.py"
 WANDB_VALIDATION_PY="${ENV_DIR}/lib/python3.11/site-packages/wandb/sdk/lib/wbauth/validation.py"
@@ -33,15 +33,16 @@ if [ ! -x "${CONDA}" ]; then
 fi
 
 if [ -d "${ENV_DIR}" ]; then
-    echo "ERROR: env 'macvi' already exists at ${ENV_DIR}" >&2
-    echo "       To reinstall, run: /home/farms/miniforge3/bin/conda env remove -n macvi" >&2
+    echo "ERROR: env already exists at ${ENV_DIR}" >&2
+    echo "       To reinstall, delete it: rm -rf '${ENV_DIR}'" >&2
     exit 1
 fi
 
 # --- Create env --------------------------------------------------------------
 
-echo ">>> Creating conda env 'macvi' (Python 3.11)..."
-"${CONDA}" create -n macvi python=3.11 -y
+echo ">>> Creating conda env at ${ENV_DIR} (Python 3.11)..."
+mkdir -p "$(dirname "${ENV_DIR}")"
+"${CONDA}" create -p "${ENV_DIR}" python=3.11 -y
 
 # --- PyTorch 2.1.2 + CUDA 12.1 -----------------------------------------------
 
@@ -147,4 +148,6 @@ echo ">>> Running import smoke check..."
 echo ""
 echo "=== bootstrap-macvi.sh complete ==="
 echo "    Env: ${ENV_DIR}"
-echo "    Patches applied: mmcv scatter, mmcv distributed.py DDP-eval, wandb validation.py"
+echo "    Patches: mmcv scatter, mmcv distributed.py DDP-eval, wandb validation.py"
+echo "    To activate: conda activate '${ENV_DIR}'"
+echo "    Or use:      conda run -p '${ENV_DIR}' python ..."
