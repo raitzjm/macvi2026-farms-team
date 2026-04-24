@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # opencode-ask.sh — delegate a task to OpenCode as a sub-agent
 #
-# Usage: opencode-ask.sh [--silence-timeout N] [--minimax|--claude|--gpt|--model MODEL] "prompt"
+# Usage: opencode-ask.sh [OPTIONS] "prompt"
 #
-# Options:
-#   --minimax           Use minimax/MiniMax-M2.5 (default).
-#   --claude            Use anthropic/claude-sonnet-4-6.
-#   --gpt               Use openai/gpt-4o.
-#   --model MODEL       Use an explicit model ID (provider/model format).
+# Model options (mutually exclusive; --model takes precedence):
+#   --model MODEL       Explicit model ID in provider/model format (e.g. openai/gpt-5.4).
+#   --minimax           minimax/MiniMax-M2.5 (default; requires MINIMAX_API_KEY)
+#   --nemotron-super    nvidia/nvidia/nemotron-3-super-120b-a12b (requires NVIDIA_API_KEY)
+#   --gpt5.4            openai/gpt-5.4 (requires OPENAI_API_KEY)
+#   --gpt5.3-codex      openai/gpt-5.3-codex (requires OPENAI_API_KEY)
+#
+# Tip: for testing without an API key use --model opencode/minimax-m2.5-free
+#
+# Other options:
 #   --silence-timeout N Seconds of silence before declaring a hang (default 300)
 #
 # Exit codes:
@@ -31,12 +36,16 @@ while [[ $# -gt 0 ]]; do
             OPENCODE_RUN_MODEL="minimax/MiniMax-M2.5"
             shift
             ;;
-        --claude)
-            OPENCODE_RUN_MODEL="anthropic/claude-sonnet-4-6"
+        --nemotron-super)
+            OPENCODE_RUN_MODEL="nvidia/nvidia/nemotron-3-super-120b-a12b"
             shift
             ;;
-        --gpt)
-            OPENCODE_RUN_MODEL="openai/gpt-4o"
+        --gpt5.4)
+            OPENCODE_RUN_MODEL="openai/gpt-5.4"
+            shift
+            ;;
+        --gpt5.3-codex)
+            OPENCODE_RUN_MODEL="openai/gpt-5.3-codex"
             shift
             ;;
         --model)
@@ -59,7 +68,7 @@ sub-agent by a Claude orchestrator via opencode-ask.sh. Rules:
 - Do NOT call opencode or invoke yourself recursively.
 - Your output goes directly to the orchestrator, not a human user.
 - Do not ask clarifying questions — complete the task as best you can.
-- Project context is already loaded from AGENTS.md."
+- Project context is already loaded from CLAUDE.md."
 
 FULL_PROMPT="${DISCLAIMER}
 
