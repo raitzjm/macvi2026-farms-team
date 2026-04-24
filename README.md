@@ -18,7 +18,7 @@ Target: ≥30 FPS at 768×384, maximizing F1 detection score.
 ```
 macvi2026-farms-team/
 ├── AGENTS.md                          # Global rules and practices for AI agents (canonical)
-├── CLAUDE.md                          # One-line stub importing AGENTS.md (for Claude Code)
+├── CLAUDE.md                          # Claude Code entrypoint; must import AGENTS.md
 ├── README.md                          # This file
 ├── .gitignore
 ├── .claude/skills/                    # Agent skills (setup-wandb, launch-training, etc.)
@@ -31,7 +31,7 @@ macvi2026-farms-team/
 │   ├── common/lars-analysis/          # LaRS dataset analysis scripts
 │   └── embedded-semantic-segmentation/
 │       ├── AGENTS.md                  # Challenge-specific context for agents (canonical)
-│       ├── CLAUDE.md                  # Stub importing AGENTS.md (for Claude Code)
+│       ├── CLAUDE.md                  # Canonical one-line stub importing AGENTS.md
 │       ├── experiment-log.md          # Training experiment log (append-only)
 │       ├── eval_metrics.md            # Phase 2 evaluation results
 │       ├── submissions.md             # Challenge submission tracker
@@ -172,6 +172,7 @@ python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.
 
 - ML conda environments: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2, mmseg 1.2.2)
 - All agents follow the rules in `AGENTS.md` (global) and the relevant `challenges/*/AGENTS.md`.
+- Root `CLAUDE.md` may add Claude-specific instructions, but it must include `@AGENTS.md`; child-directory `CLAUDE.md` files must stay as the canonical one-line stub `@AGENTS.md`.
 - Experiments are logged in `challenges/embedded-semantic-segmentation/experiment-log.md`.
 - Tasks are tracked via [GitHub Issues](https://github.com/raitzjm/macvi2026-farms-team/issues).
 - Agent activity is always tagged `[Agent - <Model Name>]` in commits and issue comments.

@@ -84,7 +84,12 @@ When installing new system or Python dependencies:
 ## Container Scripts
 - `container/scripts/build.sh` — builds the image; Docker by default, `--podman` to use Podman
 - `container/scripts/run.sh`   — runs the container; Docker by default, `--podman` to use Podman
-  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gemini-dir`, `--gitconfig`
+  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gemini-dir`, `--codex-dir`, `--gitconfig`
+
+## Agent Instruction Files
+- `AGENTS.md` is the canonical shared instruction file for this repository
+- Repo-root `CLAUDE.md` may contain Claude-specific instructions, but it must include `@AGENTS.md`
+- Child-directory `CLAUDE.md` files must be the canonical one-line stub `@AGENTS.md`
 
 ## Updating Practices
 When the user asks to change a workflow, convention, or practice:

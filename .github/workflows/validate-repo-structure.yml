@@ -1,14 +1,7 @@
-name: Validate repo structure
+name: Validate AGENTS/CLAUDE stubs
 
 on:
   pull_request:
-    branches: [main]
-    paths:
-      - '**/AGENTS.md'
-      - '**/CLAUDE.md'
-      - 'container/scripts/sync-agent-stubs.sh'
-      - '.github/workflows/validate-repo-structure.yml'
-  push:
     branches: [main]
     paths:
       - '**/AGENTS.md'
