@@ -62,7 +62,7 @@ PROMPT="${1:?Usage: opencode-ask.sh [--silence-timeout N] \"prompt\"}"
 # This is only injected here (not in project config) so it does not affect
 # manual interactive opencode sessions.
 DISCLAIMER="[SYSTEM NOTE — read before responding]: You are being invoked as a
-sub-agent by a Claude orchestrator via opencode-ask.sh. Rules:
+sub-agent by an Orchestrator Agent via opencode-ask.sh. Rules:
 - Do NOT call opencode or invoke yourself recursively.
 - Your output goes directly to the orchestrator, not a human user.
 - Do not ask clarifying questions — complete the task as best you can.
