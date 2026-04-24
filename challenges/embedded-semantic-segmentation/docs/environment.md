@@ -7,12 +7,12 @@ For the quick bootstrap summary, see the `## Env Bootstrap` section in the chall
 
 ### `macvi` — Phase 1 (mmseg 0.30.0 fork)
 
-- Path: `/home/farms/miniforge3/envs/macvi/`
-- Python 3.11 (conda-forge), CUDA 12.1
+- Path: `challenges/embedded-semantic-segmentation/envs/macvi/` (persistent via repo mount)
+- Python 3.11 (conda-forge), CUDA 12.1 (via PyTorch cu121 wheel)
 - PyTorch 2.1.2+cu121
 - mmcv-full 1.7.2 (prebuilt wheel — no source build)
 - mmsegmentation 0.30.0 fork (`lojzezust/mmsegmentation-macvi`)
-  installed non-editable at `/opt/macvi-env/mmsegmentation-macvi/`
+  installed non-editable from `challenges/embedded-semantic-segmentation/mmsegmentation-macvi/`
 - WandB 0.25.0 (pinned — required for `wandb_` key prefix patch)
 
 Created by: `bootstrap-macvi.sh`
@@ -30,12 +30,12 @@ Created by: `bootstrap-macvi.sh`
 
 ### `macvi2` — Phase 2+ (mmseg 1.2.2 stock)
 
-- Path: `/home/farms/miniforge3/envs/macvi2/`
-- Python 3.11, PyTorch 2.1.2+cu121
+- Path: `challenges/embedded-semantic-segmentation/envs/macvi2/` (persistent via repo mount)
+- Python 3.11, PyTorch 2.1.2+cu121 (CUDA via wheel)
 - mmcv 2.1.0, mmsegmentation 1.2.2 (stock pip install)
 - Additional deps vs `macvi`: `ftfy`, `regex`
   (required by mmseg tokenizer at import time)
-- Tools at: `/home/farms/miniforge3/envs/macvi2/lib/python3.11/site-packages/mmseg/.mim/tools/`
+- Tools at: `envs/macvi2/lib/python3.11/site-packages/mmseg/.mim/tools/`
 - WandB 0.25.0 (pinned — same patch required)
 
 Created by: `bootstrap-macvi2.sh`
@@ -58,10 +58,10 @@ Created by: `bootstrap-macvi2.sh`
 ## Run Commands
 
 ```bash
-# Phase 1 (macvi env)
-conda run --no-capture-output -n macvi python ...
+# Phase 1 (macvi env) — path-based, not named
+conda run --no-capture-output -p challenges/embedded-semantic-segmentation/envs/macvi python ...
 
 # Phase 2+ (macvi2 env)
-conda run --no-capture-output -n macvi2 torchrun ...
-# or activate env directly: conda activate macvi2
+conda run --no-capture-output -p challenges/embedded-semantic-segmentation/envs/macvi2 torchrun ...
+# or activate: conda activate challenges/embedded-semantic-segmentation/envs/macvi2
 ```

@@ -51,13 +51,15 @@ Nothing else in STATE.md. All other detail lives in challenge CLAUDE.md or docs/
 Each challenge manages its own conda environment(s) via `bootstrap-*.sh` scripts
 in the challenge folder. Environments are:
 
-- Named per-challenge (e.g. `macvi`, `macvi2`, `fathomnet`)
-- Created at `/home/farms/miniforge3/envs/<name>/`
-- Ephemeral per container — run the bootstrap script once after each fresh container
+- Created inside the challenge directory at `challenges/{challenge}/envs/<name>/`
+  using `conda create -p <path>` (path-based, not named)
+- **Persistent** — the challenge directory is part of the mounted repo volume on the
+  host, so the env survives container recreations. Run the bootstrap script once only.
+- Gitignored via `challenges/*/envs/` — never committed (too large, reproducible)
 - NOT baked into the Docker image (lean image, faster rebuilds)
 
-Bootstrap scripts are committed to the repo. If placed under `challenges/`, they
-are gitignored-except (tracked) — no special .gitignore entry needed.
+Bootstrap scripts are committed to the repo and tracked normally — no special
+`.gitignore` handling needed for the scripts themselves, only for `envs/`.
 
 ## CUDA is env-scoped, not base-image-scoped
 

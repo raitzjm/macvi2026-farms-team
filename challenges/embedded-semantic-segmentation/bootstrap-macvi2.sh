@@ -9,6 +9,8 @@
 #
 # Run once. Because the challenge directory is part of the mounted repo volume,
 # the env survives container recreations — no need to re-run on restart.
+# NOTE: conda records absolute paths (shebangs, RECORD). If the repo is moved
+# to a different host path, delete envs/macvi2/ and re-run this script.
 #
 # Original pinned recipe: git show macvi-embedded-semantic-segmentation-2026:container/Dockerfile
 # =============================================================================
