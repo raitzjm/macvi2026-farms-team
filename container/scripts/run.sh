@@ -2,7 +2,7 @@
 # Run the macvi-farms container.
 # Defaults to Docker; pass --podman to use Podman instead.
 # Data directory is mounted read-only at /home/farms/data inside the container.
-# Use --claude-dir / --gemini-dir to persist AI assistant config across runs.
+# Use --claude-dir / --gemini-dir / --opencode-dir to persist AI assistant config across runs.
 
 set -e
 
@@ -13,6 +13,7 @@ RUNTIME="docker"
 CLAUDE_DIR=""
 CLAUDE_JSON=""
 GEMINI_DIR=""
+OPENCODE_DIR=""
 GITCONFIG=""
 SSH_DIR=""
 DATA_DIR=""
@@ -35,6 +36,10 @@ while [[ $# -gt 0 ]]; do
             GEMINI_DIR="$2"
             shift 2
             ;;
+        --opencode-dir)
+            OPENCODE_DIR="$2"
+            shift 2
+            ;;
         --gitconfig)
             GITCONFIG="$2"
             shift 2
@@ -55,6 +60,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --claude-dir DIR    Path to .claude directory (for Claude Code / agentic work)"
             echo "  --claude-json FILE  Path to .claude.json file (mounted at /home/farms/.claude.json)"
             echo "  --gemini-dir DIR    Path to .gemini directory (for Gemini CLI / agentic work)"
+            echo "  --opencode-dir DIR  Path to OpenCode config directory (for OpenCode / agentic work)"
             echo "  --gitconfig FILE    Path to .gitconfig file (for correct git commit attribution)"
             echo "  --ssh-dir DIR       Path to .ssh directory (for git over SSH)"
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
@@ -81,6 +87,10 @@ fi
 
 if [[ -n "$GEMINI_DIR" ]]; then
     VOLUMES+=(-v "${GEMINI_DIR}:/home/farms/.gemini")
+fi
+
+if [[ -n "$OPENCODE_DIR" ]]; then
+    VOLUMES+=(-v "${OPENCODE_DIR}:/home/farms/.config/opencode")
 fi
 
 if [[ -n "$GITCONFIG" ]]; then
