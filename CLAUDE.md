@@ -84,7 +84,9 @@ When installing new system or Python dependencies:
 ## Container Scripts
 - `container/scripts/build.sh` — builds the image; Docker by default, `--podman` to use Podman
 - `container/scripts/run.sh`   — runs the container; Docker by default, `--podman` to use Podman
-  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gemini-dir`, `--gitconfig`
+  Key flags: `--data-dir`, `--ssh-dir`, `--claude-dir`, `--gemini-dir`, `--opencode-dir`, `--gitconfig`
+- `container/scripts/gemini-ask.sh` — delegate read-only tasks to Gemini as a sub-agent
+- `container/scripts/opencode-ask.sh` — delegate tasks to OpenCode (multi-model: MiniMax, GPT, Nemotron)
 
 ## Agent Instruction Files
 - `CLAUDE.md` is the canonical instruction file for this repository

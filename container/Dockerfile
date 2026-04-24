@@ -248,7 +248,7 @@ ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 # Shell conveniences
 RUN echo 'alias claude-skip="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc && \
-    echo 'alias opencode-yolo="opencode --dangerously-skip-permissions"' >> /home/farms/.bashrc
+    echo 'alias opencode-skip="opencode --dangerously-skip-permissions"' >> /home/farms/.bashrc
 
 #Set shell profile
 ENV TERM="xterm-256color"

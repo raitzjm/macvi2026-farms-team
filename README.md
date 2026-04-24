@@ -80,6 +80,7 @@ All training and experimentation is done inside the container.
 | `--ssh-dir DIR` | — | SSH directory; mounted read-only at `/home/farms/.ssh/` |
 | `--claude-dir DIR` | — | Claude Code config and memory directory |
 | `--gemini-dir DIR` | — | Gemini CLI config directory; mounted at `/home/farms/.gemini/` |
+| `--opencode-dir DIR` | — | OpenCode config directory; mounted at `/home/farms/.config/opencode/` |
 | `--gitconfig FILE` | — | Git user config (name, email) |
 
 The container mounts the repository at `/home/farms/macvi2026-farms-team/`.
@@ -97,6 +98,7 @@ required for manually running training scripts.
 | `--ssh-dir` | Mounts `~/.ssh` read-only | Needed for git operations over SSH (push, pull, clone). Without it, git remotes must use HTTPS with a token. |
 | `--gitconfig` | Mounts `~/.gitconfig` read-only | Provides git author name and email so commits are attributed correctly. Already has a sensible default (`~/.gitconfig`). |
 | `--gemini-dir` | Mounts `~/.gemini` into the container | Required for Gemini CLI authentication and to persist Gemini config across sessions. |
+| `--opencode-dir` | Mounts `~/.config/opencode` into the container | Persists OpenCode provider credentials and config across sessions. |
 | `MACVI_GH_TOKEN` | Passed as `GH_TOKEN` env var | GitHub CLI (`gh`) uses this to manage issues, PRs, and comments. Required for any agent GitHub interaction. |
 
 Set the token before running:
@@ -123,6 +125,37 @@ To authenticate Gemini CLI, mount your host `~/.gemini` directory:
   --ssh-dir ~/.ssh \
   --gemini-dir ~/.gemini
 ```
+
+### OpenCode integration
+
+OpenCode is installed in the container and can be used as a multi-model sub-agent via
+`container/scripts/opencode-ask.sh`. It supports GPT, MiniMax, Nemotron, and other providers.
+
+```bash
+# Default (MiniMax free, no API key needed)
+bash container/scripts/opencode-ask.sh "your prompt"
+
+# Named model shortcuts
+bash container/scripts/opencode-ask.sh --minimax-free "prompt"
+bash container/scripts/opencode-ask.sh --nemotron-super-free "prompt"
+bash container/scripts/opencode-ask.sh --gpt5.4 "prompt"
+bash container/scripts/opencode-ask.sh --gpt5.3-codex "prompt"
+
+# Any model explicitly
+bash container/scripts/opencode-ask.sh --model openai/gpt-5 "prompt"
+```
+
+To persist OpenCode credentials (sign in once, reuse across sessions), mount your
+host `~/.config/opencode` directory:
+
+```bash
+./container/scripts/run.sh \
+  --data-dir /path/to/datasets \
+  --opencode-dir ~/.config/opencode
+```
+
+Sign in interactively with `opencode` and authenticate each provider via
+`opencode providers`. The credentials are then available in all future sessions.
 
 ## Model Weights (Git LFS)
 

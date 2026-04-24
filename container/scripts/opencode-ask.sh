@@ -5,12 +5,10 @@
 #
 # Model options (mutually exclusive; --model takes precedence):
 #   --model MODEL       Explicit model ID in provider/model format (e.g. openai/gpt-5.4).
-#   --minimax           minimax/MiniMax-M2.5 (default; requires MINIMAX_API_KEY)
-#   --nemotron-super    nvidia/nvidia/nemotron-3-super-120b-a12b (requires NVIDIA_API_KEY)
+#   --minimax-free      opencode/minimax-m2.5-free (default)
+#   --nemotron-super-free opencode/nemotron-3-super-free
 #   --gpt5.4            openai/gpt-5.4 (requires OPENAI_API_KEY)
 #   --gpt5.3-codex      openai/gpt-5.3-codex (requires OPENAI_API_KEY)
-#
-# Tip: for testing without an API key use --model opencode/minimax-m2.5-free
 #
 # Other options:
 #   --silence-timeout N Seconds of silence before declaring a hang (default 300)
@@ -24,7 +22,7 @@
 set -uo pipefail
 
 SILENCE_TIMEOUT=300
-OPENCODE_RUN_MODEL="minimax/MiniMax-M2.5"
+OPENCODE_RUN_MODEL="opencode/minimax-m2.5-free"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -32,12 +30,12 @@ while [[ $# -gt 0 ]]; do
             SILENCE_TIMEOUT="$2"
             shift 2
             ;;
-        --minimax)
-            OPENCODE_RUN_MODEL="minimax/MiniMax-M2.5"
+        --minimax-free)
+            OPENCODE_RUN_MODEL="opencode/minimax-m2.5-free"
             shift
             ;;
-        --nemotron-super)
-            OPENCODE_RUN_MODEL="nvidia/nvidia/nemotron-3-super-120b-a12b"
+        --nemotron-super-free)
+            OPENCODE_RUN_MODEL="opencode/nemotron-3-super-free"
             shift
             ;;
         --gpt5.4)
