@@ -61,11 +61,13 @@ All training and experimentation is done inside the container.
 # Minimal — manual training work, no agentic features
 ./container/scripts/run.sh --data-dir /path/to/datasets
 
-# Full setup — agentic work with Claude Code or Gemini
+# Full setup — agentic work with Claude Code, Gemini, or OpenCode
 ./container/scripts/run.sh \
   --data-dir /path/to/datasets \
   --ssh-dir ~/.ssh \
-  --claude-dir ~/.claude
+  --claude-dir ~/.claude \
+  --gemini-dir ~/.gemini \
+  --opencode-dir ~/.config/opencode
 
 # Podman
 ./container/scripts/run.sh --podman --data-dir /path/to/datasets
