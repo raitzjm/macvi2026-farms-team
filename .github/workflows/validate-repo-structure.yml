@@ -1,0 +1,19 @@
+name: Validate AGENTS/CLAUDE stubs
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/AGENTS.md'
+      - '**/CLAUDE.md'
+      - 'container/scripts/sync-agent-stubs.sh'
+      - '.github/workflows/validate-repo-structure.yml'
+
+jobs:
+  agent-stubs:
+    name: AGENTS.md / CLAUDE.md stub sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every AGENTS.md has a sibling CLAUDE.md stub
+        run: bash container/scripts/sync-agent-stubs.sh --check

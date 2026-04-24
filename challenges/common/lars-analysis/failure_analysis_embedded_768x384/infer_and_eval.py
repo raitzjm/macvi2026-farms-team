@@ -249,7 +249,7 @@ def main():
             sys.exit(1)
     if not args.val_img_dir.exists():
         log.error(f"Val image dir not found: {args.val_img_dir}")
-        log.error("Rebuild the symlink tree (see challenge CLAUDE.md).")
+        log.error("Rebuild the symlink tree (see challenge AGENTS.md).")
         sys.exit(1)
 
     # Run each model

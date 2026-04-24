@@ -86,6 +86,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | b
 # Gemini CLI
 RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g @google/gemini-cli"
 
+# OpenAI Codex CLI
+RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g @openai/codex"
+
 # Pyright — Python language server for Claude Code pyright-lsp plugin
 # Not available in Ubuntu 22.04 apt repos; installed via npm.
 RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g pyright"
@@ -245,6 +248,7 @@ ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 # Shell conveniences
 RUN echo 'alias claude-skip="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc
+RUN echo 'alias codex-skip="codex --dangerously-bypass-approvals-and-sandbox"' >> /home/farms/.bashrc
 
 #Set shell profile
 ENV TERM="xterm-256color"
