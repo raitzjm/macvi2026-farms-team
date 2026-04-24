@@ -90,7 +90,7 @@ if [[ -n "$GEMINI_DIR" ]]; then
 fi
 
 if [[ -n "$OPENCODE_DIR" ]]; then
-    VOLUMES+=(-v "${OPENCODE_DIR}:/home/farms/.config/opencode")
+    VOLUMES+=(-v "${OPENCODE_DIR}:/home/farms/.local/share/opencode")
 fi
 
 if [[ -n "$GITCONFIG" ]]; then
