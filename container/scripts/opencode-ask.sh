@@ -132,17 +132,19 @@ while kill -0 "$OPENCODE_PID" 2>/dev/null; do
     LAST_SIZE=$CURRENT_SIZE
 done
 
-wait "$OPENCODE_PID" 2>/dev/null || OPENCODE_EXIT=$?
-OPENCODE_EXIT="${OPENCODE_EXIT:-0}"
+wait "$OPENCODE_PID" 2>/dev/null; OPENCODE_EXIT=$?
 
 # Check for quota / rate limit (exit code 2 from opencode, or keywords in output)
 if [[ "$OPENCODE_EXIT" -eq 2 ]]; then
     STATUS=2
 elif grep -qiE "quota|rate.?limit|resource.?exhausted|too.?many.?requests" "$TMPOUT" 2>/dev/null; then
     STATUS=2
+elif [[ "$STATUS" -eq 0 && "$OPENCODE_EXIT" -ne 0 ]]; then
+    STATUS=1
 fi
 
-RESPONSE_TEXT=$(cat "$TMPOUT")
+# Strip ANSI escape codes so the orchestrator receives plain text
+RESPONSE_TEXT=$(sed 's/\x1b\[[0-9;]*[mK]//g' "$TMPOUT")
 
 # Emit structured summary for the orchestrator
 case $STATUS in
@@ -155,6 +157,11 @@ case $STATUS in
     2)
         echo "STATUS: quota_exceeded"
         echo "OpenCode hit a quota/rate limit. Partial output below (may be empty)."
+        echo "---"
+        echo "$RESPONSE_TEXT"
+        ;;
+    1)
+        echo "STATUS: error (opencode exited $OPENCODE_EXIT)"
         echo "---"
         echo "$RESPONSE_TEXT"
         ;;
