@@ -60,7 +60,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --claude-dir DIR    Path to .claude directory (for Claude Code / agentic work)"
             echo "  --claude-json FILE  Path to .claude.json file (mounted at /home/farms/.claude.json)"
             echo "  --gemini-dir DIR    Path to .gemini directory (for Gemini CLI / agentic work)"
-            echo "  --opencode-dir DIR  Path to OpenCode config directory (for OpenCode / agentic work)"
+            echo "  --opencode-dir DIR  Path to OpenCode config directory (~/.local/share/opencode)"
             echo "  --gitconfig FILE    Path to .gitconfig file (for correct git commit attribution)"
             echo "  --ssh-dir DIR       Path to .ssh directory (for git over SSH)"
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
