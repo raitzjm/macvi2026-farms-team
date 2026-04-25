@@ -55,7 +55,7 @@ PROMPT="${1:?Usage: gemini-ask.sh [--silence-timeout N] \"prompt\"}"
 # This is only injected here (not in GEMINI.md) so it does not affect
 # manual interactive gemini sessions.
 DISCLAIMER="[SYSTEM NOTE — read before responding]: You are being invoked as a
-sub-agent by a Claude orchestrator via gemini-ask.sh. Rules:
+sub-agent by an Orchestrator Agent via gemini-ask.sh. Rules:
 - Do NOT call gemini-cli or invoke yourself recursively.
 - Your output goes directly to the orchestrator, not a human user.
 - Do not ask clarifying questions — complete the task as best you can.

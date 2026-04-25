@@ -39,4 +39,4 @@ bash challenges/embedded-semantic-segmentation/phase2/scripts/run_phase2.sh <mod
 
 ## DDP details
 - 2 GPUs via torchrun (--nproc_per_node=2)
-- Batch sizes and LRs are pinned per model (see phase2/CLAUDE.md tables)
+- Batch sizes and LRs are pinned per model (see phase2/PHASE2_NOTES.md tables)

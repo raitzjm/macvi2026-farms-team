@@ -1,43 +1,52 @@
-# MaCVi 2026 — FARMS Team
+# Challenge Arena
 
-Codebase for the FARMS team competing in the [MaCVi 2026](https://macvi.org/workshop/cvpr) maritime computer vision challenge at CVPR 2026.
+Multi-challenge ML workspace for competitive ML benchmarks and workshops.
+Each challenge lives under `challenges/{workshop-challenge}/` and manages its own conda environment via bootstrap scripts.
+
+> **MaCVi 2026 (FARMS Team)** — the original repo. Challenge tree is grandfathered at `challenges/embedded-semantic-segmentation/` (migration to the new convention tracked in issue #69).
 
 ## Challenge Tracks
 
 | Track | Folder | Status |
 |-------|--------|--------|
-| Embedded Semantic Segmentation | `challenges/embedded-semantic-segmentation/` | Phase 2 (active) |
+| MaCVi 2026 — Embedded Semantic Segmentation | `challenges/embedded-semantic-segmentation/` | **COMPLETE** (CVPR 2026) |
 
-### Embedded Semantic Segmentation
+### MaCVi 2026 — Embedded Semantic Segmentation
 3-class maritime segmentation (sky / water / obstacle) on the [LaRS dataset](https://larss.science.si/).
-Model is trained in PyTorch/mmsegmentation, exported to ONNX, and submitted to the challenge server which handles INT8 quantization (Qualcomm SNPE) and deployment (Luxonis RVC4).
-Target: ≥30 FPS at 768×384, maximizing F1 detection score.
+Model trained in PyTorch/mmsegmentation, exported to ONNX, submitted to challenge server (INT8 quantization via Qualcomm SNPE, deployment via Luxonis RVC4).
+Best result: EXP-020 PIDNet-S, Q=52.1 — top 3 among ≥30 FPS entries.
 
 ## Repository Structure
 
 ```
 macvi2026-farms-team/
-├── CLAUDE.md                          # Global rules and practices for AI agents (canonical)
+├── CLAUDE.md                          # Global agent instructions (canonical)
 ├── README.md                          # This file
 ├── .gitignore
 ├── .claude/skills/                    # Agent skills (setup-wandb, launch-training, etc.)
 ├── container/
-│   ├── Dockerfile                     # CUDA 12.1 base; ML envs: macvi (Phase 1), macvi2 (Phase 2)
+│   ├── Dockerfile                     # Vanilla Ubuntu 24.04; no baked envs (lean image)
 │   └── scripts/
 │       ├── build.sh                   # Build the container image
-│       └── run.sh                     # Run the container
+│       ├── run.sh                     # Run the container
+│       ├── gemini-ask.sh              # Delegate tasks to Gemini as a sub-agent
+│       └── opencode-ask.sh            # Delegate tasks to OpenCode (GPT, MiniMax, Nemotron)
 ├── challenges/
-│   ├── common/lars-analysis/          # LaRS dataset analysis scripts
-│   └── embedded-semantic-segmentation/
-│       ├── CLAUDE.md                  # Challenge-specific context for agents (canonical)
+│   └── embedded-semantic-segmentation/   # Grandfathered MaCVi 2026 challenge tree
+│       ├── CLAUDE.md                  # Challenge-specific agent instructions
+│       ├── STATE.md                   # Challenge status tracker
+│       ├── bootstrap-macvi.sh         # Create macvi conda env (Phase 1)
+│       ├── bootstrap-macvi2.sh        # Create macvi2 conda env (Phase 2+)
+│       ├── docs/                      # Reference docs (dataset, env, preprocessing, etc.)
 │       ├── experiment-log.md          # Training experiment log (append-only)
-│       ├── eval_metrics.md            # Phase 2 evaluation results
+│       ├── eval_metrics.md            # Phase 2+ evaluation results
 │       ├── submissions.md             # Challenge submission tracker
-│       ├── reference_baselines.md     # Published baselines from challenge website
-│       ├── mmsegmentation-macvi/      # Fork of lojzezust/mmsegmentation-macvi (Phase 1)
 │       ├── phase1/                    # Phase 1 configs, scripts, report, artifacts
-│       └── phase2/                    # Phase 2 configs, scripts, datasets, artifacts
+│       ├── phase2/                    # Phase 2 configs, scripts, PHASE2_NOTES.md
+│       └── phase3/                    # Phase 3 configs, scripts, phase3_report.md
 └── docs/
+    ├── multi-challenge-convention.md  # Multi-challenge workspace conventions
+    └── agent-reference/               # Delegation docs for Gemini, OpenCode
 ```
 
 ## Container Setup
@@ -117,7 +126,7 @@ Gemini CLI is installed in the container and can be used as a sub-agent via
 
 **Context loading:** `.gemini/settings.json` configures Gemini CLI to automatically
 load `GEMINI.md` and `CLAUDE.md` files from the project tree at session start,
-so project rules and context are always in scope without passing them in every prompt.
+so project rules and context are in scope for interactive sessions.
 
 To authenticate Gemini CLI, mount your host `~/.gemini` directory:
 
@@ -174,16 +183,19 @@ Best checkpoints for INT8-stable models are committed via Git LFS under
 See [`eval_metrics.md`](challenges/embedded-semantic-segmentation/eval_metrics.md) for the
 full results table including INT8 impact analysis.
 
-To use a checkpoint, run the export script:
+To use a checkpoint, first bootstrap the `macvi2` env (once), then run the export script:
 ```bash
-python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py \
+bash challenges/embedded-semantic-segmentation/bootstrap-macvi2.sh
+conda run -p challenges/embedded-semantic-segmentation/envs/macvi2 \
+  python challenges/embedded-semantic-segmentation/phase2/scripts/export_and_eval.py \
   --models pidnets   # or stdc2, bisenetv2
 ```
 
 ## Workflow
 
-- ML conda environments: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2, mmseg 1.2.2)
-- All agents follow the rules in `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
+- Each challenge has its own bootstrap script(s) — run once; the env is created in the challenge directory (part of the mounted repo) and persists across container recreations.
+- ML envs for MaCVi 2026: `macvi` (Phase 1, mmseg 0.30.0) and `macvi2` (Phase 2+, mmseg 1.2.2).
+- All agents follow `CLAUDE.md` (global) and the relevant `challenges/*/CLAUDE.md`.
 - Experiments are logged in `challenges/embedded-semantic-segmentation/experiment-log.md`.
 - Tasks are tracked via [GitHub Issues](https://github.com/raitzjm/macvi2026-farms-team/issues).
-- Agent activity is always tagged `[Agent - <Model Name>]` in commits and issue comments.
+- Agent commits have `[agent]` in the subject; issue comments begin with `[Agent - <Model Name>]`.
