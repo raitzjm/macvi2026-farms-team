@@ -4,7 +4,7 @@
 # Usage: gemini-ask.sh [--silence-timeout N] [--pro|--auto|--flash] "prompt"
 #
 # Options:
-#   --pro               Use gemini-3.1-pro-preview (explicit; same as default).
+#   --pro               Use gemini-3.1-pro-preview (explicit; overrides Flash default).
 #   --auto              Use the Gemini CLI default model (omits -m flag entirely).
 #                       Prefer this for lightweight tasks (short lookups,
 #                       summaries, simple Q&A) where Pro is overkill.
@@ -22,7 +22,7 @@
 set -uo pipefail
 
 SILENCE_TIMEOUT=300
-GEMINI_MODEL="gemini-3.1-pro-preview"
+GEMINI_MODEL="gemini-3-flash-preview"
 GEMINI_AUTO=0
 
 while [[ $# -gt 0 ]]; do
@@ -144,7 +144,7 @@ with open(sys.argv[1]) as f:
             obj = json.loads(line)
             if obj.get("type") == "result" and obj.get("status") != "success":
                 err = str(obj).lower()
-                if any(k in err for k in ("resource_exhausted", "ratelimit", "quota")):
+                if any(k in err for k in ("resource_exhausted", "ratelimit", "quota", "exhausted")):
                     sys.exit(0)  # quota detected
         except Exception:
             pass
