@@ -2,7 +2,7 @@
 
 ## Project
 Multi-challenge ML workspace. Each challenge lives at `challenges/{workshop-challenge}/`.
-Current challenges: see the repo README.
+Current challenges: see `README.md` (Challenge Tracks table) for the list of challenge folders.
 
 ## Multi-challenge Convention
 
