@@ -99,6 +99,9 @@ ENV PATH="/home/farms/.opencode/bin:$PATH"
 # Not available in Ubuntu 24.04 apt repos; installed via npm.
 RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g pyright"
 
+# Kaggle CLI — for downloading competition datasets
+RUN pip install --user kaggle --break-system-packages
+
 # --- Miniforge ---
 # Installs conda (conda-forge channel) into /home/farms/miniforge3.
 # Provides conda/mamba for bootstrap scripts that set up per-challenge envs.
