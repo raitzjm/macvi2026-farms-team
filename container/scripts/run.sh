@@ -20,8 +20,7 @@ DATA_DIR=""
 
 # Credential overrides — flags take precedence over host env vars
 GH_TOKEN_OVERRIDE=""
-KAGGLE_USERNAME_OVERRIDE=""
-KAGGLE_KEY_OVERRIDE=""
+KAGGLE_TOKEN_OVERRIDE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -61,12 +60,8 @@ while [[ $# -gt 0 ]]; do
             GH_TOKEN_OVERRIDE="$2"
             shift 2
             ;;
-        --kaggle-username)
-            KAGGLE_USERNAME_OVERRIDE="$2"
-            shift 2
-            ;;
-        --kaggle-key)
-            KAGGLE_KEY_OVERRIDE="$2"
+        --kaggle-token)
+            KAGGLE_TOKEN_OVERRIDE="$2"
             shift 2
             ;;
         -h|--help)
@@ -82,8 +77,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --ssh-dir DIR       Path to .ssh directory (for git over SSH)"
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
             echo "  --gh-token TOKEN    GitHub token (overrides \$MACVI_GH_TOKEN from host env)"
-            echo "  --kaggle-username U Kaggle username (overrides \$KAGGLE_USERNAME from host env)"
-            echo "  --kaggle-key KEY    Kaggle API key (overrides \$KAGGLE_KEY from host env)"
+            echo "  --kaggle-token TOKEN    Kaggle API token (overrides \$KAGGLE_API_TOKEN from host env)"
             echo ""
             echo "All mounts and credentials are optional; omitted ones fall back to host env vars."
             exit 0
@@ -135,8 +129,7 @@ HOST_SHM_BYTES=$(df --block-size=1 /dev/shm | awk 'NR==2{print $2}')
 
 # Resolve credentials: flag overrides host env var
 _GH_TOKEN="${GH_TOKEN_OVERRIDE:-${MACVI_GH_TOKEN}}"
-_KAGGLE_USERNAME="${KAGGLE_USERNAME_OVERRIDE:-${KAGGLE_USERNAME}}"
-_KAGGLE_KEY="${KAGGLE_KEY_OVERRIDE:-${KAGGLE_KEY}}"
+_KAGGLE_TOKEN="${KAGGLE_TOKEN_OVERRIDE:-${KAGGLE_API_TOKEN}}"
 
 echo "Running with: $RUNTIME (shm-size=${HOST_SHM_BYTES} bytes)"
 "$RUNTIME" run -it --rm \
@@ -145,7 +138,6 @@ echo "Running with: $RUNTIME (shm-size=${HOST_SHM_BYTES} bytes)"
     --shm-size="${HOST_SHM_BYTES}" \
     --ulimit memlock=-1 \
     -e GH_TOKEN="${_GH_TOKEN}" \
-    -e KAGGLE_USERNAME="${_KAGGLE_USERNAME}" \
-    -e KAGGLE_KEY="${_KAGGLE_KEY}" \
+    -e KAGGLE_API_TOKEN="${_KAGGLE_TOKEN}" \
     "${VOLUMES[@]}" \
     macvi-farms:latest
