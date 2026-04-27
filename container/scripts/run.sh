@@ -21,7 +21,7 @@ DATA_DIR=""
 # Credential overrides — flags take precedence over host env vars
 GH_TOKEN_OVERRIDE=""
 KAGGLE_TOKEN_OVERRIDE=""
-WANDB_KEY_OVERRIDE=""
+WANDB_API_KEY_OVERRIDE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -66,7 +66,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --wandb-key)
-            WANDB_KEY_OVERRIDE="$2"
+            WANDB_API_KEY_OVERRIDE="$2"
             shift 2
             ;;
         -h|--help)
@@ -83,7 +83,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --data-dir DIR      Path to datasets directory (mounted read-only at /home/farms/data)"
             echo "  --gh-token TOKEN    GitHub token (overrides \$MACVI_GH_TOKEN from host env)"
             echo "  --kaggle-token TOKEN    Kaggle API token (overrides \$KAGGLE_API_TOKEN from host env)"
-            echo "  --wandb-key TOKEN    Weights & Biases API key (overrides \$WANDB_KEY from host env)"
+            echo "  --wandb-key TOKEN    Weights & Biases API key (overrides \$WANDB_API_KEY from host env)"
             echo ""
             echo "All mounts and credentials are optional; omitted ones fall back to host env vars."
             exit 0
@@ -136,7 +136,7 @@ HOST_SHM_BYTES=$(df --block-size=1 /dev/shm | awk 'NR==2{print $2}')
 # Resolve credentials: flag overrides host env var
 _GH_TOKEN="${GH_TOKEN_OVERRIDE:-${MACVI_GH_TOKEN}}"
 _KAGGLE_TOKEN="${KAGGLE_TOKEN_OVERRIDE:-${KAGGLE_API_TOKEN}}"
-_WANDB_KEY="${WANDB_KEY_OVERRIDE:-${WANDB_KEY}}"
+_WANDB_API_KEY="${WANDB_API_KEY_OVERRIDE:-${WANDB_API_KEY}}"
 
 echo "Running with: $RUNTIME (shm-size=${HOST_SHM_BYTES} bytes)"
 "$RUNTIME" run -it --rm \
@@ -146,6 +146,6 @@ echo "Running with: $RUNTIME (shm-size=${HOST_SHM_BYTES} bytes)"
     --ulimit memlock=-1 \
     -e GH_TOKEN="${_GH_TOKEN}" \
     -e KAGGLE_API_TOKEN="${_KAGGLE_TOKEN}" \
-    -e WANDB_KEY="${_WANDB_KEY}" \
+    -e WANDB_API_KEY="${_WANDB_API_KEY}" \
     "${VOLUMES[@]}" \
     macvi-farms:latest
