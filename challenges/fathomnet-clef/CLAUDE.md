@@ -70,7 +70,12 @@ If you discover errors in the docs, new CLI commands, or new SDK capabilities wh
 - New Kaggle CLI/SDK patterns → `../../docs/agent-reference/kaggle-cli.md`
 - New discussion findings → `docs/discussions/`
 
+The `experiment-log.md` format may be adapted as the challenge evolves — if you find the format insufficient for a new type of experiment or dependency pattern, update the format and note the change in the file header.
+
 Do not leave stale or incorrect documentation — future agents depend on it.
+
+## Evaluation Notebook
+`kaggle/code/lauravchrobak/map50-95` is a **reference implementation of the metric** — not a submission tool. It shows how mAP@[.50:.95] is computed via pycocotools. You can use its logic to evaluate your model on the micro-val split locally. To get official competition scores, you must submit a CSV to Kaggle — test annotations are withheld server-side.
 
 ## Agent Conventions
 - All commits: `[agent]` prefix, body includes model name
