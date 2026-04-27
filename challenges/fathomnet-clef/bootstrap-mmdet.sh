@@ -50,8 +50,8 @@ echo ">>> Installing PyTorch 2.1.2+cu121..."
 
 # --- OpenMMLab stack ---------------------------------------------------------
 
-echo ">>> Installing setuptools, numpy<2, and mmcv..."
-"${PIP}" install setuptools "numpy<2"
+echo ">>> Installing setuptools<81 (for pkg_resources), numpy<2, and mmcv..."
+"${PIP}" install "setuptools<81" "numpy<2"
 MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine mmdet -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
 
 # --- Supporting packages -----------------------------------------------------
