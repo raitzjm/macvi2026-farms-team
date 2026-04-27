@@ -1,0 +1,9 @@
+outputs/
+envs/
+wandb/
+*.pt
+docs/raw-*.md
+docs/gemini-flash/
+docs/minimax/
+docs/nemotron/
+docs/sonnet/

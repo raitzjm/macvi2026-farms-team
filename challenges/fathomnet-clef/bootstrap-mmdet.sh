@@ -59,6 +59,15 @@ MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine mmdet -f http
 echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas..."
 "${PIP}" install pycocotools wandb ensemble-boxes pandas
 
+# --- Co-DETR source (mmdet projects/ are not in the pip wheel) ---------------
+
+CODETR_SRC="${SCRIPT_DIR}/envs/mmdet-src"
+if [ ! -d "${CODETR_SRC}" ]; then
+    echo ">>> Cloning mmdetection v3.3.0 for projects/CO-DETR..."
+    git clone --depth 1 --branch v3.3.0 \
+        https://github.com/open-mmlab/mmdetection.git "${CODETR_SRC}"
+fi
+
 # --- Smoke check -------------------------------------------------------------
 
 echo ">>> Running import smoke check..."

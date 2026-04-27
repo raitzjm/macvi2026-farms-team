@@ -1,0 +1,13 @@
+{
+  "id": "raitzjm/fathomnet-yolo11l-baseline",
+  "title": "FathomNet YOLO11l Baseline",
+  "code_file": "kernel_train.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["cosheimil/fathomnetclef2026"],
+  "competition_sources": ["fathomnet-2026"],
+  "kernel_sources": []
+}
