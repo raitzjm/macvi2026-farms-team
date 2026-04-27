@@ -5,20 +5,21 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 
 > **Format note:** This format will be adapted as the challenge progresses. If a new experiment
 > type or dependency pattern requires changes, update the format and note it here with a date.
+> Backfill of historical entries is not required — note the effective date of each format change.
 > Last updated: 2026-04-27
 
 ---
 
 ## Training Index
 
-| ID | Date | Model | Description | Seed | μval mAP | Status |
-|----|------|-------|-------------|------|----------|--------|
-| — | — | — | — | — | — | — |
+| ID | Date | Track | Description | Seed | μval mAP |
+|----|------|-------|-------------|------|----------|
+| — | — | — | — | — | — |
 
 ## Inference Index
 
-| ID | Date | Inputs | Description | μval mAP | LB mAP | Sub ID | Status |
-|----|------|--------|-------------|----------|--------|--------|--------|
+| ID | Date | Track | Inputs | Description | μval mAP | LB mAP | Sub ID |
+|----|------|-------|--------|-------------|----------|--------|--------|
 | — | — | — | — | — | — | — | — |
 
 ---
@@ -31,15 +32,13 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | Field | Value |
 |---|---|
 | Date | YYYY-MM-DD |
-| Status | planned \| running \| completed \| failed \| abandoned |
+| Track | YOLO11l \| Co-DETR |
+| Env | ultralytics \| mmdet |
 | Platform | TensorDock (GPU type) \| Kaggle (GPU type) \| local RTX 3050 |
 | Duration | Xh Ym |
-| Code version | git sha (short) |
-| Data version | dataset manifest SHA or note |
 | Seed | 42 |
 | Inputs | — (fresh start) \| T-NNN checkpoint, I-NNN pseudo-labels, etc. |
 | Artifacts | outputs/T-001/best.pt, outputs/T-001/last.pt, outputs/T-001/config.yaml |
-| Failure reason | (if abandoned/failed — required) |
 
 #### Model & Architecture
 | Field | Value |
@@ -74,11 +73,11 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | num_workers | 8 |
 | Loss config | box=7.5, cls=0.5, dfl=1.5 (YOLO defaults) |
 
-#### Evaluation Config
+#### Evaluation Config (training-time val only)
 | Field | Value |
 |---|---|
 | Evaluator | pycocotools mAP@[.5:.95] |
-| Conf threshold (val) | 0.001 |
+| Conf threshold | 0.001 |
 | IoU threshold (NMS) | 0.7 |
 
 #### Results
@@ -103,20 +102,25 @@ Free-text observations.
 | Field | Value |
 |---|---|
 | Date | YYYY-MM-DD |
-| Status | planned \| running \| completed \| failed \| abandoned |
+| Track | YOLO11l \| Co-DETR \| Ensemble |
+| Env | ultralytics \| mmdet |
 | Platform | local RTX 3050 \| TensorDock \| Kaggle |
 | Duration | Xh Ym |
-| Code version | git sha (short) |
-| Evaluated split | micro-val \| full train (sanity) \| test set |
+| Evaluated split | micro-val \| test set |
 | Inputs | T-001 checkpoint, T-002 checkpoint, configs/per_class_thresholds.yaml |
 | Artifacts | outputs/I-001/predictions_raw.json, outputs/I-001/submission.csv |
-| Lineage | T-001 → I-001 (baseline) |
-| Failure reason | (if abandoned/failed — required) |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
 |---|---|---|
 | primary | T-001 | outputs/T-001/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 1280×1280 \| multi-scale [800, 1333] |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.7 |
 
 #### SAHI Config
 | Field | Value |
@@ -154,8 +158,8 @@ Free-text observations.
 #### Results
 | Metric | Value |
 |---|---|
-| μval mAP@[.5:.95] | — |
-| μval mAP@.50 | — |
+| μval mAP@[.5:.95] | — (blank if evaluated on test set) |
+| μval mAP@.50 | — (blank if evaluated on test set) |
 
 #### Submission
 | Field | Value |
@@ -175,12 +179,11 @@ Free-text observations.
 
 ## Dependency / Lineage Conventions
 
-- **Inputs field**: list all upstream dependencies explicitly — checkpoint paths, pseudo-label sources, threshold files. This is the primary dependency record. No retroactive child links needed.
-- **Lineage field**: one-line compact chain for complex flows, e.g.:
-  `T-001 → I-001 (pseudo-labels) → T-002 → I-002 + I-003 → I-004 (WBF ensemble)`
-- **IDs**: `T-NNN` for training, `I-NNN` for inference, zero-padded to 3 digits. Never reused, even if abandoned.
-- **Status values**: `planned | running | completed | failed | abandoned`
-  - `failed` = crashed or produced invalid results
-  - `abandoned` = intentionally stopped; `Failure reason` field required
+- **Inputs field**: list all upstream dependencies explicitly — checkpoint paths, pseudo-label sources, threshold files. This is the primary dependency record.
+- **Lineage column** (Inference Index only): optional one-line compact chain for multi-hop flows, e.g.:
+  `T-001 → I-001 (pseudo-labels) → T-002 → I-002 + I-003 → I-004 (WBF)`
+- **IDs**: `T-NNN` for training, `I-NNN` for inference, zero-padded to 3 digits. Never reused.
 - **Artifacts**: record output paths explicitly so any experiment is reproducible from its entry alone.
-- **Reproducibility**: `Code version` (git sha) + `Data version` + `Seed` are mandatory for completed training runs.
+- **Reproducibility**: `Seed` + `Env` + `Inputs` are mandatory for every training entry.
+- **Commit rule**: log entry must be committed to git when the experiment completes.
+- **Weights**: not committed by default. Commit via Git LFS only after LB validation confirms a checkpoint is worth keeping.
