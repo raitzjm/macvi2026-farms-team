@@ -41,12 +41,6 @@ echo ">>> Creating conda env at ${ENV_DIR} (Python 3.11)..."
 mkdir -p "$(dirname "${ENV_DIR}")"
 "${CONDA}" create -p "${ENV_DIR}" python=3.11 -y
 
-# --- CUDA toolchain for MMDetection/MMCV builds ------------------------------
-
-echo ">>> Installing conda-forge CUDA packages (cuda-nvcc, cudatoolkit, cudnn)..."
-"${CONDA}" install -p "${ENV_DIR}" -c conda-forge \
-    cuda-nvcc cudatoolkit cudnn -y
-
 # --- PyTorch 2.1.2 + CUDA 12.1 -----------------------------------------------
 
 echo ">>> Installing PyTorch 2.1.2+cu121..."
@@ -56,13 +50,14 @@ echo ">>> Installing PyTorch 2.1.2+cu121..."
 
 # --- OpenMMLab stack ---------------------------------------------------------
 
-echo ">>> Installing mmcv, mmdet, and mmengine..."
-MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install -U mmcv mmengine mmdet
+echo ">>> Installing setuptools, numpy<2, and mmcv..."
+"${PIP}" install setuptools "numpy<2"
+MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine mmdet -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
 
 # --- Supporting packages -----------------------------------------------------
 
-echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas, numpy..."
-"${PIP}" install pycocotools wandb ensemble-boxes pandas numpy
+echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas..."
+"${PIP}" install pycocotools wandb ensemble-boxes pandas
 
 # --- Smoke check -------------------------------------------------------------
 
