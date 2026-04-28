@@ -14,13 +14,117 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 
 | ID | Date | Track | Description | Seed | μval mAP |
 |----|------|-------|-------------|------|----------|
-| — | — | — | — | — | — |
+| T-001 | 2026-04-28 | YOLO26l | YOLO26l-local-v1: 50 epochs, rect 1152px, batch≈4 (auto), RTX 3050 | 42 | 0.408 (train-val 90/10) |
+| T-002 | 2026-04-28 | Co-DETR | Co-DETR R50 v14: 12 epochs, 1333×800 rect, Kaggle T4, no inference (bug) | 42 | 0.324 (train-val 90/10) |
 
 ## Inference Index
 
 | ID | Date | Track | Inputs | Description | μval mAP | LB mAP | Sub ID |
 |----|------|-------|--------|-------------|----------|--------|--------|
 | — | — | — | — | — | — | — | — |
+
+---
+
+### T-001 — YOLO26l local baseline (50 epochs)
+
+| Field | Value |
+|---|---|
+| Date | 2026-04-28 |
+| Track | YOLO26l |
+| Env | ultralytics (envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~5.9 h |
+| Seed | 42 |
+| Inputs | yolo26l.pt (COCO pretrained) |
+| Artifacts | outputs/yolo26l-local-v1/run/best.pt, outputs/yolo26l-local-v1/run/last.pt, outputs/yolo26l-local-v1/run/results.csv |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | YOLO26l |
+| Pretrained weights | yolo26l.pt (COCO) |
+| Input resolution | imgsz=1152, rect=True (short-side ~640 for 16:9) |
+| Config file | scripts/train_yolo.py |
+| Modifications | — |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | 90% of 6,463 training images (5,816 images) |
+| Val split | 10% of training images (647 images) |
+| Classes | all 32 |
+| PU strategy | none |
+| Augmentation | ultralytics defaults |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 50 |
+| Batch size | auto (≈4 on 4GB VRAM) |
+| Optimizer | ultralytics default (SGD) |
+| AMP | True |
+
+#### Results
+| Metric | Value |
+|---|---|
+| val mAP@[.5:.95] | **0.408** |
+| val mAP@.50 | 0.549 |
+| Best epoch | 47 |
+| Final train box loss | 1.001 |
+
+#### Notes
+Strong result vs YOLO11l Kaggle baseline (0.372 mAP50-95). WandB run logged to `little_farms/fathomnet2026` as `yolov26-baseline` (moved from wrong project post-run — name was manually corrected in WandB UI).
+
+---
+
+### T-002 — Co-DETR R50 v14 (12 epochs, Kaggle T4)
+
+| Field | Value |
+|---|---|
+| Date | 2026-04-28 |
+| Track | Co-DETR |
+| Env | mmdet (envs/mmdet/) |
+| Platform | Kaggle T4 |
+| Duration | ~3.8 h (training), inference aborted (bug) |
+| Seed | 42 |
+| Inputs | co_dino_5scale_r50_lsj_8xb2_1x_coco.pth (COCO pretrained) |
+| Artifacts | none recoverable (kernel v14 output download blocked while v15 running) |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | Co-DETR R50 |
+| Pretrained weights | co_dino_5scale_r50_lsj_8xb2_1x_coco.pth |
+| Input resolution | 1333×800 (mmdet rect) |
+| Config file | kaggle/codetr-baseline/kernel_train.py (inline config) |
+| Modifications | AMP enabled; custom dataset (32 classes) |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | 90% of 6,463 images |
+| Val split | 10% of 6,463 images |
+| Classes | all 32 |
+| PU strategy | none |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 12 |
+| Batch size | 2 |
+| Optimizer | AdamW |
+| LR initial | 1e-4 |
+
+#### Results
+| Metric | Value |
+|---|---|
+| val mAP@[.5:.95] | **0.324** |
+| val mAP@.50 | — |
+| Best epoch | 12 |
+| Final train loss | — |
+
+#### Notes
+Training completed 12 epochs. Inference crashed: `mmdetection-src` was deleted (cleanup) before `init_detector()` — sub-module files needed at model construction time even after `sys.modules` cache. Fixed in v15 (cleanup moved to after submission.csv is written). Checkpoint zip not recovered — v15 was running when download attempted (403 Forbidden from Kaggle API).
 
 ---
 
