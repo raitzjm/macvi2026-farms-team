@@ -117,21 +117,25 @@ def main():
         f"names: {class_names}\n"
     )
 
-    # WandB pre-init: ultralytics overrides WANDB_PROJECT with its `project=` arg
-    # (which is the local output dir). Pre-initing wandb makes its callback
-    # attach to our run instead of creating one named after the path.
     if not args.no_wandb:
         key = load_wandb_key()
         if key:
             os.environ["WANDB_API_KEY"] = key
-            try:
-                from ultralytics.utils import SETTINGS
-                SETTINGS.update({"wandb": True})
-            except Exception as e:
-                print(f"warn: ultralytics SETTINGS update failed: {e}")
-            import wandb
-            wandb.init(project="fathomnet2026", entity="little_farms",
-                       name=args.name, dir=str(out_root))
+            # Monkey-patch wandb.init so that regardless of when ultralytics
+            # calls it (with trainer.args.project as project and "run" as name),
+            # we always land in the right WandB project with the right run name.
+            import wandb as _wandb
+            _orig_wandb_init = _wandb.init
+            _run_name = args.name
+
+            def _patched_wandb_init(*a, **kw):
+                kw["project"] = "fathomnet2026"
+                kw["entity"] = "little_farms"
+                kw["name"] = _run_name
+                kw.pop("id", None)  # drop auto-generated id so name is used
+                return _orig_wandb_init(*a, **kw)
+
+            _wandb.init = _patched_wandb_init
         else:
             print("[warn] no WANDB_API_KEY; running without wandb")
 

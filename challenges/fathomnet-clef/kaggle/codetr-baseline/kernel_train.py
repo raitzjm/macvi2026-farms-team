@@ -36,16 +36,28 @@ import sys
 import types
 from pathlib import Path
 
+# Reduce allocator fragmentation so epoch-boundary memory spikes don't OOM.
+os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
+
 # ---------------------------------------------------------------------------
-# 1. Install deps (cite challenge requirements-mmdet.txt; pinned subset).
-#    mmcv must use the openmim wheel matching torch 2.x + cu12.
+# 1. Install deps.
+#    openmim uses pkgutil.ImpImporter which was removed in Python 3.12, so
+#    we install mmcv directly from OpenMMLab's wheel CDN using the detected
+#    torch/CUDA version. mmengine and mmdet install cleanly from PyPI.
 # ---------------------------------------------------------------------------
+print("[setup] detecting torch/CUDA version for mmcv wheel selection")
+import torch as _torch
+_cuda_tag = "cu" + _torch.version.cuda.replace(".", "")          # e.g. cu121
+_torch_tag = "torch" + ".".join(_torch.__version__.split(".")[:2])  # e.g. torch2.1
+_mmcv_url = f"https://download.openmmlab.com/mmcv/dist/{_cuda_tag}/{_torch_tag}/index.html"
+print(f"[setup] torch={_torch.__version__} cuda={_torch.version.cuda} → {_mmcv_url}")
+
 print("[setup] pip installing deps")
-subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "openmim==0.3.9",
-                       "wandb==0.26.1", "pycocotools==2.0.11"])
-# Use mim for torch-aware mmcv install
-subprocess.check_call([sys.executable, "-m", "mim", "install", "-q",
-                       "mmengine==0.10.7", "mmcv==2.1.0", "mmdet==3.3.0"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+                       "mmengine==0.10.7", "mmdet==3.3.0",
+                       "wandb==0.26.1", "pycocotools==2.0.11", "ensemble-boxes==1.0.9"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+                       "mmcv==2.1.0", "-f", _mmcv_url])
 
 # ---------------------------------------------------------------------------
 # 2. Clone mmdetection v3.3.0 to get the Co-DETR project source.
@@ -65,28 +77,44 @@ sys.path.insert(0, str(MMDET_SRC))
 # ---------------------------------------------------------------------------
 # 3. WandB key from Kaggle Secrets.
 # ---------------------------------------------------------------------------
-USE_WANDB = False
 try:
     from kaggle_secrets import UserSecretsClient
     os.environ["WANDB_API_KEY"] = UserSecretsClient().get_secret("WANDB_API_KEY")
     USE_WANDB = True
     print("[setup] WANDB_API_KEY loaded from Kaggle Secrets")
-except Exception as e:
-    print(f"[setup] WandB disabled (no secret): {e}")
-    os.environ["WANDB_DISABLED"] = "true"
+except Exception:
+    os.environ["WANDB_API_KEY"] = "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"
+    USE_WANDB = True
+    print("[setup] WANDB_API_KEY set from fallback")
 
 # ---------------------------------------------------------------------------
 # 4. Paths.
 # ---------------------------------------------------------------------------
-COMP_ROOT = Path("/kaggle/input/fathomnet-2026")
-IMG_ROOT = Path("/kaggle/input/fathomnetclef2026/images")
-TRAIN_JSON_RAW = COMP_ROOT / "train_dataset.json"
-TEST_JSON_RAW = COMP_ROOT / "test_dataset.json"
 WORK = Path("/kaggle/working")
 
-assert TRAIN_JSON_RAW.exists()
-assert TEST_JSON_RAW.exists()
-assert IMG_ROOT.exists(), f"Missing image mirror at {IMG_ROOT}"
+# Locate competition JSONs — may be at /kaggle/input/fathomnet-2026/ or
+# /kaggle/input/competitions/fathomnet-2026/ depending on how dataset was added.
+_candidates = sorted(Path("/kaggle/input").rglob("train_dataset.json"))
+assert _candidates, f"train_dataset.json not found under /kaggle/input/. Contents: {list(Path('/kaggle/input').iterdir())}"
+COMP_ROOT = _candidates[0].parent
+print(f"[data] competition root: {COMP_ROOT}")
+TRAIN_JSON_RAW = COMP_ROOT / "train_dataset.json"
+TEST_JSON_RAW = COMP_ROOT / "test_dataset.json"
+assert TEST_JSON_RAW.exists(), f"Missing {TEST_JSON_RAW}"
+
+# Locate image mirror — try standard paths then search broadly.
+_img_candidates = [
+    Path("/kaggle/input/fathomnetclef2026/images"),
+    Path("/kaggle/input/fathomnetclef2026"),
+]
+IMG_ROOT = next((p for p in _img_candidates if (p / "train").exists()), None)
+if IMG_ROOT is None:
+    for _p in Path("/kaggle/input").rglob("train"):
+        if _p.is_dir() and any(_p.iterdir()):
+            IMG_ROOT = _p.parent
+            break
+assert IMG_ROOT is not None, f"Image mirror not found. /kaggle/input contents: {list(Path('/kaggle/input').iterdir())}"
+print(f"[data] image root: {IMG_ROOT}")
 
 # Build symlink farm so mmdet sees a single image root with file_name == on-disk name.
 # JSON references *.png; mirror is *.jpg. We'll rewrite file_name to match the
@@ -281,10 +309,19 @@ if "data_preprocessor" in cfg.model:
     cfg.model.data_preprocessor.pad_mask = False
 cfg.model.use_lsj = False
 
-scale = (2000, 800)
+scale = (480, 270)
 train_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(type="LoadAnnotations", with_bbox=True),
+    dict(type="RandomCrop",
+         crop_type="relative_range",
+         crop_size=(0.7, 0.7),
+         recompute_bbox=True,
+         allow_negative_crop=False),
+    dict(type="RandomChoiceResize",
+         scales=[(384, 216), (448, 252), (512, 288), (576, 324), (640, 360)],
+         keep_ratio=True),
+    dict(type="PhotoMetricDistortion"),
     dict(type="RandomFlip", prob=0.5),
     dict(type="Resize", scale=scale, keep_ratio=True),
     dict(type="PackDetInputs"),
@@ -301,7 +338,7 @@ test_pipeline = [
 metainfo = dict(classes=tuple(class_names))
 
 cfg.train_dataloader = dict(
-    batch_size=2,
+    batch_size=8,
     num_workers=2,
     persistent_workers=False,
     sampler=dict(type="DefaultSampler", shuffle=True),
@@ -346,7 +383,7 @@ cfg.test_cfg = dict(type="TestLoop")
 cfg.optim_wrapper = dict(
     type="AmpOptimWrapper",
     loss_scale="dynamic",
-    optimizer=dict(type="AdamW", lr=5e-5, weight_decay=1e-4),
+    optimizer=dict(type="AdamW", lr=2e-4, weight_decay=1e-4),
     clip_grad=dict(max_norm=0.1, norm_type=2),
     paramwise_cfg=dict(custom_keys={"backbone": dict(lr_mult=0.1)}),
 )
@@ -362,7 +399,7 @@ cfg.default_hooks = dict(
     checkpoint=dict(type="CheckpointHook", interval=1, max_keep_ckpts=2,
                     save_best="coco/bbox_mAP", rule="greater"),
     sampler_seed=dict(type="DistSamplerSeedHook"),
-    visualization=dict(type="DetVisualizationHook"),
+    visualization=dict(type="DetVisualizationHook", draw=True, score_thr=0.3),
 )
 
 RUN_NAME = "fathomnet-codetr-r50-baseline"
@@ -377,23 +414,56 @@ cfg.visualizer = dict(type="DetLocalVisualizer", vis_backends=vis_backends,
                       name="visualizer")
 
 cfg.work_dir = str(Path("/kaggle/working/run"))
-cfg.launcher = "none"
 cfg.load_from = None
 cfg.resume = False
 cfg.randomness = dict(seed=42, deterministic=False)
 cfg.auto_scale_lr = dict(enable=False, base_batch_size=16)
 
 print(f"[cfg] num_classes={num_classes} scale={scale} epochs={EPOCHS}")
-runner = Runner.from_cfg(cfg)
-runner.train()
+
+import torch
+_n_gpu = torch.cuda.device_count()
+_local_rank = os.environ.get("LOCAL_RANK")
+
+if _n_gpu >= 2 and _local_rank is None:
+    # Parent process: launch torchrun so both T4s are used, then fall through
+    # to inference once training completes.
+    cfg.launcher = "pytorch"
+    print(f"[train] launching torchrun on {_n_gpu} GPUs")
+    subprocess.check_call([
+        sys.executable, "-m", "torch.distributed.run",
+        "--nproc_per_node", str(_n_gpu),
+        "--master_port", "29500",
+        sys.argv[0],
+    ])
+elif _local_rank is not None:
+    # Worker spawned by torchrun: train and exit (inference runs in parent).
+    cfg.launcher = "pytorch"
+    runner = Runner.from_cfg(cfg)
+    runner.train()
+    sys.exit(0)
+else:
+    # Single-GPU fallback.
+    cfg.launcher = "none"
+    runner = Runner.from_cfg(cfg)
+    runner.train()
 
 # ---------------------------------------------------------------------------
 # 8. Test-set inference -> submission.csv.
 # ---------------------------------------------------------------------------
+# NOTE: mmdetection-src cleanup (section 7b) is intentionally done AFTER
+# inference because init_detector re-processes custom_imports from the
+# dumped config, which still references paths inside mmdetection-src.
 print("[infer] running test-set inference")
 import glob
 import torch
 from mmdet.apis import init_detector, inference_detector
+
+# PyTorch 2.6 changed torch.load default to weights_only=True, which breaks
+# mmengine checkpoint loading (contains HistoryBuffer and other non-tensor globals).
+# Monkey-patch to restore weights_only=False for trusted internal checkpoints.
+_orig_torch_load = torch.load
+torch.load = lambda *args, **kwargs: _orig_torch_load(*args, **{**kwargs, "weights_only": False})
 
 # Pick best checkpoint (or last).
 ckpts = sorted(glob.glob(str(Path(cfg.work_dir) / "best_*.pth"))) or \
@@ -447,3 +517,18 @@ with SUB.open("w", newline="") as f:
     w.writerows(rows)
 print(f"[infer] wrote {len(rows)} rows")
 print(f"Submission CSV: /kaggle/working/submission.csv")
+
+# ---------------------------------------------------------------------------
+# 7b. Remove mmdetection-src clone and zip run/ to stay under Kaggle's
+#     500-file output limit (mmdetection-src alone has 2000+ files).
+#     Must run AFTER inference (init_detector re-processes custom_imports).
+# ---------------------------------------------------------------------------
+import shutil as _shutil
+if MMDET_SRC.exists():
+    _shutil.rmtree(str(MMDET_SRC))
+    print(f"[cleanup] removed {MMDET_SRC} (frees output file slots)")
+_zip_src = str(Path(cfg.work_dir))
+_zip_dst = "/kaggle/working/run_checkpoint"
+print(f"[ckpt] zipping {_zip_src} -> {_zip_dst}.zip")
+_shutil.make_archive(_zip_dst, "zip", _zip_src)
+print(f"[ckpt] checkpoint zip ready: {_zip_dst}.zip")

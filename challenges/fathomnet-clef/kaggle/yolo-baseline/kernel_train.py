@@ -30,17 +30,29 @@ import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# 0. Pin torch + torchvision before ultralytics is imported.
+#    torch 2.4.1+cu121 is the last release supporting SM 6.0 (P100/Pascal)
+#    and also covers SM 7.5 (T4) and SM 8.0 (A100). cu121 wheels run fine
+#    on any CUDA 12.x driver. Always re-exec so the new wheels are active.
+# ---------------------------------------------------------------------------
+if not os.environ.get("_TORCH_COMPAT"):
+    print("[setup] Pinning torch 2.4.1+cu121 + torchvision 0.19.1 (P100/T4/A100)")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+                           "torch==2.4.1", "torchvision==0.19.1",
+                           "--index-url", "https://download.pytorch.org/whl/cu121"])
+    os.environ["_TORCH_COMPAT"] = "1"
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+# ---------------------------------------------------------------------------
 # 1. Install deps (cite challenge requirements-ultralytics.txt; pinned subset).
 # ---------------------------------------------------------------------------
-PIP_PKGS = [
-    "ultralytics==8.4.41",
-    "sahi==0.11.36",
-    "wandb==0.26.1",
-    "pycocotools==2.0.11",
-    "ensemble-boxes==1.0.9",
-]
 print("[setup] pip installing deps")
-subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", *PIP_PKGS])
+# Install ultralytics with --no-deps to avoid overriding the system PyTorch.
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+                       "ultralytics==8.4.41", "--no-deps"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+                       "sahi==0.11.36", "wandb==0.26.1",
+                       "pycocotools==2.0.11", "ensemble-boxes==1.0.9"])
 
 # ---------------------------------------------------------------------------
 # 2. WandB key from Kaggle Secrets.
@@ -50,23 +62,41 @@ try:
     os.environ["WANDB_API_KEY"] = UserSecretsClient().get_secret("WANDB_API_KEY")
     USE_WANDB = True
     print("[setup] WANDB_API_KEY loaded from Kaggle Secrets")
-except Exception as e:
-    print(f"[setup] WandB disabled (no secret): {e}")
-    USE_WANDB = False
+except Exception:
+    os.environ["WANDB_API_KEY"] = "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"
+    USE_WANDB = True
+    print("[setup] WANDB_API_KEY set from fallback")
 
 # ---------------------------------------------------------------------------
 # 3. Paths.
 # ---------------------------------------------------------------------------
-COMP_ROOT = Path("/kaggle/input/fathomnet-2026")
-IMG_ROOT = Path("/kaggle/input/fathomnetclef2026/images")  # train/, test/
-TRAIN_JSON = COMP_ROOT / "train_dataset.json"
-TEST_JSON = COMP_ROOT / "test_dataset.json"
 WORK = Path("/kaggle/working")
 YOLO_DATA = WORK / "yolo_data"
 
-assert TRAIN_JSON.exists(), f"Missing {TRAIN_JSON}"
+# Locate competition JSONs — may be at /kaggle/input/fathomnet-2026/ or
+# /kaggle/input/competitions/fathomnet-2026/ depending on how dataset was added.
+_candidates = sorted(Path("/kaggle/input").rglob("train_dataset.json"))
+assert _candidates, f"train_dataset.json not found under /kaggle/input/. Contents: {list(Path('/kaggle/input').iterdir())}"
+COMP_ROOT = _candidates[0].parent
+print(f"[data] competition root: {COMP_ROOT}")
+TRAIN_JSON = COMP_ROOT / "train_dataset.json"
+TEST_JSON = COMP_ROOT / "test_dataset.json"
 assert TEST_JSON.exists(), f"Missing {TEST_JSON}"
-assert IMG_ROOT.exists(), f"Missing image mirror dataset at {IMG_ROOT}"
+
+# Locate image mirror — try standard path then search broadly.
+_img_candidates = [
+    Path("/kaggle/input/fathomnetclef2026/images"),
+    Path("/kaggle/input/fathomnetclef2026"),
+]
+IMG_ROOT = next((p for p in _img_candidates if (p / "train").exists()), None)
+if IMG_ROOT is None:
+    # Search all of /kaggle/input for a directory containing a 'train' subdir with images
+    for _p in Path("/kaggle/input").rglob("train"):
+        if _p.is_dir() and any(_p.iterdir()):
+            IMG_ROOT = _p.parent
+            break
+assert IMG_ROOT is not None, f"Image mirror not found. /kaggle/input contents: {list(Path('/kaggle/input').iterdir())}"
+print(f"[data] image root: {IMG_ROOT}")
 
 # Resolve image filename: JSON references *.png; cosheimil mirror is *.jpg.
 # Build a stem -> path index once for fast lookup.
@@ -159,18 +189,20 @@ yaml_path.write_text(
 )
 
 # ---------------------------------------------------------------------------
-# 5. WandB pre-init (so ultralytics callback uses our run name).
+# 5. WandB setup — set env vars so ultralytics callback logs to the right project.
 # ---------------------------------------------------------------------------
 RUN_NAME = "fathomnet-yolo11l-baseline"
+WANDB_PROJECT = "fathomnet2026"
 if USE_WANDB:
+    # WANDB_PROJECT env var is NOT honored by ultralytics — it uses the project=
+    # kwarg to model.train() as both the local save dir and the WandB project name.
+    # Set it to "fathomnet2026" (relative) so WandB project matches.
+    os.environ["WANDB_ENTITY"] = "little_farms"
     try:
         from ultralytics.utils import SETTINGS
         SETTINGS.update({"wandb": True})
     except Exception as e:
         print(f"[wandb] settings update failed: {e}")
-    import wandb
-    wandb.init(project="fathomnet2026", entity="little_farms",
-               name=RUN_NAME, dir=str(WORK))
 
 # ---------------------------------------------------------------------------
 # 6. Train.
@@ -186,27 +218,38 @@ model.train(
     data=str(yaml_path),
     epochs=50,
     patience=20,
-    imgsz=1280,
+    imgsz=640,
     rect=True,
-    batch=8,                  # per-GPU batch on T4x2 -> effective 16
+    batch=16,                 # per-GPU batch on T4x2 -> effective 32
     workers=2,
     optimizer="AdamW",
     lr0=0.001,
-    project=str(WORK),
-    name="run",
+    project=WANDB_PROJECT,    # relative → saves to /kaggle/working/fathomnet2026/
+    name=RUN_NAME,            # ultralytics uses project+name as WandB project+run
     exist_ok=True,
     device=device,
     amp=True,
 )
 
-best_pt = WORK / "run" / "weights" / "best.pt"
+# Get the actual save_dir from the trainer (ultralytics prefixes runs/detect/ regardless
+# of the project= kwarg, so constructing the path manually is unreliable).
+import shutil
+save_dir = Path(model.trainer.save_dir)
+best_pt = save_dir / "weights" / "best.pt"
 final_pt = WORK / "best.pt"
+print(f"[train] trainer save_dir: {save_dir}")
 if best_pt.exists():
-    import shutil
     shutil.copy2(best_pt, final_pt)
     print(f"[train] copied best weights -> {final_pt}")
 else:
-    print(f"[train] WARN: best.pt not found at {best_pt}")
+    # Fallback: search working dir for any best.pt
+    candidates = list(WORK.rglob("best.pt"))
+    if candidates:
+        best_pt = candidates[0]
+        shutil.copy2(best_pt, final_pt)
+        print(f"[train] copied best weights (fallback glob) from {best_pt} -> {final_pt}")
+    else:
+        raise FileNotFoundError(f"best.pt not found under {WORK}. Contents: {list(WORK.iterdir())}")
 
 # ---------------------------------------------------------------------------
 # 7. Inference on test_set -> submission.csv.
@@ -230,7 +273,7 @@ for im in test_images:
     test_ids.append(im["id"])
 print(f"[infer] {len(test_paths)} test imgs found / {missing} missing")
 
-infer_model = YOLO(str(final_pt) if final_pt.exists() else str(best_pt))
+infer_model = YOLO(str(final_pt))
 rows: list[dict] = []
 ann_id = 1
 BATCH = 16
@@ -239,7 +282,7 @@ for i in range(0, len(test_paths), BATCH):
     chunk_ids = test_ids[i : i + BATCH]
     results = infer_model.predict(
         source=[str(p) for p in chunk],
-        imgsz=1280,
+        imgsz=640,
         conf=0.001,
         iou=0.6,
         device=0,
