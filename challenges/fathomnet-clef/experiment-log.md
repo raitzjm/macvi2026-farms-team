@@ -15,7 +15,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | ID | Date | Track | Description | Seed | μval mAP |
 |----|------|-------|-------------|------|----------|
 | T-001 | 2026-04-28 | YOLO26l | YOLO26l-local-v1: 50 epochs, rect 1152px, batch≈4 (auto), RTX 3050 | 42 | 0.408 (train-val 90/10) |
-| T-002 | 2026-04-28 | Co-DETR | Co-DETR R50 v14: 12 epochs, 1333×800 rect, Kaggle T4, no inference (bug) | 42 | 0.324 (train-val 90/10) |
+| T-002 | 2026-04-28 | YOLO11l | YOLO11l-kaggle-v1: 50 epochs, rect 1152px, batch=8, Kaggle T4 | 42 | 0.377 (train-val 90/10) |
 
 ## Inference Index
 
@@ -77,54 +77,55 @@ Strong result vs YOLO11l Kaggle baseline (0.372 mAP50-95). WandB run logged to `
 
 ---
 
-### T-002 — Co-DETR R50 v14 (12 epochs, Kaggle T4)
+### T-002 — YOLO11l Kaggle baseline (50 epochs)
 
 | Field | Value |
 |---|---|
 | Date | 2026-04-28 |
-| Track | Co-DETR |
-| Env | mmdet (envs/mmdet/) |
+| Track | YOLO11l |
+| Env | ultralytics (envs/ultralytics/) |
 | Platform | Kaggle T4 |
-| Duration | ~3.8 h (training), inference aborted (bug) |
+| Duration | ~2.6 h |
 | Seed | 42 |
-| Inputs | co_dino_5scale_r50_lsj_8xb2_1x_coco.pth (COCO pretrained) |
-| Artifacts | none recoverable (kernel v14 output download blocked while v15 running) |
+| Inputs | yolo11l.pt (COCO pretrained) |
+| Artifacts | /tmp/yolo11l-output/best.pt, /tmp/yolo11l-output/submission.csv (downloaded from Kaggle outputs) |
 
 #### Model & Architecture
 | Field | Value |
 |---|---|
-| Architecture | Co-DETR R50 |
-| Pretrained weights | co_dino_5scale_r50_lsj_8xb2_1x_coco.pth |
-| Input resolution | 1333×800 (mmdet rect) |
-| Config file | kaggle/codetr-baseline/kernel_train.py (inline config) |
-| Modifications | AMP enabled; custom dataset (32 classes) |
+| Architecture | YOLO11l |
+| Pretrained weights | yolo11l.pt (COCO) |
+| Input resolution | imgsz=1152, rect=True |
+| Config file | kaggle/yolo-baseline/kernel_train.py |
+| Modifications | — |
 
 #### Dataset Config
 | Field | Value |
 |---|---|
-| Train split | 90% of 6,463 images |
-| Val split | 10% of 6,463 images |
+| Train split | 90% of 6,463 training images |
+| Val split | 10% of training images |
 | Classes | all 32 |
 | PU strategy | none |
+| Augmentation | ultralytics defaults |
 
 #### Hyperparameters
 | Field | Value |
 |---|---|
-| Epochs | 12 |
-| Batch size | 2 |
-| Optimizer | AdamW |
-| LR initial | 1e-4 |
+| Epochs | 50 |
+| Batch size | 8 |
+| Optimizer | ultralytics default (SGD) |
+| AMP | True |
 
 #### Results
 | Metric | Value |
 |---|---|
-| val mAP@[.5:.95] | **0.324** |
-| val mAP@.50 | — |
-| Best epoch | 12 |
-| Final train loss | — |
+| val mAP@[.5:.95] | **0.377** |
+| val mAP@.50 | 0.501 |
+| Best epoch | 49 |
+| Final train box loss | 0.910 |
 
 #### Notes
-Training completed 12 epochs. Inference crashed: `mmdetection-src` was deleted (cleanup) before `init_detector()` — sub-module files needed at model construction time even after `sys.modules` cache. Fixed in v15 (cleanup moved to after submission.csv is written). Checkpoint zip not recovered — v15 was running when download attempted (403 Forbidden from Kaggle API).
+Completed on Kaggle T4. submission.csv produced (68,794 rows). Checkpoint and submission downloaded to `/tmp/yolo11l-output/`. WandB run logged under `little_farms/fathomnet2026`.
 
 ---
 
