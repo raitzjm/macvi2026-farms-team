@@ -88,7 +88,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - All commits: `[agent]` prefix, body includes model name
 - Do not run full training locally (RTX 3050 4GB) — use TensorDock or Kaggle
 - Outputs go to `outputs/` (gitignored)
-- Curated checkpoints and submission CSVs go to `artifacts/`; checkpoints are Git LFS tracked
+- Curated checkpoints and submission CSVs go to `artifacts/`; both checkpoints and submission CSVs are Git LFS tracked
 - Training runs are tracked in `training-log.md`; inference and official Kaggle submissions are tracked in `inference-log.md`
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
 - This challenge intentionally does not maintain `STATE.md`; status lives in the repo-level challenge table and this AGENTS.md
