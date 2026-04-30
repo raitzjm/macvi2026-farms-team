@@ -6,7 +6,13 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 > **Format note:** This format will be adapted as the challenge progresses. If a new inference,
 > submission, or artifact-tracking pattern requires changes, update the format and note it here with a date.
 > Backfill of historical entries is not required — note the effective date of each format change.
-> Last updated: 2026-04-28
+> Last updated: 2026-04-30
+
+> **2026-04-30 artifact policy:** every new tracked inference run must have a durable bundle at
+> `artifacts/inference-runs/I-NNN/` with `metadata.json`, the resolved inference config snapshot,
+> and a raw `stdout.log` whenever the launcher can capture it. The submission CSV remains the
+> durable payload under `artifacts/submissions/` and is referenced from both the bundle and the
+> log entry.
 
 ---
 
@@ -392,7 +398,11 @@ The tiled Co-DETR pass dramatically increased prediction count and performed muc
 | Duration | Xh Ym |
 | Evaluated split | micro-val \| test set |
 | Inputs | T-001 checkpoint, T-002 checkpoint, configs/per_class_thresholds.yaml |
-| Artifacts | outputs/I-001/predictions_raw.json, outputs/I-001/submission.csv |
+| Repo commit | <40-char git SHA used to launch the run> |
+| Config source | scripts/infer_yolo.py \| scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-001/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-001/stdout.log |
+| Artifacts | artifacts/inference-runs/I-001/, artifacts/submissions/I-001-.../submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -465,6 +475,8 @@ Free-text observations.
 
 - `I-NNN` IDs are zero-padded, unique, and never reused.
 - Record output paths explicitly so the inference run or submission can be reconstructed from the entry alone.
+- Every new tracked run must have a durable bundle under `artifacts/inference-runs/I-NNN/`.
+- `Repo commit`, `Config source`, `Resolved config`, and the submission CSV path are mandatory for new entries.
 - The `Inputs` field is the primary lineage record: list all checkpoints, pseudo-label sources, and threshold files.
 - Log entry must be committed to git when the inference/submission completes.
 - Archive curated checkpoints and submission CSVs under `artifacts/`.

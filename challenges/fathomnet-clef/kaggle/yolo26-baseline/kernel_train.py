@@ -22,12 +22,14 @@ Outputs:
 """
 from __future__ import annotations
 
+import atexit
 import json
 import os
 import random
 import subprocess
 import sys
 from pathlib import Path
+import shutil
 
 # ---------------------------------------------------------------------------
 # 0. Pin torch + torchvision before ultralytics is imported.
@@ -55,6 +57,34 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
 # ---------------------------------------------------------------------------
 # 2. WandB key from Kaggle Secrets.
 # ---------------------------------------------------------------------------
+WORK = Path("/kaggle/working")
+
+
+class _TeeWriter:
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data):
+        for stream in self._streams:
+            stream.write(data)
+        return len(data)
+
+    def flush(self):
+        for stream in self._streams:
+            stream.flush()
+
+
+def _write_json(path: Path, payload: dict):
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+_raw_stdout = sys.stdout
+_raw_stderr = sys.stderr
+_log_file = (WORK / "train.log").open("a", encoding="utf-8", buffering=1)
+sys.stdout = _TeeWriter(_raw_stdout, _log_file)
+sys.stderr = _TeeWriter(_raw_stderr, _log_file)
+atexit.register(_log_file.close)
+
 try:
     from kaggle_secrets import UserSecretsClient
     os.environ["WANDB_API_KEY"] = UserSecretsClient().get_secret("WANDB_API_KEY")
@@ -69,7 +99,6 @@ except Exception:
 # ---------------------------------------------------------------------------
 # 3. Paths.
 # ---------------------------------------------------------------------------
-WORK = Path("/kaggle/working")
 YOLO_DATA = WORK / "yolo_data"
 
 # Locate competition JSONs.
@@ -183,6 +212,21 @@ yaml_path.write_text(
     f"names: {class_names}\n"
 )
 
+_write_json(
+    WORK / "metadata.json",
+    {
+        "config_source": "kaggle/yolo26-baseline/kernel_train.py",
+        "kind": "training+inference",
+        "platform": "kaggle",
+        "resolved_config": "resolved-config.yaml",
+        "results_artifact": "results.csv",
+        "selected_checkpoint": "best.pt",
+        "stdout_log": "train.log",
+        "submission_artifact": "submission.csv",
+        "track": "YOLO26l",
+    },
+)
+
 # ---------------------------------------------------------------------------
 # 5. WandB setup.
 # ---------------------------------------------------------------------------
@@ -225,7 +269,6 @@ model.train(
 
 # Get actual save_dir from trainer — ultralytics prefixes runs/detect/ regardless
 # of project= kwarg so constructing the path manually is unreliable.
-import shutil
 save_dir = Path(model.trainer.save_dir)
 best_pt = save_dir / "weights" / "best.pt"
 final_pt = WORK / "best.pt"
@@ -241,6 +284,13 @@ else:
         print(f"[train] copied best weights (fallback glob) from {best_pt} -> {final_pt}")
     else:
         raise FileNotFoundError(f"best.pt not found under {WORK}. Contents: {list(WORK.iterdir())}")
+
+resolved_cfg_src = save_dir / "args.yaml"
+if resolved_cfg_src.exists():
+    shutil.copy2(resolved_cfg_src, WORK / "resolved-config.yaml")
+results_csv_src = save_dir / "results.csv"
+if results_csv_src.exists():
+    shutil.copy2(results_csv_src, WORK / "results.csv")
 
 # ---------------------------------------------------------------------------
 # 7. Inference on test_set -> submission.csv.

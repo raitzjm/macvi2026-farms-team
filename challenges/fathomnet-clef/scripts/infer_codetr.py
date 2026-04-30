@@ -28,6 +28,13 @@ from infer_yolo import (  # noqa: E402
     write_submission_csv,
     xyxy_to_xywh,
 )
+from run_tracking import (  # noqa: E402
+    git_commit,
+    relpath_str,
+    resolve_artifact_dir,
+    tee_output,
+    write_json,
+)
 
 
 def rows_from_xywh(
@@ -232,6 +239,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--run-id", default=None,
+                        help="Optional tracked inference ID (for example I-009)")
+    parser.add_argument("--artifact-dir", default=None,
+                        help="Optional durable artifact directory override")
+    parser.add_argument("--source-train-id", default=None,
+                        help="Training run ID that produced the primary checkpoint")
     parser.add_argument(
         "--config",
         default=None,
@@ -251,41 +264,80 @@ def main():
     args = parse_args()
     assert_gpu_if_needed(args.device)
 
-    checkpoint_path = Path(args.checkpoint)
-    config_path = Path(args.config) if args.config else resolve_default_config_path(checkpoint_path)
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config not found at {config_path}. Pass --config explicitly.")
+    artifact_dir = resolve_artifact_dir(CHALLENGE_ROOT, "inference", args.run_id, args.artifact_dir)
+    log_path = artifact_dir / "stdout.log" if artifact_dir else None
 
-    images = load_test_images(TEST_JSON)
-    idx_to_cat_id = load_idx_to_cat_id(args.idx_to_cat_id, TRAIN_JSON)
-    output_csv = Path(args.output)
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with tee_output(log_path):
+        checkpoint_path = Path(args.checkpoint)
+        config_path = Path(args.config) if args.config else resolve_default_config_path(checkpoint_path)
+        if not config_path.exists():
+            raise FileNotFoundError(f"Config not found at {config_path}. Pass --config explicitly.")
 
-    if args.sahi:
-        run_sahi_codetr(
-            checkpoint=str(checkpoint_path),
-            config_path=config_path,
-            images=images,
-            idx_to_cat_id=idx_to_cat_id,
-            output_csv=output_csv,
-            score_thr=args.score_thr,
-            device=args.device,
-            slice_size=args.slice_size,
-            overlap=args.overlap,
-            postprocess_match_threshold=args.postprocess_match_threshold,
-        )
-    else:
-        run_regular_codetr(
-            checkpoint=str(checkpoint_path),
-            config_path=config_path,
-            images=images,
-            idx_to_cat_id=idx_to_cat_id,
-            output_csv=output_csv,
-            score_thr=args.score_thr,
-            device=args.device,
-        )
+        images = load_test_images(TEST_JSON)
+        idx_to_cat_id = load_idx_to_cat_id(args.idx_to_cat_id, TRAIN_JSON)
+        output_csv = Path(args.output)
+        output_csv.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Wrote: {output_csv}")
+        if artifact_dir:
+            write_json(
+                artifact_dir / "resolved-config.json",
+                {
+                    "checkpoint": str(checkpoint_path),
+                    "config_path": str(config_path),
+                    "config_source": "scripts/infer_codetr.py",
+                    "device": args.device,
+                    "idx_to_cat_id": args.idx_to_cat_id,
+                    "output_csv": relpath_str(output_csv, CHALLENGE_ROOT),
+                    "postprocess_match_threshold": args.postprocess_match_threshold,
+                    "sahi": args.sahi,
+                    "score_thr": args.score_thr,
+                    "slice_size": args.slice_size,
+                    "overlap": args.overlap,
+                    "source_train_id": args.source_train_id,
+                },
+            )
+            write_json(
+                artifact_dir / "metadata.json",
+                {
+                    "artifact_dir": relpath_str(artifact_dir, CHALLENGE_ROOT),
+                    "checkpoint_path": str(checkpoint_path),
+                    "config_source": "scripts/infer_codetr.py",
+                    "git_commit": git_commit(CHALLENGE_ROOT),
+                    "kind": "inference",
+                    "output_csv": relpath_str(output_csv, CHALLENGE_ROOT),
+                    "resolved_config": relpath_str(artifact_dir / "resolved-config.json", CHALLENGE_ROOT),
+                    "run_id": args.run_id,
+                    "source_train_id": args.source_train_id,
+                    "stdout_log": relpath_str(artifact_dir / "stdout.log", CHALLENGE_ROOT),
+                    "track": "Co-DETR",
+                },
+            )
+
+        if args.sahi:
+            run_sahi_codetr(
+                checkpoint=str(checkpoint_path),
+                config_path=config_path,
+                images=images,
+                idx_to_cat_id=idx_to_cat_id,
+                output_csv=output_csv,
+                score_thr=args.score_thr,
+                device=args.device,
+                slice_size=args.slice_size,
+                overlap=args.overlap,
+                postprocess_match_threshold=args.postprocess_match_threshold,
+            )
+        else:
+            run_regular_codetr(
+                checkpoint=str(checkpoint_path),
+                config_path=config_path,
+                images=images,
+                idx_to_cat_id=idx_to_cat_id,
+                output_csv=output_csv,
+                score_thr=args.score_thr,
+                device=args.device,
+            )
+
+        print(f"Wrote: {output_csv}")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,14 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 > **Format note:** This format will be adapted as the challenge progresses. If a new training
 > dependency pattern requires changes, update the format and note it here with a date.
 > Backfill of historical entries is not required — note the effective date of each format change.
-> Last updated: 2026-04-28
+> Last updated: 2026-04-30
+
+> **2026-04-30 artifact policy:** every new tracked training run must have a durable bundle at
+> `artifacts/training-runs/T-NNN/` with `metadata.json`, raw `stdout.log`, a resolved config
+> snapshot, and the framework-native metrics artifact (`results.csv`, `metrics.jsonl`, or
+> equivalent). The selected checkpoint remains under `artifacts/checkpoints/` and is referenced
+> from the bundle and from the log entry. Canonical model configs stay in one path per model
+> family; do not copy a new config file per experiment unless the model family truly forks.
 
 ---
 
@@ -31,7 +38,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | Duration | ~5.9 h |
 | Seed | 42 |
 | Inputs | yolo26l.pt (COCO pretrained) |
-| Artifacts | outputs/yolo26l-local-v1/run/best.pt, outputs/yolo26l-local-v1/run/last.pt, outputs/yolo26l-local-v1/run/results.csv |
+| Artifacts | artifacts/training-runs/T-001/, artifacts/checkpoints/T-001-yolo26l-local/best.pt, outputs/yolo26l-local-v1/run/last.pt |
 
 #### Model & Architecture
 | Field | Value |
@@ -83,7 +90,7 @@ Strong result vs YOLOv11 Kaggle baseline (0.377 mAP50-95). WandB run logged to `
 | Duration | ~2.6 h |
 | Seed | 42 |
 | Inputs | yolo11l.pt (COCO pretrained) |
-| Artifacts | artifacts/checkpoints/T-002-yolov11-kaggle/best.pt, artifacts/submissions/I-001-yolov11-kaggle-nonsahi/submission.csv |
+| Artifacts | artifacts/training-runs/T-002/, artifacts/checkpoints/T-002-yolov11-kaggle/best.pt, artifacts/submissions/I-001-yolov11-kaggle-nonsahi/submission.csv |
 
 #### Model & Architecture
 | Field | Value |
@@ -135,7 +142,7 @@ Completed on Kaggle T4 x2. submission.csv produced (68,794 predictions; 68,795 C
 | Duration | ~4 h 46 m |
 | Seed | 42 |
 | Inputs | co_dino_5scale_r50_8xb2_1x_coco.py base config + COCO-pretrained weights |
-| Artifacts | artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth, artifacts/checkpoints/T-003-codetr-kaggle/epoch_12.pth, artifacts/checkpoints/T-003-codetr-kaggle/config_used.py, artifacts/checkpoints/T-003-codetr-kaggle/idx_to_cat_id.json |
+| Artifacts | artifacts/training-runs/T-003/, artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth, artifacts/checkpoints/T-003-codetr-kaggle/config_used.py, artifacts/checkpoints/T-003-codetr-kaggle/idx_to_cat_id.json |
 
 #### Model & Architecture
 | Field | Value |
@@ -193,7 +200,13 @@ Downloaded from completed Kaggle kernel outputs. Kaggle non-SAHI inference from 
 | Duration | Xh Ym |
 | Seed | 42 |
 | Inputs | — (fresh start) \| T-NNN checkpoint, I-NNN pseudo-labels, etc. |
-| Artifacts | outputs/T-001/best.pt, outputs/T-001/last.pt, outputs/T-001/config.yaml |
+| Repo commit | <40-char git SHA used to launch the run> |
+| Config source | scripts/train_yolo.py \| kaggle/codetr-baseline/kernel_train.py |
+| Resolved config | artifacts/training-runs/T-001/resolved-config.json |
+| Stdout log | artifacts/training-runs/T-001/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-001/results.csv \| metrics.jsonl |
+| Selected checkpoint | artifacts/checkpoints/T-001-.../best.pt |
+| Artifacts | artifacts/training-runs/T-001/, artifacts/checkpoints/T-001-.../ |
 
 #### Model & Architecture
 | Field | Value |
@@ -253,6 +266,9 @@ Free-text observations.
 
 - `T-NNN` IDs are zero-padded, unique, and never reused.
 - Record output paths explicitly so the training run can be reconstructed from the entry alone.
+- Every new tracked run must have a durable bundle under `artifacts/training-runs/T-NNN/`.
+- `Repo commit`, `Config source`, `Resolved config`, `Stdout log`, `Metrics artifact`, and `Selected checkpoint` are mandatory for new entries.
+- If a tracked experiment changes the model config, isolate that config change in its own commit before the run starts.
 - `Seed`, `Env`, and `Inputs` are mandatory.
 - Log entry must be committed to git when the training run completes.
 - Weights are not committed by default. Commit via Git LFS only after validation confirms a checkpoint is worth keeping.

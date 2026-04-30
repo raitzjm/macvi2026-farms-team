@@ -34,6 +34,14 @@ if MMDET_SRC.exists():
 
 sys.path.insert(0, str(HERE))
 from _paths import TRAIN_JSON, TRAIN_IMGS, DATASET_ROOT  # noqa: E402
+from run_tracking import (  # noqa: E402
+    copy_if_exists,
+    git_commit,
+    relpath_str,
+    resolve_artifact_dir,
+    tee_output,
+    write_json,
+)
 
 
 def setup_wandb(disabled: bool) -> bool:
@@ -123,8 +131,21 @@ def main():
     ap.add_argument("--no-amp", action="store_true",
                     help="Disable AMP. AMP is on by default (with mmcv NMS dtype patch)")
     ap.add_argument("--lr", type=float, default=1e-4)
+    ap.add_argument("--run-id", default=None,
+                    help="Optional tracked training ID (for example T-004)")
+    ap.add_argument("--artifact-dir", default=None,
+                    help="Optional durable artifact directory override")
     args = ap.parse_args()
     args.amp = not args.no_amp
+
+    artifact_dir = resolve_artifact_dir(CHALLENGE_ROOT, "training", args.run_id, args.artifact_dir)
+    log_path = artifact_dir / "stdout.log" if artifact_dir else None
+
+    with tee_output(log_path):
+        _main(args, artifact_dir)
+
+
+def _main(args, artifact_dir: Path | None):
 
     if args.amp:
         # mmcv 2.1.0 + Co-DETR + AMP triggers two known issues:
@@ -317,12 +338,54 @@ def main():
     cfg.randomness = dict(seed=42, deterministic=False)
     cfg.auto_scale_lr = dict(enable=False, base_batch_size=16)
 
+    if artifact_dir:
+        cfg_dump_path = artifact_dir / "resolved-config.py"
+        cfg.dump(str(cfg_dump_path))
+        write_json(
+            artifact_dir / "metadata.json",
+            {
+                "artifact_dir": relpath_str(artifact_dir, CHALLENGE_ROOT),
+                "config_source": relpath_str(cfg_path, CHALLENGE_ROOT),
+                "git_commit": git_commit(CHALLENGE_ROOT),
+                "kind": "training",
+                "metrics_artifact": relpath_str(artifact_dir / "metrics.jsonl", CHALLENGE_ROOT),
+                "output_root": relpath_str(out_dir, CHALLENGE_ROOT),
+                "platform": "local",
+                "resolved_config": relpath_str(cfg_dump_path, CHALLENGE_ROOT),
+                "run_id": args.run_id,
+                "run_name": args.name,
+                "stdout_log": relpath_str(artifact_dir / "stdout.log", CHALLENGE_ROOT),
+                "track": "Co-DETR",
+            },
+        )
+
     print(f"[cfg] model={cfg.model.type}  num_classes={num_classes}")
     print(f"[cfg] work_dir={cfg.work_dir}")
     print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb}")
 
     runner = Runner.from_cfg(cfg)
     runner.train()
+
+    if artifact_dir:
+        run_root = Path(cfg.work_dir)
+        vis_data_root = max(run_root.glob("*/vis_data"), default=None)
+        if vis_data_root is not None:
+            copy_if_exists(vis_data_root / "scalars.json", artifact_dir / "metrics.jsonl")
+            copy_if_exists(vis_data_root / "config.py", artifact_dir / "visualizer-config.py")
+        latest_log = max(run_root.glob("*/*.log"), default=None)
+        if latest_log is not None:
+            copy_if_exists(latest_log, artifact_dir / "framework.log")
+
+        best_ckpts = sorted(run_root.glob("best_*.pth"))
+        selected_ckpt = best_ckpts[-1] if best_ckpts else None
+        if selected_ckpt is not None:
+            write_json(
+                artifact_dir / "selected-checkpoint.json",
+                {
+                    "relative_path": relpath_str(selected_ckpt, CHALLENGE_ROOT),
+                    "selection": "training framework best checkpoint",
+                },
+            )
     print("OK")
 
 

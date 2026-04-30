@@ -9,6 +9,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from _paths import TEST_IMGS, TEST_JSON, TRAIN_JSON  # noqa: E402
+from run_tracking import (  # noqa: E402
+    git_commit,
+    relpath_str,
+    resolve_artifact_dir,
+    tee_output,
+    write_json,
+)
 
 
 CSV_COLUMNS = [
@@ -226,6 +233,12 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--checkpoint", required=True)
     p.add_argument("--output", required=True)
+    p.add_argument("--run-id", default=None,
+                   help="Optional tracked inference ID (for example I-009)")
+    p.add_argument("--artifact-dir", default=None,
+                   help="Optional durable artifact directory override")
+    p.add_argument("--source-train-id", default=None,
+                   help="Training run ID that produced the primary checkpoint")
     p.add_argument("--imgsz", type=int, default=1152)
     p.add_argument("--conf", type=float, default=0.001)
     p.add_argument("--iou", type=float, default=0.6)
@@ -243,39 +256,81 @@ def main():
     args = parse_args()
     assert_gpu_if_needed(args.device)
 
-    images = load_test_images(TEST_JSON)
-    idx_to_cat_id = load_idx_to_cat_id(args.idx_to_cat_id, TRAIN_JSON)
+    challenge_root = Path(__file__).resolve().parent.parent
+    artifact_dir = resolve_artifact_dir(challenge_root, "inference", args.run_id, args.artifact_dir)
+    log_path = artifact_dir / "stdout.log" if artifact_dir else None
 
-    output_csv = Path(args.output)
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    with tee_output(log_path):
+        images = load_test_images(TEST_JSON)
+        idx_to_cat_id = load_idx_to_cat_id(args.idx_to_cat_id, TRAIN_JSON)
 
-    if args.sahi:
-        run_sahi_yolo(
-            checkpoint=args.checkpoint,
-            images=images,
-            idx_to_cat_id=idx_to_cat_id,
-            output_csv=output_csv,
-            imgsz=args.imgsz,
-            conf=args.conf,
-            device=args.device,
-            slice_size=args.slice_size,
-            overlap=args.overlap,
-            postprocess_match_threshold=args.postprocess_match_threshold,
-        )
-    else:
-        run_regular_yolo(
-            checkpoint=args.checkpoint,
-            images=images,
-            idx_to_cat_id=idx_to_cat_id,
-            output_csv=output_csv,
-            imgsz=args.imgsz,
-            conf=args.conf,
-            iou=args.iou,
-            device=args.device,
-            batch=args.batch,
-        )
+        output_csv = Path(args.output)
+        output_csv.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Wrote: {output_csv}")
+        if artifact_dir:
+            write_json(
+                artifact_dir / "resolved-config.json",
+                {
+                    "batch": args.batch,
+                    "checkpoint": args.checkpoint,
+                    "conf": args.conf,
+                    "config_source": "scripts/infer_yolo.py",
+                    "device": args.device,
+                    "idx_to_cat_id": args.idx_to_cat_id,
+                    "imgsz": args.imgsz,
+                    "iou": args.iou,
+                    "output_csv": relpath_str(output_csv, challenge_root),
+                    "postprocess_match_threshold": args.postprocess_match_threshold,
+                    "sahi": args.sahi,
+                    "slice_size": args.slice_size,
+                    "overlap": args.overlap,
+                    "source_train_id": args.source_train_id,
+                },
+            )
+            write_json(
+                artifact_dir / "metadata.json",
+                {
+                    "artifact_dir": relpath_str(artifact_dir, challenge_root),
+                    "checkpoint_path": args.checkpoint,
+                    "config_source": "scripts/infer_yolo.py",
+                    "git_commit": git_commit(challenge_root),
+                    "kind": "inference",
+                    "output_csv": relpath_str(output_csv, challenge_root),
+                    "resolved_config": relpath_str(artifact_dir / "resolved-config.json", challenge_root),
+                    "run_id": args.run_id,
+                    "source_train_id": args.source_train_id,
+                    "stdout_log": relpath_str(artifact_dir / "stdout.log", challenge_root),
+                    "track": "YOLO",
+                },
+            )
+
+        if args.sahi:
+            run_sahi_yolo(
+                checkpoint=args.checkpoint,
+                images=images,
+                idx_to_cat_id=idx_to_cat_id,
+                output_csv=output_csv,
+                imgsz=args.imgsz,
+                conf=args.conf,
+                device=args.device,
+                slice_size=args.slice_size,
+                overlap=args.overlap,
+                postprocess_match_threshold=args.postprocess_match_threshold,
+            )
+        else:
+            run_regular_yolo(
+                checkpoint=args.checkpoint,
+                images=images,
+                idx_to_cat_id=idx_to_cat_id,
+                output_csv=output_csv,
+                imgsz=args.imgsz,
+                conf=args.conf,
+                iou=args.iou,
+                device=args.device,
+                batch=args.batch,
+            )
+
+        print(f"Wrote: {output_csv}")
 
 
 if __name__ == "__main__":

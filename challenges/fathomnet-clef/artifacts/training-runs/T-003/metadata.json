@@ -1,0 +1,16 @@
+{
+  "config_source": "kaggle/codetr-baseline/kernel_train.py",
+  "framework_log": "artifacts/training-runs/T-003/framework.log",
+  "git_commit": null,
+  "git_commit_note": "Historical Kaggle run predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-003/metrics.jsonl",
+  "platform": "Kaggle T4 x2",
+  "resolved_config": "artifacts/training-runs/T-003/resolved-config.py",
+  "run_id": "T-003",
+  "run_name": "fathomnet-codetr-r50-baseline",
+  "selected_checkpoint": "artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth",
+  "stdout_log": "artifacts/training-runs/T-003/stdout.log",
+  "stdout_log_raw": "artifacts/training-runs/T-003/kaggle-console.json",
+  "track": "Co-DETR"
+}

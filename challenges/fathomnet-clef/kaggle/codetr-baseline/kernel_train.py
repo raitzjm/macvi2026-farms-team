@@ -28,6 +28,7 @@ Notes:
 """
 from __future__ import annotations
 
+import atexit
 import json
 import os
 import random
@@ -77,6 +78,34 @@ sys.path.insert(0, str(MMDET_SRC))
 # ---------------------------------------------------------------------------
 # 3. WandB key from Kaggle Secrets.
 # ---------------------------------------------------------------------------
+WORK = Path("/kaggle/working")
+
+
+class _TeeWriter:
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data):
+        for stream in self._streams:
+            stream.write(data)
+        return len(data)
+
+    def flush(self):
+        for stream in self._streams:
+            stream.flush()
+
+
+def _write_json(path: Path, payload: dict):
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+_raw_stdout = sys.stdout
+_raw_stderr = sys.stderr
+_log_file = (WORK / "train.log").open("a", encoding="utf-8", buffering=1)
+sys.stdout = _TeeWriter(_raw_stdout, _log_file)
+sys.stderr = _TeeWriter(_raw_stderr, _log_file)
+atexit.register(_log_file.close)
+
 try:
     from kaggle_secrets import UserSecretsClient
     os.environ["WANDB_API_KEY"] = UserSecretsClient().get_secret("WANDB_API_KEY")
@@ -91,8 +120,6 @@ except Exception:
 # ---------------------------------------------------------------------------
 # 4. Paths.
 # ---------------------------------------------------------------------------
-WORK = Path("/kaggle/working")
-
 # Locate competition JSONs — may be at /kaggle/input/fathomnet-2026/ or
 # /kaggle/input/competitions/fathomnet-2026/ depending on how dataset was added.
 _candidates = sorted(Path("/kaggle/input").rglob("train_dataset.json"))
@@ -234,6 +261,21 @@ test_json = prepare_test(TEST_JSON_RAW, WORK)
 num_classes = len(class_names)
 (WORK / "idx_to_cat_id.json").write_text(
     json.dumps({str(k): v for k, v in idx_to_cat_id.items()})
+)
+_write_json(
+    WORK / "metadata.json",
+    {
+        "config_source": "kaggle/codetr-baseline/kernel_train.py",
+        "framework_log": "framework.log",
+        "kind": "training+inference",
+        "metrics_artifact": "metrics.jsonl",
+        "platform": "kaggle",
+        "resolved_config": "resolved-config.py",
+        "selected_checkpoint": "best_coco_bbox_mAP_epoch_*.pth",
+        "stdout_log": "train.log",
+        "submission_artifact": "submission.csv",
+        "track": "Co-DETR",
+    },
 )
 
 # ---------------------------------------------------------------------------
@@ -478,6 +520,16 @@ print(f"[infer] using checkpoint {ckpt}")
 cfg.dump(str(Path(cfg.work_dir) / "config_used.py"))
 detector = init_detector(str(Path(cfg.work_dir) / "config_used.py"),
                          ckpt, device="cuda:0")
+shutil.copy2(str(Path(cfg.work_dir) / "config_used.py"), WORK / "resolved-config.py")
+
+_run_log_root = max(Path(cfg.work_dir).glob("*/"), default=None)
+if _run_log_root is not None:
+    framework_log = _run_log_root / f"{_run_log_root.name}.log"
+    scalars_json = _run_log_root / "vis_data" / "scalars.json"
+    if framework_log.exists():
+        shutil.copy2(framework_log, WORK / "framework.log")
+    if scalars_json.exists():
+        shutil.copy2(scalars_json, WORK / "metrics.jsonl")
 
 test_coco = json.loads(test_json.read_text())
 rows: list[dict] = []

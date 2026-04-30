@@ -70,6 +70,10 @@ kaggle kernels status <username>/<kernel-slug>
 
 # Pull kernel output files
 kaggle kernels output <username>/<kernel-slug>
+
+# Fetch kernel console logs (historical or live follow mode)
+kaggle kernels logs <username>/<kernel-slug>
+kaggle kernels logs <username>/<kernel-slug> --follow
 ```
 
 #### kernel-metadata.json required fields

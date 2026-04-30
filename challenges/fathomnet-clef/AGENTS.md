@@ -32,6 +32,8 @@ challenges/fathomnet-clef/
     challenge-overview.md       # complete competition reference (verbatim)
     discussions/                # saved discussion threads
   artifacts/                    # curated checkpoints and submission CSVs
+    training-runs/              # durable training run bundles (logs/config/metrics metadata)
+    inference-runs/             # durable inference run bundles (logs/config metadata)
   configs/                      # model configs (YOLO, MMDet)
   scripts/
     _paths.py                   # multi-environment data path resolution
@@ -108,7 +110,18 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Do not run full training locally (RTX 3050 4GB) — use TensorDock or Kaggle
 - Outputs go to `outputs/` (gitignored)
 - Curated checkpoints and submission CSVs go to `artifacts/`; both checkpoints and submission CSVs are Git LFS tracked
+- Durable per-run metadata lives beside those payloads:
+  - `artifacts/training-runs/T-NNN/` contains `metadata.json`, raw `stdout.log`, resolved config snapshot, and native metrics artifact (`results.csv`, `metrics.jsonl`, or equivalent)
+  - `artifacts/inference-runs/I-NNN/` contains `metadata.json`, raw `stdout.log` when available, and resolved inference config snapshot
+- Continue storing the heavy payloads separately:
+  - selected checkpoints under `artifacts/checkpoints/T-NNN-.../`
+  - submission CSVs under `artifacts/submissions/I-NNN-.../`
+- Canonical config policy for FathomNet:
+  - keep one canonical config/script path per model family instead of copying a config per experiment
+  - every tracked training or inference run must record the repo commit SHA plus a resolved config snapshot of the final effective parameters
+  - if a config change defines a new tracked experiment, isolate that config change in its own commit before launching the run
 - Training runs are tracked in `training-log.md`; inference and official Kaggle submissions are tracked in `inference-log.md`
+- Kaggle training scripts must tee console output to a durable file in `/kaggle/working/` so `kaggle kernels output` can recover the raw log later
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
 - For TensorDock work, keep the remote clone and the local workspace synchronized via explicit git pull/push steps
 - This challenge intentionally does not maintain `STATE.md`; status lives in the repo-level challenge table and this AGENTS.md
