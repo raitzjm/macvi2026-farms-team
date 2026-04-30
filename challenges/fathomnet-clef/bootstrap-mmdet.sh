@@ -18,6 +18,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONDA=/home/farms/miniforge3/bin/conda
 ENV_DIR="${SCRIPT_DIR}/envs/mmdet"
+REQ_FILE="${SCRIPT_DIR}/requirements-mmdet.txt"
 PIP="${ENV_DIR}/bin/pip"
 PYTHON="${ENV_DIR}/bin/python"
 
@@ -35,6 +36,11 @@ if [ -d "${ENV_DIR}" ]; then
     exit 1
 fi
 
+if [ ! -f "${REQ_FILE}" ]; then
+    echo "ERROR: requirements file not found at ${REQ_FILE}" >&2
+    exit 1
+fi
+
 # --- Create env --------------------------------------------------------------
 
 echo ">>> Creating conda env at ${ENV_DIR} (Python 3.11)..."
@@ -43,35 +49,16 @@ mkdir -p "$(dirname "${ENV_DIR}")"
 
 # --- PyTorch 2.1.2 + CUDA 12.1 -----------------------------------------------
 
-echo ">>> Installing PyTorch 2.1.2+cu121..."
-"${PIP}" install \
-    torch==2.1.2 torchvision==0.16.2 \
-    --index-url https://download.pytorch.org/whl/cu121
+echo ">>> Installing pinned MMDetection stack from ${REQ_FILE}..."
+MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install \
+    --requirement "${REQ_FILE}" \
+    --extra-index-url https://download.pytorch.org/whl/cu121 \
+    --find-links https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
 
-# --- OpenMMLab stack ---------------------------------------------------------
+echo ">>> Reasserting numpy<2 after dependency resolution..."
+"${PIP}" install "numpy<2"
 
-echo ">>> Installing setuptools<81 (for pkg_resources), numpy<2, and mmcv..."
-"${PIP}" install "setuptools<81" "numpy<2"
-MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine==0.10.7 mmdet==3.3.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
-
-# --- Supporting packages -----------------------------------------------------
-
-echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas, and SAHI helpers..."
-"${PIP}" install \
-    click \
-    "opencv-python<=4.11.0.86" \
-    pillow \
-    pycocotools \
-    pybboxes==0.1.6 \
-    pyyaml \
-    requests \
-    shapely \
-    terminaltables \
-    tqdm \
-    wandb \
-    ensemble-boxes \
-    pandas \
-    fire
+echo ">>> Installing SAHI without dependency resolution to preserve pinned torch..."
 "${PIP}" install sahi==0.11.36 --no-deps
 
 # --- Co-DETR source (mmdet projects/ are not in the pip wheel) ---------------
@@ -87,7 +74,7 @@ fi
 
 echo ">>> Running import smoke check..."
 PYTHONPATH="${CODETR_SRC}/projects/CO-DETR:${PYTHONPATH:-}" \
-    "${PYTHON}" -c "import torch, mmcv, mmdet, mmengine, sahi, codetr; from mmcv.ops import nms; print(torch.__version__, mmcv.__version__, mmdet.__version__, mmengine.__version__, sahi.__version__)"
+    "${PYTHON}" -c "import torch, mmcv, mmdet, mmengine, sahi, codetr, numpy; from mmcv.ops import nms; assert torch.__version__ == '2.1.2+cu121', torch.__version__; assert numpy.__version__ == '1.26.4', numpy.__version__; print(torch.__version__, mmcv.__version__, mmdet.__version__, mmengine.__version__, sahi.__version__, numpy.__version__)"
 
 echo ""
 echo "=== bootstrap-mmdet.sh complete ==="

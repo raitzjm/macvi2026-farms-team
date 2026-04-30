@@ -41,7 +41,7 @@ nvidia-nvshmem-cu13==3.4.5
 nvidia-nvtx==13.0.85
 opencv-python==4.11.0.86
 opencv-python-headless==4.8.1.78
-packaging @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_packaging_1777103621/work
+packaging==26.2
 pandas==3.0.2
 pillow==12.1.1
 platformdirs==4.9.6
@@ -57,7 +57,6 @@ pyparsing==3.3.2
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 requests==2.28.1
-sahi==0.11.36
 scipy==1.17.1
 sentry-sdk==2.58.0
 shapely==2.1.2
