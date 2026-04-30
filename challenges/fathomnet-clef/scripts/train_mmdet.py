@@ -42,10 +42,6 @@ def setup_wandb(disabled: bool) -> bool:
         return False
     if os.environ.get("WANDB_API_KEY"):
         return True
-    key_file = Path.home() / "data" / "WANDB_API_KEY.txt"
-    if key_file.exists():
-        os.environ["WANDB_API_KEY"] = key_file.read_text().strip()
-        return True
     print("[warn] no WANDB_API_KEY found; wandb logging will be skipped.")
     os.environ["WANDB_DISABLED"] = "true"
     return False

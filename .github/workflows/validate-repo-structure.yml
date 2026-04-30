@@ -1,0 +1,23 @@
+name: Validate repo structure
+
+on:
+  pull_request:
+    paths:
+      - '**/AGENTS.md'
+      - '**/CLAUDE.md'
+      - 'container/scripts/sync-agent-stubs.sh'
+      - '.github/workflows/validate-repo-structure.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**/AGENTS.md'
+      - '**/CLAUDE.md'
+      - 'container/scripts/sync-agent-stubs.sh'
+      - '.github/workflows/validate-repo-structure.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash container/scripts/sync-agent-stubs.sh --check

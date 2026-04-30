@@ -1,0 +1,10 @@
+title = "macvi2026-farms-team gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "wandb-api-key"
+description = "Weights & Biases API key"
+regex = '''(?i)wandb_v1_[A-Za-z0-9_]{20,}'''
+tags = ["key", "wandb"]

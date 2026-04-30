@@ -24,9 +24,6 @@ from _paths import DATASET_ROOT, TRAIN_JSON, TRAIN_IMGS  # noqa: E402
 def load_wandb_key() -> str | None:
     if os.environ.get("WANDB_API_KEY"):
         return os.environ["WANDB_API_KEY"]
-    fallback = Path.home() / "data" / "WANDB_API_KEY.txt"
-    if fallback.exists():
-        return fallback.read_text().strip()
     return None
 
 

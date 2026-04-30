@@ -5,7 +5,7 @@
 # Creates: <challenge-dir>/envs/mmdet/  (gitignored, persistent via repo mount)
 # Stack:   Python 3.11, conda-forge CUDA toolchain (cuda-nvcc, cudatoolkit,
 #          cudnn), PyTorch 2.1.2+cu121, mmcv (CUDA ops), mmdet, mmengine,
-#          pycocotools, wandb, ensemble-boxes, pandas, numpy
+#          pycocotools, wandb, ensemble-boxes, pandas, numpy, sahi
 #
 # Run once. Because the challenge directory is part of the mounted repo volume,
 # the env survives container recreations — no need to re-run on restart.
@@ -52,12 +52,27 @@ echo ">>> Installing PyTorch 2.1.2+cu121..."
 
 echo ">>> Installing setuptools<81 (for pkg_resources), numpy<2, and mmcv..."
 "${PIP}" install "setuptools<81" "numpy<2"
-MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine mmdet -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
+MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install mmcv==2.1.0 mmengine==0.10.7 mmdet==3.3.0 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1/index.html
 
 # --- Supporting packages -----------------------------------------------------
 
-echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas..."
-"${PIP}" install pycocotools wandb ensemble-boxes pandas
+echo ">>> Installing pycocotools, wandb, ensemble-boxes, pandas, and SAHI helpers..."
+"${PIP}" install \
+    click \
+    "opencv-python<=4.11.0.86" \
+    pillow \
+    pycocotools \
+    pybboxes==0.1.6 \
+    pyyaml \
+    requests \
+    shapely \
+    terminaltables \
+    tqdm \
+    wandb \
+    ensemble-boxes \
+    pandas \
+    fire
+"${PIP}" install sahi==0.11.36 --no-deps
 
 # --- Co-DETR source (mmdet projects/ are not in the pip wheel) ---------------
 
@@ -71,7 +86,8 @@ fi
 # --- Smoke check -------------------------------------------------------------
 
 echo ">>> Running import smoke check..."
-"${PYTHON}" -c "import torch, mmcv, mmdet, mmengine; from mmcv.ops import nms; print(torch.__version__, mmcv.__version__, mmdet.__version__, mmengine.__version__)"
+PYTHONPATH="${CODETR_SRC}/projects/CO-DETR:${PYTHONPATH:-}" \
+    "${PYTHON}" -c "import torch, mmcv, mmdet, mmengine, sahi, codetr; from mmcv.ops import nms; print(torch.__version__, mmcv.__version__, mmdet.__version__, mmengine.__version__, sahi.__version__)"
 
 echo ""
 echo "=== bootstrap-mmdet.sh complete ==="

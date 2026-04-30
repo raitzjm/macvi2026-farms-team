@@ -83,9 +83,10 @@ try:
     USE_WANDB = True
     print("[setup] WANDB_API_KEY loaded from Kaggle Secrets")
 except Exception:
-    os.environ["WANDB_API_KEY"] = "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"
-    USE_WANDB = True
-    print("[setup] WANDB_API_KEY set from fallback")
+    # removed - use Kaggle Secret WANDB_API_KEY instead of embedding credentials
+    os.environ.pop("WANDB_API_KEY", None)
+    USE_WANDB = False
+    print("[setup] WANDB disabled: Kaggle Secret WANDB_API_KEY not available")
 
 # ---------------------------------------------------------------------------
 # 4. Paths.
