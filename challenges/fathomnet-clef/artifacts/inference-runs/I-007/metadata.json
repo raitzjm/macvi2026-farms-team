@@ -1,0 +1,15 @@
+{
+  "checkpoint_path": "artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": null,
+  "git_commit_note": "Historical local inference predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-007-codetr-local-nonsahi/submission.csv",
+  "platform": "local RTX 3050 4GB",
+  "resolved_config": "artifacts/inference-runs/I-007/resolved-config.json",
+  "run_id": "I-007",
+  "source_train_id": "T-003",
+  "stdout_log": null,
+  "stdout_log_note": "No raw stdout capture was preserved for this historical local inference run.",
+  "track": "Co-DETR"
+}

@@ -1,0 +1,15 @@
+{
+  "checkpoint_path": "artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth",
+  "config_source": "kaggle/codetr-baseline/kernel_train.py",
+  "git_commit": null,
+  "git_commit_note": "Historical Kaggle inference predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-006-codetr-kaggle-nonsahi/submission.csv",
+  "platform": "Kaggle T4 x2",
+  "resolved_config": "artifacts/inference-runs/I-006/resolved-config.json",
+  "run_id": "I-006",
+  "source_train_id": "T-003",
+  "stdout_log": "artifacts/inference-runs/I-006/stdout.log",
+  "stdout_log_note": "Recovered from the combined Kaggle train+infer kernel console log.",
+  "track": "Co-DETR"
+}

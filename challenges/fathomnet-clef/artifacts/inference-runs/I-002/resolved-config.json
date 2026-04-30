@@ -1,0 +1,11 @@
+{
+  "checkpoint": "artifacts/checkpoints/T-001-yolo26l-local/best.pt",
+  "conf": 0.001,
+  "config_source": "scripts/infer_yolo.py",
+  "device": "local-gpu",
+  "imgsz": 1152,
+  "iou": 0.6,
+  "output_csv": "artifacts/submissions/I-002-yolo26l-local-nonsahi/submission.csv",
+  "sahi": false,
+  "source_train_id": "T-001"
+}

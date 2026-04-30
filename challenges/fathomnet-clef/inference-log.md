@@ -41,7 +41,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | Platform | Kaggle T4 x2 |
 | Evaluated split | test set |
 | Inputs | T-002 checkpoint + Kaggle kernel inference path |
-| Artifacts | artifacts/submissions/I-001-yolov11-kaggle-nonsahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-001/, artifacts/submissions/I-001-yolov11-kaggle-nonsahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -84,7 +84,7 @@ Baseline official submission from the successful Kaggle YOLOv11 kernel run.
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-001 checkpoint |
-| Artifacts | artifacts/submissions/I-002-yolo26l-local-nonsahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-002/, artifacts/submissions/I-002-yolo26l-local-nonsahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -127,7 +127,7 @@ Initial submission `52140950` errored with `bbox_height must be positive` due to
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-001 checkpoint |
-| Artifacts | artifacts/submissions/I-003-yolo26l-local-sahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-003/, artifacts/submissions/I-003-yolo26l-local-sahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -173,7 +173,7 @@ SAHI materially increased box count but underperformed the direct non-SAHI pass 
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-002 checkpoint + archived idx_to_cat_id map |
-| Artifacts | artifacts/submissions/I-004-yolov11-local-nonsahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-004/, artifacts/submissions/I-004-yolov11-local-nonsahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -216,7 +216,7 @@ Local non-SAHI output was not identical to the Kaggle-generated CSV: 61,110 pred
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-002 checkpoint + archived idx_to_cat_id map |
-| Artifacts | artifacts/submissions/I-005-yolov11-local-sahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-005/, artifacts/submissions/I-005-yolov11-local-sahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -262,7 +262,7 @@ SAHI substantially increased prediction count but hurt public leaderboard perfor
 | Platform | Kaggle T4 x2 |
 | Evaluated split | test set |
 | Inputs | T-003 checkpoint + Kaggle kernel inference path |
-| Artifacts | artifacts/submissions/I-006-codetr-kaggle-nonsahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-006/, artifacts/submissions/I-006-codetr-kaggle-nonsahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -305,7 +305,7 @@ The completed Kaggle kernel wrote `submission.csv` and the best epoch-12 checkpo
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-003 checkpoint + downloaded `config_used.py` + downloaded `idx_to_cat_id.json` |
-| Artifacts | artifacts/submissions/I-007-codetr-local-nonsahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-007/, artifacts/submissions/I-007-codetr-local-nonsahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -348,7 +348,7 @@ Local non-SAHI inference was not identical to the Kaggle kernel output and sligh
 | Platform | local RTX 3050 4GB |
 | Evaluated split | test set |
 | Inputs | T-003 checkpoint + downloaded `config_used.py` + downloaded `idx_to_cat_id.json` |
-| Artifacts | artifacts/submissions/I-008-codetr-local-sahi/submission.csv |
+| Artifacts | artifacts/inference-runs/I-008/, artifacts/submissions/I-008-codetr-local-sahi/submission.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
