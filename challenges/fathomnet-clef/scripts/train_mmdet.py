@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -134,12 +135,18 @@ def main():
     ap.add_argument("--no-amp", action="store_true",
                     help="Disable AMP. AMP is on by default (with mmcv NMS dtype patch)")
     ap.add_argument("--lr", type=float, default=1e-4)
+    ap.add_argument("--load-from", default=None,
+                    help="Optional checkpoint path or URL for detector warm start")
     ap.add_argument("--run-id", default=None,
                     help="Optional tracked training ID (for example T-004)")
     ap.add_argument("--artifact-dir", default=None,
                     help="Optional durable artifact directory override")
     ap.add_argument("--split-manifest", default=str(default_split_manifest_path()),
                     help="Path to shared train/val split manifest JSON")
+    ap.add_argument("--launcher", choices=("none", "pytorch", "auto"), default="auto")
+    ap.add_argument("--nproc-per-node", type=int, default=None,
+                    help="Used when launcher is pytorch/auto parent process")
+    ap.add_argument("--master-port", default="29500")
     args = ap.parse_args()
     args.amp = not args.no_amp
 
@@ -321,6 +328,8 @@ def _main(args, artifact_dir: Path | None):
         sampler_seed=dict(type="DistSamplerSeedHook"),
         visualization=dict(type="DetVisualizationHook"),
     )
+    cfg.default_hooks["checkpoint"]["save_best"] = "coco/bbox_mAP"
+    cfg.default_hooks["checkpoint"]["rule"] = "greater"
 
     # --- Visualizer (handles WandB) --------------------------------------
     vis_backends = [dict(type="LocalVisBackend")]
@@ -341,7 +350,7 @@ def _main(args, artifact_dir: Path | None):
 
     cfg.work_dir = str(out_dir / "mmdet_run")
     cfg.launcher = "none"
-    cfg.load_from = None
+    cfg.load_from = args.load_from
     cfg.resume = False
     cfg.randomness = dict(seed=42, deterministic=False)
     cfg.auto_scale_lr = dict(enable=False, base_batch_size=16)
@@ -356,6 +365,7 @@ def _main(args, artifact_dir: Path | None):
                 "config_source": relpath_str(cfg_path, CHALLENGE_ROOT),
                 "git_commit": git_commit(CHALLENGE_ROOT),
                 "kind": "training",
+                "load_from": args.load_from,
                 "metrics_artifact": relpath_str(artifact_dir / "metrics.jsonl", CHALLENGE_ROOT),
                 "output_root": relpath_str(out_dir, CHALLENGE_ROOT),
                 "platform": "local",
@@ -372,8 +382,63 @@ def _main(args, artifact_dir: Path | None):
     print(f"[cfg] work_dir={cfg.work_dir}")
     print(f"[cfg] run_name={run_name}")
     print(f"[cfg] split_manifest={split_manifest_path}")
+    print(f"[cfg] load_from={args.load_from}")
     print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb}")
 
+    n_gpu = 0
+    try:
+        import torch
+        n_gpu = torch.cuda.device_count()
+    except Exception:
+        n_gpu = 0
+
+    local_rank = os.environ.get("LOCAL_RANK")
+    requested_nproc = args.nproc_per_node or n_gpu
+    use_pytorch = args.launcher == "pytorch" or (args.launcher == "auto" and requested_nproc and requested_nproc > 1)
+
+    if use_pytorch and local_rank is None:
+        cfg.launcher = "pytorch"
+        print(f"[dist] launching torchrun with nproc_per_node={requested_nproc}")
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "torch.distributed.run",
+                "--nproc_per_node",
+                str(requested_nproc),
+                "--master_port",
+                str(args.master_port),
+                __file__,
+                "--epochs",
+                str(args.epochs),
+                "--batch",
+                str(args.batch),
+                "--name",
+                args.name,
+                "--width",
+                str(args.width),
+                "--height",
+                str(args.height),
+                "--lr",
+                str(args.lr),
+                "--run-id",
+                str(args.run_id or ""),
+                "--artifact-dir",
+                str(args.artifact_dir or ""),
+                "--split-manifest",
+                str(args.split_manifest),
+                "--launcher",
+                "pytorch",
+                "--master-port",
+                str(args.master_port),
+            ]
+            + (["--load-from", str(args.load_from)] if args.load_from else [])
+            + (["--no-wandb"] if args.no_wandb else [])
+            + (["--no-amp"] if args.no_amp else [])
+        )
+        return
+
+    cfg.launcher = "pytorch" if local_rank is not None else "none"
     runner = Runner.from_cfg(cfg)
     runner.train()
 
