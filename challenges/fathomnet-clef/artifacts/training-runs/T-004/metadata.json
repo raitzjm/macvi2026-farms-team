@@ -1,0 +1,16 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-004",
+  "config_source": "envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py",
+  "git_commit": "097354f58722855be2d775f1b7111072d70864e3",
+  "kind": "training",
+  "load_from": "https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth",
+  "metrics_artifact": "artifacts/training-runs/T-004/metrics.jsonl",
+  "output_root": "outputs/codetr-r50-bounded-fairness-T-004",
+  "platform": "local",
+  "resolved_config": "artifacts/training-runs/T-004/resolved-config.py",
+  "run_id": "T-004",
+  "run_name": "codetr-r50-bounded-fairness-T-004",
+  "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+  "stdout_log": "artifacts/training-runs/T-004/stdout.log",
+  "track": "Co-DETR"
+}

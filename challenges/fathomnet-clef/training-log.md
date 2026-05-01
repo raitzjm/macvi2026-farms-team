@@ -24,6 +24,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-001 | 2026-04-28 | YOLO26l | YOLO26l-local-v1: 50 epochs, rect 1152px, batch≈4 (auto), RTX 3050 | 42 | 0.408 (train-val 90/10) |
 | T-002 | 2026-04-28 | YOLOv11 | YOLOv11-kaggle-v15: 50 epochs, imgsz=640, rect disabled by DDP, batch=16/GPU, Kaggle T4x2 | 42 | 0.377 (train-val 90/10) |
 | T-003 | 2026-04-28 | Co-DETR | Co-DETR-R50-kaggle-v15: 12 epochs, torchrun T4x2, AMP, best val bbox mAP 0.326 | 42 | 0.326 (train-val 90/10) |
+| T-004 | 2026-05-01 | Co-DETR | Co-DETR-R50-tensordock: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090, official pretrain, shared split | 42 | 0.417 (shared-train-val-v1) |
 
 ---
 
@@ -183,6 +184,68 @@ Completed on Kaggle T4 x2. submission.csv produced (68,794 predictions; 68,795 C
 
 #### Notes
 Downloaded from completed Kaggle kernel outputs. Kaggle non-SAHI inference from the best epoch checkpoint produced `submission.csv` with 360,718 predictions and scored **0.0318** public LB. WandB run archived inside the downloaded `vis_data/wandb/` tree.
+
+---
+
+### T-004 — Co-DETR R50 TensorDock corrected baseline (12 epochs)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-01 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (2× RTX 4090, fathom1) |
+| Duration | ~2h39m (13:30–16:09 UTC+2) |
+| Seed | 42 |
+| Inputs | Co-DINO R50 official pretrain (https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth) |
+| Repo commit | 097354f58722855be2d775f1b7111072d70864e3 |
+| Config source | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Resolved config | artifacts/training-runs/T-004/resolved-config.py |
+| Stdout log | artifacts/training-runs/T-004/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-004/metrics.jsonl |
+| Selected checkpoint | artifacts/checkpoints/T-004-codetr-tensordock/best.pth (epoch 7) |
+| Artifacts | artifacts/training-runs/T-004/, artifacts/checkpoints/T-004-codetr-tensordock/ |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/dmr1u4w4 |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | Co-DETR R50 (5-scale) |
+| Pretrained weights | co_dino_5scale_r50_1x_coco-7481f903.pth (OpenMMLab official COCO pretrain) |
+| Input resolution | 768×432 |
+| Config file | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Modifications | Resolution 768×432, batch=5/GPU, AMP, 2-GPU torchrun (DDP), shared-split manifest |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images / 20,015 annotations |
+| Val split | shared-train-val-v1 val: 647 images / 2,210 annotations |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | none |
+| Augmentation | mmdet defaults (RandomFlip, Normalize, Pad) |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 12 |
+| Batch size | 5 per GPU (10 effective on 2× RTX 4090) |
+| Optimizer | AdamW (mmdet Co-DETR defaults) |
+| LR initial | 1e-4 |
+| AMP | True |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Val mAP@[.5:.95] by epoch | 0.218, 0.312, 0.326, 0.358, 0.401, 0.391, **0.417**, 0.395, 0.413, 0.402, 0.360, 0.392 |
+| Best val mAP@[.5:.95] | **0.417** (epoch 7) |
+| Best val mAP@.50 | **0.562** (epoch 7) |
+| Best epoch | 7 |
+| Final epoch val mAP@[.5:.95] | 0.392 |
+
+#### Notes
+Corrected Co-DETR baseline addressing issue #84: T-003 used a wrong 90/10 random split (not the shared manifest) and COCO weights via the Kaggle config path rather than the official OpenMMLab pretrain. This run uses the shared-train-val-v1 split manifest and the official pretrain — making results directly comparable to T-001 YOLO26l. T-004 (0.417) beats T-001 (0.408 mAP) by +0.009 mAP. WandB: https://wandb.ai/little_farms/fathomnet2026/runs/dmr1u4w4
 
 ---
 

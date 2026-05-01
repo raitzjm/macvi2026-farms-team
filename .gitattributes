@@ -16,3 +16,4 @@ challenges/common/external-dataset-analysis/shared_data/harmonized_*/**/*.png fi
 challenges/fathomnet-clef/artifacts/**/*.pt filter=lfs diff=lfs merge=lfs -text
 challenges/fathomnet-clef/artifacts/**/*.pth filter=lfs diff=lfs merge=lfs -text
 challenges/fathomnet-clef/artifacts/submissions/**/*.csv filter=lfs diff=lfs merge=lfs -text
+challenges/fathomnet-clef/artifacts/checkpoints/**/*.pth filter=lfs diff=lfs merge=lfs -text
