@@ -4,8 +4,8 @@ YOLO11 training for FathomNet-CLEF — runs locally and on Kaggle.
 
 Dataset path resolves via _paths.py. Trains with rectangular batches
 (rect=True) at 640px short side (imgsz=1152 → height ~640 for 16:9 inputs).
-Builds YOLO labels from COCO JSON into outputs/<name>/yolo_data/, with a
-deterministic 90/10 train/val split (seed=42). WandB logs via env vars.
+Builds YOLO labels from COCO JSON into outputs/<name>/yolo_data/, using a
+shared explicit train/val split manifest. WandB logs via env vars.
 
 Usage:
   python train_yolo_kaggle.py --epochs 1 --batch 8 --name smoke-yolo
@@ -13,7 +13,6 @@ Usage:
 import argparse
 import json
 import os
-import random
 import sys
 from pathlib import Path
 
@@ -28,6 +27,11 @@ from run_tracking import (  # noqa: E402
     tracked_run_name,
     write_json,
 )
+from split_manifest import (  # noqa: E402
+    default_split_manifest_path,
+    ensure_manifest,
+    load_manifest,
+)
 
 
 def load_wandb_key() -> str | None:
@@ -36,9 +40,8 @@ def load_wandb_key() -> str | None:
     return None
 
 
-def coco_to_yolo(coco_json: Path, dst_root: Path, train_imgs_dir: Path,
-                 val_split: float = 0.1, seed: int = 42):
-    """Build YOLO labels + symlinked image dirs split into train/val."""
+def coco_to_yolo(coco_json: Path, dst_root: Path, train_imgs_dir: Path, split_manifest_path: Path):
+    """Build YOLO labels + symlinked image dirs using an explicit split manifest."""
     coco = json.loads(Path(coco_json).read_text())
     cats = sorted(coco["categories"], key=lambda c: c["id"])
     cat_id_to_idx = {c["id"]: i for i, c in enumerate(cats)}
@@ -49,11 +52,8 @@ def coco_to_yolo(coco_json: Path, dst_root: Path, train_imgs_dir: Path,
     for a in coco["annotations"]:
         anns_by_img.setdefault(a["image_id"], []).append(a)
 
-    img_ids = sorted(img_by_id.keys())
-    rng = random.Random(seed)
-    rng.shuffle(img_ids)
-    cut = int(len(img_ids) * (1 - val_split))
-    splits = {"train": img_ids[:cut], "val": img_ids[cut:]}
+    manifest = load_manifest(split_manifest_path)
+    splits = {"train": manifest["train_ids"], "val": manifest["val_ids"]}
 
     for split, ids in splits.items():
         labels_dir = dst_root / "labels" / split
@@ -101,6 +101,8 @@ def main():
                    help="Optional tracked training ID (for example T-004)")
     p.add_argument("--artifact-dir", default=None,
                    help="Optional durable artifact directory override")
+    p.add_argument("--split-manifest", default=str(default_split_manifest_path()),
+                   help="Path to shared train/val split manifest JSON")
     p.add_argument("--no-rect", action="store_true")
     p.add_argument("--no-wandb", action="store_true")
     args = p.parse_args()
@@ -116,13 +118,15 @@ def main():
     with tee_output(log_path):
         out_root.mkdir(parents=True, exist_ok=True)
         yolo_data = out_root / "yolo_data"
+        split_manifest_path = ensure_manifest(TRAIN_JSON, Path(args.split_manifest))
 
         print(f"Dataset:  {DATASET_ROOT}")
         print(f"Output:   {out_root}")
         print(f"Run:      {run_name}")
+        print(f"Split:    {split_manifest_path}")
         print(f"imgsz={imgsz} (w={args.width} h={args.height}) rect={not args.no_rect} batch={args.batch}")
 
-        class_names, splits = coco_to_yolo(TRAIN_JSON, yolo_data, TRAIN_IMGS)
+        class_names, splits = coco_to_yolo(TRAIN_JSON, yolo_data, TRAIN_IMGS, split_manifest_path)
         print(f"Built YOLO data: {len(splits['train'])} train / {len(splits['val'])} val")
 
         yaml_path = yolo_data / "fathomnet.yaml"
@@ -151,8 +155,8 @@ def main():
                     "rect": not args.no_rect,
                     "requested_name": args.name,
                     "seed": 42,
+                    "split_manifest": relpath_str(split_manifest_path, challenge_root),
                     "train_json": str(TRAIN_JSON),
-                    "val_split": 0.1,
                     "wandb_enabled": not args.no_wandb,
                     "width": args.width,
                     "workers": args.workers,
@@ -172,6 +176,7 @@ def main():
                     "resolved_config": relpath_str(artifact_dir / "resolved-config.json", challenge_root),
                     "run_id": args.run_id,
                     "run_name": run_name,
+                    "split_manifest": relpath_str(split_manifest_path, challenge_root),
                     "stdout_log": relpath_str(artifact_dir / "stdout.log", challenge_root),
                     "track": "YOLO",
                     "train_labels_yaml": relpath_str(yaml_path, challenge_root),

@@ -3,9 +3,9 @@
 Co-DETR smoke trainer for FathomNet-CLEF 2026.
 
 Loads the Co-DETR R50 (5-scale, no LSJ) config from the bundled CO-DETR project,
-remaps non-contiguous COCO category IDs to a contiguous 0..N-1 space, makes a
-deterministic 90/10 train/val split, and runs a short MMEngine training loop
-with AMP and WandB logging via the visualizer.
+remaps non-contiguous COCO category IDs to a contiguous 0..N-1 space, uses a
+shared explicit train/val split manifest, and runs a short MMEngine training
+loop with AMP and WandB logging via the visualizer.
 
 Designed to run on:
 - Local container (RTX 3050 4GB) — 1-batch smoke
@@ -17,7 +17,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import random
 import sys
 from pathlib import Path
 
@@ -43,6 +42,11 @@ from run_tracking import (  # noqa: E402
     tracked_run_name,
     write_json,
 )
+from split_manifest import (  # noqa: E402
+    default_split_manifest_path,
+    ensure_manifest,
+    load_manifest,
+)
 
 
 def setup_wandb(disabled: bool) -> bool:
@@ -56,8 +60,8 @@ def setup_wandb(disabled: bool) -> bool:
     return False
 
 
-def prepare_splits(train_json: Path, out_dir: Path, seed: int = 42):
-    """Build contiguous category map; write 90/10 split COCO JSONs."""
+def prepare_splits(train_json: Path, out_dir: Path, split_manifest_path: Path):
+    """Build contiguous category map; write shared split COCO JSONs."""
     with open(train_json) as f:
         coco = json.load(f)
 
@@ -76,12 +80,10 @@ def prepare_splits(train_json: Path, out_dir: Path, seed: int = 42):
         a["category_id"] = cat_id_to_idx[ann["category_id"]]
         remapped_anns.append(a)
 
-    images = list(coco["images"])
-    rng = random.Random(seed)
-    rng.shuffle(images)
-    n_val = max(1, int(round(0.1 * len(images))))
-    val_imgs = images[:n_val]
-    train_imgs = images[n_val:]
+    manifest = load_manifest(split_manifest_path)
+    images_by_id = {int(im["id"]): im for im in coco["images"]}
+    train_imgs = [images_by_id[i] for i in manifest["train_ids"]]
+    val_imgs = [images_by_id[i] for i in manifest["val_ids"]]
     val_ids = {im["id"] for im in val_imgs}
 
     train_anns = [a for a in remapped_anns if a["image_id"] not in val_ids]
@@ -136,6 +138,8 @@ def main():
                     help="Optional tracked training ID (for example T-004)")
     ap.add_argument("--artifact-dir", default=None,
                     help="Optional durable artifact directory override")
+    ap.add_argument("--split-manifest", default=str(default_split_manifest_path()),
+                    help="Path to shared train/val split manifest JSON")
     args = ap.parse_args()
     args.amp = not args.no_amp
 
@@ -197,7 +201,8 @@ def _main(args, artifact_dir: Path | None):
     out_dir = CHALLENGE_ROOT / "outputs" / run_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    train_json, val_json, class_names = prepare_splits(Path(TRAIN_JSON), out_dir)
+    split_manifest_path = ensure_manifest(Path(TRAIN_JSON), Path(args.split_manifest))
+    train_json, val_json, class_names = prepare_splits(Path(TRAIN_JSON), out_dir, split_manifest_path)
     num_classes = len(class_names)
 
     # Import CO-DETR so its registries populate, then load config.
@@ -357,6 +362,7 @@ def _main(args, artifact_dir: Path | None):
                 "resolved_config": relpath_str(cfg_dump_path, CHALLENGE_ROOT),
                 "run_id": args.run_id,
                 "run_name": run_name,
+                "split_manifest": relpath_str(split_manifest_path, CHALLENGE_ROOT),
                 "stdout_log": relpath_str(artifact_dir / "stdout.log", CHALLENGE_ROOT),
                 "track": "Co-DETR",
             },
@@ -365,6 +371,7 @@ def _main(args, artifact_dir: Path | None):
     print(f"[cfg] model={cfg.model.type}  num_classes={num_classes}")
     print(f"[cfg] work_dir={cfg.work_dir}")
     print(f"[cfg] run_name={run_name}")
+    print(f"[cfg] split_manifest={split_manifest_path}")
     print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb}")
 
     runner = Runner.from_cfg(cfg)
