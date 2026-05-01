@@ -100,6 +100,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
 - All FathomNet training runs must log to WandB entity `little_farms`, project `fathomnet2026`
 - Tracked training run names must append the training run ID suffix (example: `codetr-r50-baseline-T-004`)
+- Training run IDs are only burned by retained tracked runs; if a launch is scrapped before it yields a run worth logging, reuse that `T-NNN` on the corrected relaunch rather than incrementing
 - Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known (example: `submission-I-009-from-T-004.csv`) so Kaggle UI entries remain identifiable
 - If a training launch fails after creating a WandB run, delete that failed WandB run before retrying so the project history stays clean
 - This challenge intentionally does not maintain `STATE.md`; status lives in the repo-level challenge table and this AGENTS.md
