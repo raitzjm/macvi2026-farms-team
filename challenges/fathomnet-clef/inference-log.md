@@ -28,6 +28,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-006 | 2026-04-28 | Co-DETR | T-003 | Kaggle kernel non-SAHI inference on test set | — | 0.0318 | 52148404 |
 | I-007 | 2026-04-28 | Co-DETR | T-003 | Local non-SAHI inference on test set; differs from Kaggle CSV | — | 0.0333 | 52149263 |
 | I-008 | 2026-04-28 | Co-DETR | T-003 | Local SAHI inference on test set | — | 0.0053 | 52149270 |
+| I-009 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI inference on test set; corrected baseline (official pretrain + shared split) | — | 0.0556 | see notes |
 
 ---
 
@@ -381,6 +382,56 @@ Local non-SAHI inference was not identical to the Kaggle kernel output and sligh
 
 #### Notes
 The tiled Co-DETR pass dramatically increased prediction count and performed much worse than both Kaggle and local non-SAHI inference.
+
+---
+
+### I-009 — Co-DETR T-004 local non-SAHI inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-01 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-004 checkpoint, best epoch 7 |
+| Repo commit | 0c3fe90042e4af0c912c3297677e6a5f7019dfb4 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-009/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-009/stdout.log |
+| Artifacts | artifacts/inference-runs/I-009/, artifacts/submissions/I-009-from-T-004-codetr-local-nonsahi/submission-I-009-from-T-004.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-004 | artifacts/checkpoints/T-004-codetr-tensordock/best.pth (epoch 7, val mAP=0.417) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+| (slice_size) | 640 (not active) |
+| (overlap) | 0.20 (not active) |
+| (postprocess_match_threshold) | 0.50 (not active) |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-01 18:24 UTC) |
+| Date | 2026-05-01 |
+| Public LB mAP | **0.0556** |
+| Notes | +0.0179 vs I-004 anchor (0.0377); new best LB score; submitted via Kaggle CLI from local container |
+
+#### Notes
+First submission from T-004 corrected Co-DETR baseline (official pretrain + shared split manifest). Public LB score 0.0556 is +0.0179 above the previous best I-004 (0.0377 mAP), confirming that the corrected training setup translates to substantially better test-set performance. Val mAP improvement (+0.009 vs T-001 YOLO26l) closely mirrors LB improvement, supporting trust in the shared-split as a reliable proxy metric.
 
 ---
 
