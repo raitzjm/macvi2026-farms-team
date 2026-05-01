@@ -49,10 +49,6 @@ from split_manifest import (  # noqa: E402
     load_manifest,
 )
 
-from mmdet.engine.hooks import DetVisualizationHook  # noqa: E402
-from mmdet.registry import HOOKS  # noqa: E402
-
-
 def setup_wandb(disabled: bool) -> bool:
     if disabled:
         os.environ["WANDB_DISABLED"] = "true"
@@ -123,75 +119,6 @@ def _set_num_classes(node, num_classes: int):
     elif isinstance(node, list):
         for v in node:
             _set_num_classes(v, num_classes)
-
-
-@HOOKS.register_module()
-class WandbPredictionVisualizationHook(DetVisualizationHook):
-    """Validation/test visualization hook that logs prediction-only overlays.
-
-    MMDet's default datasample visualizer stitches GT and prediction images
-    side by side when both are present. For WandB runs that creates a duplicated
-    looking validation media panel, so we keep the prediction overlay only.
-    """
-
-    def __init__(self, *args, draw_gt: bool = False, draw_pred: bool = True, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.draw_gt = draw_gt
-        self.draw_pred = draw_pred
-
-    def after_val_iter(self, runner, batch_idx, data_batch, outputs):
-        if self.draw is False:
-            return
-
-        total_curr_iter = runner.iter + batch_idx
-        img_path = outputs[0].img_path
-        img_bytes = get(img_path, backend_args=self.backend_args)
-        img = mmcv.imfrombytes(img_bytes, channel_order='rgb')
-
-        if total_curr_iter % self.interval == 0:
-            self._visualizer.add_datasample(
-                osp.basename(img_path) if self.show else 'val_img',
-                img,
-                data_sample=outputs[0],
-                draw_gt=self.draw_gt,
-                draw_pred=self.draw_pred,
-                show=self.show,
-                wait_time=self.wait_time,
-                pred_score_thr=self.score_thr,
-                step=total_curr_iter)
-
-    def after_test_iter(self, runner, batch_idx, data_batch, outputs):
-        if self.draw is False:
-            return
-
-        if self.test_out_dir is not None:
-            self.test_out_dir = osp.join(runner.work_dir, runner.timestamp,
-                                         self.test_out_dir)
-            mkdir_or_exist(self.test_out_dir)
-
-        for data_sample in outputs:
-            self._test_index += 1
-
-            img_path = data_sample.img_path
-            img_bytes = get(img_path, backend_args=self.backend_args)
-            img = mmcv.imfrombytes(img_bytes, channel_order='rgb')
-
-            out_file = None
-            if self.test_out_dir is not None:
-                out_file = osp.basename(img_path)
-                out_file = osp.join(self.test_out_dir, out_file)
-
-            self._visualizer.add_datasample(
-                osp.basename(img_path) if self.show else 'test_img',
-                img,
-                data_sample=data_sample,
-                draw_gt=self.draw_gt,
-                draw_pred=self.draw_pred,
-                show=self.show,
-                wait_time=self.wait_time,
-                pred_score_thr=self.score_thr,
-                out_file=out_file,
-                step=self._test_index)
 
 
 def main():
@@ -399,7 +326,7 @@ def _main(args, artifact_dir: Path | None):
         checkpoint=dict(type="CheckpointHook", interval=1, max_keep_ckpts=2),
         sampler_seed=dict(type="DistSamplerSeedHook"),
         visualization=dict(
-            type="WandbPredictionVisualizationHook" if use_wandb else "DetVisualizationHook",
+            type="DetVisualizationHook",
             draw=use_wandb,
             score_thr=0.3,
         ),
