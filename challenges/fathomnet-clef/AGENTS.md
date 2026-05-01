@@ -97,6 +97,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Curated checkpoints and submission CSVs go to `artifacts/`; both checkpoints and submission CSVs are Git LFS tracked
 - Agents working on training, inference, Kaggle/TensorDock run execution, or logging/backfilling training or inference results must read and follow `docs/run-tracking-policy.md`
 - Agents working on TensorDock orchestration or remote training execution must read and follow `docs/tensordock-remote-workflow.md`
+- For FathomNet sprint execution, the primary agent should act as an orchestrator and manager: delegate implementation, monitoring, review, and other sidecar work to sub-agents where practical, and keep the top-level thread focused on coordination, decisions, and information flow between lead, worker, and reviewer agents
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
 - All FathomNet training runs must log to WandB entity `little_farms`, project `fathomnet2026`
 - Tracked training run names must append the training run ID suffix (example: `codetr-r50-baseline-T-004`)
