@@ -438,6 +438,7 @@ def _main(args, artifact_dir: Path | None):
                 "--master-port",
                 str(args.master_port),
             ]
+            + ["--max-keep-ckpts", str(args.max_keep_ckpts)]
             + (["--load-from", str(args.load_from)] if args.load_from else [])
             + (["--no-wandb"] if args.no_wandb else [])
             + (["--no-amp"] if args.no_amp else [])
