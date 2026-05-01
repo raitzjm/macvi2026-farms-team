@@ -104,4 +104,6 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Training run IDs are only burned by retained tracked runs; if a launch is scrapped before it yields a run worth logging, reuse that `T-NNN` on the corrected relaunch rather than incrementing
 - Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known (example: `submission-I-009-from-T-004.csv`) so Kaggle UI entries remain identifiable
 - If a training launch fails after creating a WandB run, delete that failed WandB run before retrying so the project history stays clean
+- Keep the sprint issue journal terse: post only when a run starts and survives the babysitting period, when a meaningful event or issue occurs, and when the run finishes
+- For experiment-specific detail that would otherwise bloat the sprint issue, open a linked follow-up issue, document the experiment there, and close that follow-up issue when appropriate
 - This challenge intentionally does not maintain `STATE.md`; status lives in the repo-level challenge table and this AGENTS.md
