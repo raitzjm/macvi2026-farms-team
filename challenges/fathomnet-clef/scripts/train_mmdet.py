@@ -404,6 +404,7 @@ def _main(args, artifact_dir: Path | None):
                 sys.executable,
                 "-m",
                 "torch.distributed.run",
+                "--standalone",
                 "--nproc_per_node",
                 str(requested_nproc),
                 "--master_port",
