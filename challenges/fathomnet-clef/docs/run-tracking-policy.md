@@ -95,6 +95,7 @@ Historical backfills may use `null` for fields that were not preserved originall
 - Training run IDs are consumed only by retained tracked runs. If a launch is scrapped before it becomes a run worth keeping in `training-log.md` and `artifacts/training-runs/`, reuse the same `T-NNN` on the corrected relaunch instead of bumping the ID.
 - Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known, for example `submission-I-009-from-T-004.csv`.
 - If a training launch fails after creating a WandB run, delete that failed WandB run before retrying.
+- When WandB is enabled, validation images must be part of the run: MMDet launches should draw validation predictions, and Ultralytics launches should keep plot generation enabled.
 
 ## Kaggle Policy
 

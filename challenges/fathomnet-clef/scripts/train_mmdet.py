@@ -326,7 +326,11 @@ def _main(args, artifact_dir: Path | None):
         param_scheduler=dict(type="ParamSchedulerHook"),
         checkpoint=dict(type="CheckpointHook", interval=1, max_keep_ckpts=2),
         sampler_seed=dict(type="DistSamplerSeedHook"),
-        visualization=dict(type="DetVisualizationHook"),
+        visualization=dict(
+            type="DetVisualizationHook",
+            draw=use_wandb,
+            score_thr=0.3,
+        ),
     )
     cfg.default_hooks["checkpoint"]["save_best"] = "coco/bbox_mAP"
     cfg.default_hooks["checkpoint"]["rule"] = "greater"

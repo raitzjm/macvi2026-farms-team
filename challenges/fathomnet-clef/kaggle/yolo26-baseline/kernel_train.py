@@ -265,6 +265,7 @@ model.train(
     exist_ok=True,
     device=device,
     amp=True,
+    plots=True,
 )
 
 # Get actual save_dir from trainer — ultralytics prefixes runs/detect/ regardless

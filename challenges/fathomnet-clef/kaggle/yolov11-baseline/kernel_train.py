@@ -274,6 +274,7 @@ model.train(
     exist_ok=True,
     device=device,
     amp=True,
+    plots=True,
 )
 
 # Get the actual save_dir from the trainer (ultralytics prefixes runs/detect/ regardless

@@ -216,6 +216,7 @@ def main():
             exist_ok=True,
             device=0,
             amp=True,
+            plots=True,
         )
 
         if artifact_dir:
