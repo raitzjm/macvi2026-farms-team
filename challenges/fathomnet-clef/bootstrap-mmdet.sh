@@ -58,6 +58,9 @@ MMCV_WITH_OPS=1 FORCE_CUDA=1 "${PIP}" install \
 echo ">>> Reasserting numpy<2 after dependency resolution..."
 "${PIP}" install "numpy<2"
 
+echo ">>> Pinning setuptools<81 so MMEngine can still import pkg_resources..."
+"${PIP}" install "setuptools<81"
+
 echo ">>> Installing SAHI without dependency resolution to preserve pinned torch..."
 "${PIP}" install sahi==0.11.36 --no-deps
 

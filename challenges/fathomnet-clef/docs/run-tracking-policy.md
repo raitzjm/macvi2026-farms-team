@@ -93,6 +93,7 @@ Historical backfills may use `null` for fields that were not preserved originall
 - FathomNet WandB training runs must log under entity `little_farms`, project `fathomnet2026`.
 - Tracked training run names must append the training run ID suffix, for example `yolov11l-baseline-T-004`.
 - Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known, for example `submission-I-009-from-T-004.csv`.
+- If a training launch fails after creating a WandB run, delete that failed WandB run before retrying.
 
 ## Kaggle Policy
 
