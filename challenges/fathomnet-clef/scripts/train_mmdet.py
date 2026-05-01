@@ -40,6 +40,7 @@ from run_tracking import (  # noqa: E402
     relpath_str,
     resolve_artifact_dir,
     tee_output,
+    tracked_run_name,
     write_json,
 )
 
@@ -191,7 +192,9 @@ def _main(args, artifact_dir: Path | None):
 
     use_wandb = setup_wandb(args.no_wandb)
 
-    out_dir = CHALLENGE_ROOT / "outputs" / args.name
+    run_name = tracked_run_name(args.name, args.run_id)
+
+    out_dir = CHALLENGE_ROOT / "outputs" / run_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     train_json, val_json, class_names = prepare_splits(Path(TRAIN_JSON), out_dir)
@@ -322,7 +325,7 @@ def _main(args, artifact_dir: Path | None):
             init_kwargs=dict(
                 project="fathomnet2026",
                 entity="little_farms",
-                name=args.name,
+                name=run_name,
             ),
         ))
     cfg.visualizer = dict(
@@ -353,7 +356,7 @@ def _main(args, artifact_dir: Path | None):
                 "platform": "local",
                 "resolved_config": relpath_str(cfg_dump_path, CHALLENGE_ROOT),
                 "run_id": args.run_id,
-                "run_name": args.name,
+                "run_name": run_name,
                 "stdout_log": relpath_str(artifact_dir / "stdout.log", CHALLENGE_ROOT),
                 "track": "Co-DETR",
             },
@@ -361,6 +364,7 @@ def _main(args, artifact_dir: Path | None):
 
     print(f"[cfg] model={cfg.model.type}  num_classes={num_classes}")
     print(f"[cfg] work_dir={cfg.work_dir}")
+    print(f"[cfg] run_name={run_name}")
     print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb}")
 
     runner = Runner.from_cfg(cfg)

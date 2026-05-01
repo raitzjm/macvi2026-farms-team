@@ -25,6 +25,7 @@ from run_tracking import (  # noqa: E402
     relpath_str,
     resolve_artifact_dir,
     tee_output,
+    tracked_run_name,
     write_json,
 )
 
@@ -105,9 +106,10 @@ def main():
     args = p.parse_args()
 
     imgsz = args.imgsz if args.imgsz is not None else max(args.width, args.height)
+    run_name = tracked_run_name(args.name, args.run_id)
 
     challenge_root = Path(__file__).resolve().parent.parent
-    out_root = challenge_root / "outputs" / args.name
+    out_root = challenge_root / "outputs" / run_name
     artifact_dir = resolve_artifact_dir(challenge_root, "training", args.run_id, args.artifact_dir)
     log_path = artifact_dir / "stdout.log" if artifact_dir else None
 
@@ -117,6 +119,7 @@ def main():
 
         print(f"Dataset:  {DATASET_ROOT}")
         print(f"Output:   {out_root}")
+        print(f"Run:      {run_name}")
         print(f"imgsz={imgsz} (w={args.width} h={args.height}) rect={not args.no_rect} batch={args.batch}")
 
         class_names, splits = coco_to_yolo(TRAIN_JSON, yolo_data, TRAIN_IMGS)
@@ -144,8 +147,9 @@ def main():
                     "height": args.height,
                     "imgsz": imgsz,
                     "model": args.model,
-                    "name": args.name,
+                    "name": run_name,
                     "rect": not args.no_rect,
+                    "requested_name": args.name,
                     "seed": 42,
                     "train_json": str(TRAIN_JSON),
                     "val_split": 0.1,
@@ -167,7 +171,7 @@ def main():
                     "platform": "local",
                     "resolved_config": relpath_str(artifact_dir / "resolved-config.json", challenge_root),
                     "run_id": args.run_id,
-                    "run_name": args.name,
+                    "run_name": run_name,
                     "stdout_log": relpath_str(artifact_dir / "stdout.log", challenge_root),
                     "track": "YOLO",
                     "train_labels_yaml": relpath_str(yaml_path, challenge_root),
@@ -180,7 +184,7 @@ def main():
                 os.environ["WANDB_API_KEY"] = key
                 import wandb as _wandb
                 _orig_wandb_init = _wandb.init
-                _run_name = args.name
+                _run_name = run_name
 
                 def _patched_wandb_init(*a, **kw):
                     kw["project"] = "fathomnet2026"

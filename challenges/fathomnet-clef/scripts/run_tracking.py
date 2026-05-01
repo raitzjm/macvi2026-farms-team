@@ -69,6 +69,37 @@ def git_commit(repo_root: Path) -> str | None:
     return result.stdout.strip() or None
 
 
+def tracked_run_name(base_name: str, run_id: str | None) -> str:
+    name = str(base_name).strip()
+    if not run_id:
+        return name
+    suffix = str(run_id).strip().upper()
+    if not suffix:
+        return name
+    if name.upper().endswith(f"-{suffix}") or name.upper() == suffix:
+        return name
+    return f"{name}-{suffix}"
+
+
+def tracked_submission_path(output_csv: Path, run_id: str | None, source_train_id: str | None) -> Path:
+    parts: list[str] = []
+    if run_id:
+        parts.append(str(run_id).strip().upper())
+    if source_train_id:
+        source = str(source_train_id).strip().upper()
+        if source:
+            parts.append(f"from-{source}")
+
+    if not parts:
+        return output_csv
+
+    suffix = "-".join(parts)
+    stem_upper = output_csv.stem.upper()
+    if suffix.upper() in stem_upper:
+        return output_csv
+    return output_csv.with_name(f"{output_csv.stem}-{suffix}{output_csv.suffix}")
+
+
 @contextmanager
 def tee_output(log_path: Path | None):
     if log_path is None:

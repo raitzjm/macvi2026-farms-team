@@ -2,7 +2,7 @@
 
 ## Challenge
 Positive-Unlabeled (PU) object detection in marine underwater images.
-31 categories, COCO bbox format, evaluated by mAP@[0.50:0.95].
+32 categories, COCO bbox format, evaluated by mAP@[0.50:0.95].
 Deadline: **2026-05-07**.
 
 ## Key Documentation (read before acting)
@@ -59,7 +59,7 @@ challenges/fathomnet-clef/
 ## Submission Format
 CSV with columns: `annotation_id, image_id, category_id, bbox_x, bbox_y, bbox_width, bbox_height, score`
 
-Submit via: `kaggle competitions submit -c fathomnet-2026 -f submission.csv -m "description"`
+Submit via: `kaggle competitions submit -c fathomnet-2026 -f submission-I-009-from-T-004.csv -m "description"`
 
 Track training runs in `training-log.md` and every generated or official submission in `inference-log.md`.
 There is intentionally no separate `submissions.md` for this challenge.
@@ -98,4 +98,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Agents working on training, inference, Kaggle/TensorDock run execution, or logging/backfilling training or inference results must read and follow `docs/run-tracking-policy.md`
 - Agents working on TensorDock orchestration or remote training execution must read and follow `docs/tensordock-remote-workflow.md`
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
+- All FathomNet training runs must log to WandB entity `little_farms`, project `fathomnet2026`
+- Tracked training run names must append the training run ID suffix (example: `codetr-r50-baseline-T-004`)
+- Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known (example: `submission-I-009-from-T-004.csv`) so Kaggle UI entries remain identifiable
 - This challenge intentionally does not maintain `STATE.md`; status lives in the repo-level challenge table and this AGENTS.md

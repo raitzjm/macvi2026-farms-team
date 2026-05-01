@@ -88,6 +88,12 @@ Historical backfills may use `null` for fields that were not preserved originall
 - Every new tracked run must be reflected in the relevant markdown log and in its run bundle.
 - The markdown logs may evolve, but their headers must note format changes and effective dates.
 
+## Naming Policy
+
+- FathomNet WandB training runs must log under entity `little_farms`, project `fathomnet2026`.
+- Tracked training run names must append the training run ID suffix, for example `yolov11l-baseline-T-004`.
+- Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known, for example `submission-I-009-from-T-004.csv`.
+
 ## Kaggle Policy
 
 Kaggle training scripts must emit durable top-level output files in `/kaggle/working/` so they can be recovered with `kaggle kernels output`.

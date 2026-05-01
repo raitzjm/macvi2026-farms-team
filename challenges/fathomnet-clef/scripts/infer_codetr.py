@@ -33,6 +33,7 @@ from run_tracking import (  # noqa: E402
     relpath_str,
     resolve_artifact_dir,
     tee_output,
+    tracked_submission_path,
     write_json,
 )
 
@@ -275,7 +276,7 @@ def main():
 
         images = load_test_images(TEST_JSON)
         idx_to_cat_id = load_idx_to_cat_id(args.idx_to_cat_id, TRAIN_JSON)
-        output_csv = Path(args.output)
+        output_csv = tracked_submission_path(Path(args.output), args.run_id, args.source_train_id)
         output_csv.parent.mkdir(parents=True, exist_ok=True)
 
         if artifact_dir:
@@ -288,6 +289,7 @@ def main():
                     "device": args.device,
                     "idx_to_cat_id": args.idx_to_cat_id,
                     "output_csv": relpath_str(output_csv, CHALLENGE_ROOT),
+                    "requested_output_csv": args.output,
                     "postprocess_match_threshold": args.postprocess_match_threshold,
                     "sahi": args.sahi,
                     "score_thr": args.score_thr,

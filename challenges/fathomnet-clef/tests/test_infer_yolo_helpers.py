@@ -10,6 +10,12 @@ infer_yolo = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(infer_yolo)
 
+RUN_TRACKING_PATH = Path(__file__).resolve().parents[1] / "scripts" / "run_tracking.py"
+RUN_TRACKING_SPEC = importlib.util.spec_from_file_location("run_tracking", RUN_TRACKING_PATH)
+run_tracking = importlib.util.module_from_spec(RUN_TRACKING_SPEC)
+assert RUN_TRACKING_SPEC.loader is not None
+RUN_TRACKING_SPEC.loader.exec_module(run_tracking)
+
 
 class TestInferYoloHelpers(unittest.TestCase):
     def test_derive_idx_to_cat_id_sorts_by_category_id(self):
@@ -67,6 +73,23 @@ class TestInferYoloHelpers(unittest.TestCase):
         self.assertTrue(infer_yolo.has_positive_area(1.0, 2.0))
         self.assertFalse(infer_yolo.has_positive_area(1.0, 0.0))
         self.assertFalse(infer_yolo.has_positive_area(0.0, 2.0))
+
+    def test_tracked_run_name_appends_run_id_once(self):
+        self.assertEqual(
+            run_tracking.tracked_run_name("codetr-r50-baseline", "T-004"),
+            "codetr-r50-baseline-T-004",
+        )
+        self.assertEqual(
+            run_tracking.tracked_run_name("codetr-r50-baseline-T-004", "T-004"),
+            "codetr-r50-baseline-T-004",
+        )
+
+    def test_tracked_submission_path_appends_inference_and_source_ids(self):
+        output = Path("/tmp/submission.csv")
+        self.assertEqual(
+            run_tracking.tracked_submission_path(output, "I-009", "T-004").name,
+            "submission-I-009-from-T-004.csv",
+        )
 
 
 if __name__ == "__main__":
