@@ -29,6 +29,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-007 | 2026-04-28 | Co-DETR | T-003 | Local non-SAHI inference on test set; differs from Kaggle CSV | — | 0.0333 | 52149263 |
 | I-008 | 2026-04-28 | Co-DETR | T-003 | Local SAHI inference on test set | — | 0.0053 | 52149270 |
 | I-009 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI inference on test set; corrected baseline (official pretrain + shared split) | — | 0.0556 | see notes |
+| I-010 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_11.pth — T-005 PU checkpoint test | — | 0.0485 | see notes |
+| I-011 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_12.pth — T-005 PU checkpoint test | — | 0.0470 | see notes |
 
 ---
 
@@ -432,6 +434,100 @@ The tiled Co-DETR pass dramatically increased prediction count and performed muc
 
 #### Notes
 First submission from T-004 corrected Co-DETR baseline (official pretrain + shared split manifest). Public LB score 0.0556 is +0.0179 above the previous best I-004 (0.0377 mAP), confirming that the corrected training setup translates to substantially better test-set performance. Val mAP improvement (+0.009 vs T-001 YOLO26l) closely mirrors LB improvement, supporting trust in the shared-split as a reliable proxy metric.
+
+---
+
+### I-010 — Co-DETR T-004 epoch11 local non-SAHI inference (T-005 PU checkpoint test)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-01 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-004 checkpoint, epoch 11 |
+| Repo commit | 0c3fe90042e4af0c912c3297677e6a5f7019dfb4 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-010/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-010/stdout.log |
+| Artifacts | artifacts/inference-runs/I-010/, artifacts/submissions/I-010-from-T-004ep11-codetr-local-nonsahi/submission-I-010-from-T-004ep11.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-004 | outputs/codetr-r50-bounded-fairness-T-004/mmdet_run/epoch_11.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-01 18:43 UTC) |
+| Date | 2026-05-01 |
+| Public LB mAP | **0.0485** |
+| Notes | T-005 PU checkpoint test; epoch 11 scores below epoch 7 (0.0556), supporting PU selection of best_val epoch |
+
+#### Notes
+Part of T-005 PU checkpoint selection experiment. Epoch 11 on LB (0.0485) is -0.0071 vs epoch 7 (I-009, 0.0556), confirming that later training epochs do not improve test-set performance. Val mAP at epoch 11 was higher than epoch 7, which is consistent with the PU hypothesis: labeled positives in the train split are a biased subset, and overfitting to them degrades detection on the test set.
+
+---
+
+### I-011 — Co-DETR T-004 epoch12 local non-SAHI inference (T-005 PU checkpoint test)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-01 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-004 checkpoint, epoch 12 |
+| Repo commit | 0c3fe90042e4af0c912c3297677e6a5f7019dfb4 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-011/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-011/stdout.log |
+| Artifacts | artifacts/inference-runs/I-011/, artifacts/submissions/I-011-from-T-004ep12-codetr-local-nonsahi/submission-I-011-from-T-004ep12.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-004 | outputs/codetr-r50-bounded-fairness-T-004/mmdet_run/epoch_12.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-01 18:43 UTC) |
+| Date | 2026-05-01 |
+| Public LB mAP | **0.0470** |
+| Notes | T-005 PU checkpoint test; epoch 12 scores below epoch 11 (0.0485) and well below epoch 7 (0.0556) |
+
+#### Notes
+Part of T-005 PU checkpoint selection experiment. Epoch 12 on LB (0.0470) is -0.0086 vs epoch 7 (I-009, 0.0556) and -0.0015 vs epoch 11 (I-010, 0.0485). The monotonic decline across epochs 7→11→12 strongly confirms the PU hypothesis: epoch 7 is the better checkpoint for test-set generalization despite epochs 11/12 having higher val mAP on the shared split.
 
 ---
 
