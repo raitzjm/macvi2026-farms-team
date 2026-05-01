@@ -1,0 +1,16 @@
+{
+  "config_source": "scripts/train_yolo.py",
+  "git_commit": null,
+  "git_commit_note": "Historical run predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-001/results.csv",
+  "output_root": "outputs/yolo26l-local-v1",
+  "platform": "local RTX 3050 4GB",
+  "resolved_config": "artifacts/training-runs/T-001/resolved-config.yaml",
+  "run_id": "T-001",
+  "run_name": "yolo26l-local-v1",
+  "selected_checkpoint": "artifacts/checkpoints/T-001-yolo26l-local/best.pt",
+  "stdout_log": null,
+  "stdout_log_note": "No raw stdout capture was preserved for this historical local run.",
+  "track": "YOLO26l"
+}

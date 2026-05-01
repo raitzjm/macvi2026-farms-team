@@ -1,0 +1,15 @@
+{
+  "checkpoint": "challenges/fathomnet-clef/outputs/codetr-r50-bounded-fairness-T-004/mmdet_run/best_coco_bbox_mAP_epoch_7.pth",
+  "config_path": "challenges/fathomnet-clef/outputs/codetr-r50-bounded-fairness-T-004/mmdet_run/co_dino_5scale_r50_8xb2_1x_coco.py",
+  "config_source": "scripts/infer_codetr.py",
+  "device": "0",
+  "idx_to_cat_id": null,
+  "output_csv": "artifacts/submissions/I-009-from-T-004-codetr-local-nonsahi",
+  "overlap": 0.2,
+  "postprocess_match_threshold": 0.5,
+  "requested_output_csv": "challenges/fathomnet-clef/artifacts/submissions/I-009-from-T-004-codetr-local-nonsahi/",
+  "sahi": false,
+  "score_thr": 0.001,
+  "slice_size": 640,
+  "source_train_id": "T-004"
+}

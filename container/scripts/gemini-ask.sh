@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # gemini-ask.sh — delegate a task to Gemini as a sub-agent
 #
-# Usage: gemini-ask.sh [--silence-timeout N] [--pro|--auto|--flash] "prompt"
+# Usage: gemini-ask.sh [--silence-timeout N] [--pro|--auto|--flash|--flash-lite] "prompt"
 #
 # Options:
 #   --pro               Use gemini-3.1-pro-preview (explicit; overrides Flash default).
@@ -11,6 +11,8 @@
 #   --flash             Use "gemini-3-flash-preview". Prefer this for log
 #                       parsing, metric extraction, and other fast structured
 #                       reads where Pro is overkill.
+#   --flash-lite       Use "gemini-3.1-flash-lite-preview". Fast, low-cost
+#                       model for simple, high-volume tasks.
 #   --silence-timeout N Seconds of silence before declaring a hang (default 300)
 #
 # Exit codes:
@@ -43,6 +45,10 @@ while [[ $# -gt 0 ]]; do
             GEMINI_MODEL="gemini-3-flash-preview"
             shift
             ;;
+        --flash-lite)
+            GEMINI_MODEL="gemini-3.1-flash-lite-preview"
+            shift
+            ;;
         --) shift; break ;;
         -*) echo "Unknown option: $1" >&2; exit 1 ;;
         *) break ;;
@@ -59,7 +65,7 @@ sub-agent by an Orchestrator Agent via gemini-ask.sh. Rules:
 - Do NOT call gemini-cli or invoke yourself recursively.
 - Your output goes directly to the orchestrator, not a human user.
 - Do not ask clarifying questions — complete the task as best you can.
-- Project context is already loaded from CLAUDE.md."
+- Project context is already loaded from AGENTS.md."
 
 FULL_PROMPT="${DISCLAIMER}
 

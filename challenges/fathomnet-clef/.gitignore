@@ -1,0 +1,5 @@
+outputs/
+envs/
+wandb/
+*.pt
+!artifacts/**/*.pt

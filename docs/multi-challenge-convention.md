@@ -1,7 +1,7 @@
 # Multi-Challenge Convention
 
 Conventions for organizing multiple ML challenge tracks in this repo.
-See also: root `CLAUDE.md` for the short summary.
+See also: root `AGENTS.md` for the short summary.
 
 ## Layout
 
@@ -44,7 +44,9 @@ status: active|finished
 - `active` — currently training/submitting for the current year.
 - `finished` — submission cycle for the current year is complete.
 
-Nothing else in STATE.md. All other detail lives in challenge CLAUDE.md or docs/.
+Nothing else in STATE.md. All other detail lives in challenge AGENTS.md or docs/.
+
+Exception: `challenges/fathomnet-clef/` intentionally keeps status in `AGENTS.md`.
 
 ## Env Bootstrap Pattern
 
@@ -92,4 +94,6 @@ issue #69. The 2026 submission state is tagged as
 
 ## Link back
 
-Root CLAUDE.md: `/CLAUDE.md` — contains the short summary of this convention.
+Root AGENTS.md: `/AGENTS.md` — contains the short summary of this convention.
+
+Root `CLAUDE.md` is the Claude compatibility wrapper for `AGENTS.md`. Only repo-root `CLAUDE.md` may receive Claude-specific additions.

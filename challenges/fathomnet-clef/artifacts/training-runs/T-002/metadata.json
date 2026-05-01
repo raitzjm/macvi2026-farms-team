@@ -1,0 +1,15 @@
+{
+  "config_source": "kaggle/yolov11-baseline/kernel_train.py",
+  "git_commit": null,
+  "git_commit_note": "Historical Kaggle run predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-002/results.csv",
+  "platform": "Kaggle T4 x2",
+  "resolved_config": "artifacts/training-runs/T-002/resolved-config.yaml",
+  "run_id": "T-002",
+  "run_name": "fathomnet-yolo11l-baseline",
+  "selected_checkpoint": "artifacts/checkpoints/T-002-yolov11-kaggle/best.pt",
+  "stdout_log": "artifacts/training-runs/T-002/stdout.log",
+  "stdout_log_raw": "artifacts/training-runs/T-002/kaggle-console.json",
+  "track": "YOLOv11"
+}

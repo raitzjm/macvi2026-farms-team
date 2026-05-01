@@ -1,0 +1,12 @@
+{
+  "checkpoint": "artifacts/checkpoints/T-003-codetr-kaggle/best_coco_bbox_mAP_epoch_12.pth",
+  "config_path": "artifacts/checkpoints/T-003-codetr-kaggle/config_used.py",
+  "config_source": "scripts/infer_codetr.py",
+  "device": "local-gpu",
+  "iou": "detector-defaults",
+  "output_csv": "artifacts/submissions/I-007-codetr-local-nonsahi/submission.csv",
+  "sahi": false,
+  "score_thr": 0.001,
+  "source_train_id": "T-003",
+  "test_resize": "Resize(1333,800), keep_ratio=True"
+}

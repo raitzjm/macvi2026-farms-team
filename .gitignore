@@ -92,6 +92,10 @@ challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384/logs/inference.log
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/logs/inference.log
 
+# Explicitly track curated FathomNet artifacts despite *.pth / local *.pt rules
+!challenges/fathomnet-clef/artifacts/**/*.pth
+!challenges/fathomnet-clef/artifacts/**/*.pt
+
 # Per-challenge conda envs — created by bootstrap scripts inside challenge dirs,
 # gitignored because they are large and rebuild from the bootstrap script.
 challenges/*/envs/
@@ -103,3 +107,6 @@ challenges/*/envs/
 # Ignore only the file form; a future `.codex/` directory should still be tracked.
 .codex
 !.codex/
+
+# Local planning scratch space — never committed
+docs/superpowers/

@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-010",
+  "checkpoint_path": "challenges/fathomnet-clef/outputs/codetr-r50-bounded-fairness-T-004/mmdet_run/epoch_11.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "0c3fe90042e4af0c912c3297677e6a5f7019dfb4",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-010-from-T-004ep11-codetr-local-nonsahi",
+  "resolved_config": "artifacts/inference-runs/I-010/resolved-config.json",
+  "run_id": "I-010",
+  "source_train_id": "T-004",
+  "stdout_log": "artifacts/inference-runs/I-010/stdout.log",
+  "track": "Co-DETR"
+}

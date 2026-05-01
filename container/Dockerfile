@@ -91,6 +91,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | b
 # Gemini CLI
 RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g @google/gemini-cli"
 
+# OpenAI Codex CLI
+RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g @openai/codex"
+
 # OpenCode — multi-model AI coding agent
 RUN curl -fsSL https://opencode.ai/install | bash
 ENV PATH="/home/farms/.opencode/bin:$PATH"
@@ -98,6 +101,9 @@ ENV PATH="/home/farms/.opencode/bin:$PATH"
 # Pyright — Python language server for Claude Code pyright-lsp plugin
 # Not available in Ubuntu 24.04 apt repos; installed via npm.
 RUN /bin/bash -c "source $HOME/.nvm/nvm.sh && npm install -g pyright"
+
+# Kaggle CLI — for downloading competition datasets
+RUN pip install --user kaggle --break-system-packages
 
 # --- Miniforge ---
 # Installs conda (conda-forge channel) into /home/farms/miniforge3.
@@ -117,6 +123,7 @@ ENV PATH="/home/${USERNAME}/.local/bin:$PATH"
 
 # Shell conveniences
 RUN echo 'alias claude-skip="claude --dangerously-skip-permissions"' >> /home/farms/.bashrc && \
+    echo 'alias codex-skip="codex --dangerously-bypass-approvals-and-sandbox"' >> /home/farms/.bashrc && \
     echo 'alias opencode-run-skip="opencode --dangerously-skip-permissions"' >> /home/farms/.bashrc
 
 #Set shell profile

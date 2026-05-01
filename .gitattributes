@@ -13,3 +13,7 @@ challenges/common/external-dataset-analysis/shared_data/harmonized_MULTIAQUA_nig
 challenges/common/external-dataset-analysis/shared_data/harmonized_WaterScenes/**/*.png filter=lfs diff=lfs merge=lfs -text
 challenges/common/external-dataset-analysis/shared_data/harmonized_ROSEBUD/**/*.png filter=lfs diff=lfs merge=lfs -text
 challenges/common/external-dataset-analysis/shared_data/harmonized_*/**/*.png filter=lfs diff=lfs merge=lfs -text
+challenges/fathomnet-clef/artifacts/**/*.pt filter=lfs diff=lfs merge=lfs -text
+challenges/fathomnet-clef/artifacts/**/*.pth filter=lfs diff=lfs merge=lfs -text
+challenges/fathomnet-clef/artifacts/submissions/**/*.csv filter=lfs diff=lfs merge=lfs -text
+challenges/fathomnet-clef/artifacts/checkpoints/**/*.pth filter=lfs diff=lfs merge=lfs -text

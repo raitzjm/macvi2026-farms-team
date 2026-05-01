@@ -3,9 +3,18 @@
     "commit": "",
     "pr": ""
   },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
   "enabledPlugins": {
     "github@claude-plugins-official": false,
     "pyright-lsp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "codex@openai-codex": true
   }
 }

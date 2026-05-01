@@ -1,0 +1,15 @@
+{
+  "checkpoint_path": "artifacts/checkpoints/T-002-yolov11-kaggle/best.pt",
+  "config_source": "kaggle/yolov11-baseline/kernel_train.py",
+  "git_commit": null,
+  "git_commit_note": "Historical Kaggle inference predates the 2026-04-30 durable run-bundle policy.",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-001-yolov11-kaggle-nonsahi/submission.csv",
+  "platform": "Kaggle T4 x2",
+  "resolved_config": "artifacts/inference-runs/I-001/resolved-config.json",
+  "run_id": "I-001",
+  "source_train_id": "T-002",
+  "stdout_log": "artifacts/inference-runs/I-001/stdout.log",
+  "stdout_log_note": "Recovered from the combined Kaggle train+infer kernel console log.",
+  "track": "YOLOv11"
+}
