@@ -26,6 +26,8 @@ For this challenge, a persistent TensorDock VM controlled remotely from a local 
 - When using this workflow, the challenge envs are expected to be created on the VM host from the challenge directory after installing Miniforge there
 - Keep challenge-specific tooling inside the challenge envs where practical
 - Treat the host NVIDIA driver as external infrastructure; validate CUDA access after VM changes or GPU reconfiguration
+- Remote training launches that should log to WandB must provide `WANDB_API_KEY` in the actual `ssh` or `tmux` launch environment; do not assume a value exported late in `~/.bashrc` will appear in non-interactive shells
+- A prior successful `wandb login` on the VM is useful for verification, but the tracked training scripts still key off `WANDB_API_KEY` being present when deciding whether to enable WandB
 
 ## Capacity Monitoring
 

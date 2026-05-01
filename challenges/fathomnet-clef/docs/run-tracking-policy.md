@@ -119,6 +119,7 @@ This is recovery-only. New kernels should write `train.log` directly.
 - Before remote training or inference, verify the TensorDock clone is on the intended commit.
 - After remote work is committed and pushed, pull it locally before continuing.
 - TensorDock dataset roots must be supplied through `FATHOMNET_DATA_DIR`.
+- Remote TensorDock launches that should use WandB must explicitly export `WANDB_API_KEY` in the launch command path; non-interactive SSH shells may not inherit late `~/.bashrc` exports.
 
 ## LFS Policy
 
