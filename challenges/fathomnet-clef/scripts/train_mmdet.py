@@ -142,6 +142,8 @@ def main():
                     help="Optional durable artifact directory override")
     ap.add_argument("--split-manifest", default=str(default_split_manifest_path()),
                     help="Path to shared train/val split manifest JSON")
+    ap.add_argument("--max-keep-ckpts", type=int, default=2,
+                    help="Max number of periodic checkpoints to keep on disk")
     ap.add_argument("--launcher", choices=("none", "pytorch", "auto"), default="auto")
     ap.add_argument("--nproc-per-node", type=int, default=None,
                     help="Used when launcher is pytorch/auto parent process")
@@ -323,7 +325,7 @@ def _main(args, artifact_dir: Path | None):
         timer=dict(type="IterTimerHook"),
         logger=dict(type="LoggerHook", interval=10),
         param_scheduler=dict(type="ParamSchedulerHook"),
-        checkpoint=dict(type="CheckpointHook", interval=1, max_keep_ckpts=2),
+        checkpoint=dict(type="CheckpointHook", interval=1, max_keep_ckpts=args.max_keep_ckpts),
         sampler_seed=dict(type="DistSamplerSeedHook"),
         visualization=dict(
             type="DetVisualizationHook",
