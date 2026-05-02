@@ -25,6 +25,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-002 | 2026-04-28 | YOLOv11 | YOLOv11-kaggle-v15: 50 epochs, imgsz=640, rect disabled by DDP, batch=16/GPU, Kaggle T4x2 | 42 | 0.377 (train-val 90/10) |
 | T-003 | 2026-04-28 | Co-DETR | Co-DETR-R50-kaggle-v15: 12 epochs, torchrun T4x2, AMP, best val bbox mAP 0.326 | 42 | 0.326 (train-val 90/10) |
 | T-004 | 2026-05-01 | Co-DETR | Co-DETR-R50-tensordock: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090, official pretrain, shared split | 42 | 0.417 (shared-train-val-v1) |
+| T-006 | 2026-05-02 | Co-DETR | Co-DETR-R50-tensordock extended schedule: planned 24 epochs, 768×432, batch=6/GPU, stopped at epoch 12 when epoch 5 remained best | 42 | 0.427 (shared-train-val-v1) |
 
 ---
 
@@ -246,6 +247,68 @@ Downloaded from completed Kaggle kernel outputs. Kaggle non-SAHI inference from 
 
 #### Notes
 Corrected Co-DETR baseline addressing issue #84: T-003 used a wrong 90/10 random split (not the shared manifest) and COCO weights via the Kaggle config path rather than the official OpenMMLab pretrain. This run uses the shared-train-val-v1 split manifest and the official pretrain — making results directly comparable to T-001 YOLO26l. T-004 (0.417) beats T-001 (0.408 mAP) by +0.009 mAP. WandB: https://wandb.ai/little_farms/fathomnet2026/runs/dmr1u4w4
+
+---
+
+### T-006 — Co-DETR R50 TensorDock extended schedule (stopped at epoch 12)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-02 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (2× RTX 4090, fathom1) |
+| Duration | ~2h32m (22:48 UTC on 2026-05-01 to 01:20 UTC on 2026-05-02) |
+| Seed | 42 |
+| Inputs | Co-DINO R50 official pretrain (`co_dino_5scale_r50_1x_coco-7481f903.pth`) |
+| Repo commit | a8c91d55e4fe7559c2f76bba029ef99b88fffd99 |
+| Config source | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Resolved config | artifacts/training-runs/T-006/resolved-config.py |
+| Stdout log | artifacts/training-runs/T-006/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-006/metrics.jsonl |
+| Selected checkpoint | artifacts/checkpoints/T-006-codetr-tensordock/best.pth (epoch 5) |
+| Artifacts | artifacts/training-runs/T-006/, artifacts/checkpoints/T-006-codetr-tensordock/ |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/yr2scirj |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | Co-DETR R50 (5-scale) |
+| Pretrained weights | co_dino_5scale_r50_1x_coco-7481f903.pth (OpenMMLab official COCO pretrain) |
+| Input resolution | 768×432 |
+| Config file | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Modifications | Extended schedule to 24 planned epochs, batch=6/GPU, AMP, 2-GPU torchrun (DDP), shared-split manifest |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images / 20,015 annotations |
+| Val split | shared-train-val-v1 val: 647 images / 2,210 annotations |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | none |
+| Augmentation | mmdet defaults (RandomFlip, Normalize, Pad) |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 24 planned, stopped after epoch 12 |
+| Batch size | 6 per GPU (12 effective on 2× RTX 4090) |
+| Optimizer | AdamW (mmdet Co-DETR defaults) |
+| LR initial | 1e-4 |
+| AMP | True |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Val mAP@[.5:.95] by epoch | 0.180, 0.312, 0.350, 0.357, **0.427**, 0.407, 0.420, 0.398, 0.414, 0.422, 0.426, 0.390 |
+| Best val mAP@[.5:.95] | **0.427** (epoch 5) |
+| Best val mAP@.50 | **0.566** (epoch 11) |
+| Best epoch | 5 |
+| Final epoch val mAP@[.5:.95] | 0.390 |
+
+#### Notes
+Sprint 1 issue #86 extended the corrected Co-DETR baseline to test whether a longer schedule would help. It did not: epoch 5 remained the best checkpoint through epoch 12, and training was stopped early rather than burning the remaining 12 epochs. The near-tie at epoch 11 (0.426 mAP, higher mAP@.50) makes it the only later checkpoint worth a Kaggle hedge; epochs 9, 10, and 12 were not selected for submission.
 
 ---
 

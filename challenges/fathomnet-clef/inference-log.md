@@ -31,6 +31,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-009 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI inference on test set; corrected baseline (official pretrain + shared split) | — | 0.0556 | see notes |
 | I-010 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_11.pth — T-005 PU checkpoint test | — | 0.0485 | see notes |
 | I-011 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_12.pth — T-005 PU checkpoint test | — | 0.0470 | see notes |
+| I-012 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, best_coco_bbox_mAP_epoch_5.pth — primary T-006 submission | — | 0.0535 | see notes |
+| I-013 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, epoch_11.pth — T-006 late-epoch hedge | — | 0.0508 | see notes |
 
 ---
 
@@ -528,6 +530,100 @@ Part of T-005 PU checkpoint selection experiment. Epoch 11 on LB (0.0485) is -0.
 
 #### Notes
 Part of T-005 PU checkpoint selection experiment. Epoch 12 on LB (0.0470) is -0.0086 vs epoch 7 (I-009, 0.0556) and -0.0015 vs epoch 11 (I-010, 0.0485). The monotonic decline across epochs 7→11→12 strongly confirms the PU hypothesis: epoch 7 is the better checkpoint for test-set generalization despite epochs 11/12 having higher val mAP on the shared split.
+
+---
+
+### I-012 — Co-DETR T-006 epoch5 local non-SAHI inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-02 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-006 checkpoint, best epoch 5 |
+| Repo commit | a8c91d55e4fe7559c2f76bba029ef99b88fffd99 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-012/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-012/stdout.log |
+| Artifacts | artifacts/inference-runs/I-012/, artifacts/submissions/I-012-from-T-006ep5-codetr-local-nonsahi/submission-I-012-from-T-006ep5.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-006 | artifacts/checkpoints/T-006-codetr-tensordock/best.pth (epoch 5, val mAP=0.427) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-02 01:36 UTC) |
+| Date | 2026-05-02 |
+| Public LB mAP | **0.0535** |
+| Notes | 401,611 predictions (401,612 CSV lines incl. header); primary T-006 submission; below I-009 best baseline (0.0556) by 0.0021 |
+
+#### Notes
+Primary submission for T-006 after the lead data scientist review favored the early best checkpoint. Epoch 5 beat the later T-006 hedge (I-013, 0.0508) by 0.0027 on the public leaderboard, which is consistent with the T-004/T-005 PU pattern: later training epochs do not reliably improve held-out test performance even when they remain competitive on validation.
+
+---
+
+### I-013 — Co-DETR T-006 epoch11 local non-SAHI inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-02 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-006 checkpoint, epoch 11 |
+| Repo commit | a8c91d55e4fe7559c2f76bba029ef99b88fffd99 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-013/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-013/stdout.log |
+| Artifacts | artifacts/inference-runs/I-013/, artifacts/submissions/I-013-from-T-006ep11-codetr-local-nonsahi/submission-I-013-from-T-006ep11.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-006 | outputs/codetr-r50-extended-T-006/mmdet_run/epoch_11.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-02 01:39 UTC) |
+| Date | 2026-05-02 |
+| Public LB mAP | **0.0508** |
+| Notes | 385,807 predictions (385,808 CSV lines incl. header); later-epoch hedge scored below epoch 5 (0.0535) by 0.0027 |
+
+#### Notes
+The only late T-006 checkpoint worth testing after epoch 5 was epoch 11 because its val mAP (0.426) nearly matched the best checkpoint and its val mAP@.50 was slightly higher. Kaggle rejected that hedge: epoch 11 underperformed both I-012 (epoch 5) and I-009 (T-004 epoch 7), strengthening the working PU hypothesis that later epochs overfit the labeled-positive subset rather than improving test-set generalization.
 
 ---
 
