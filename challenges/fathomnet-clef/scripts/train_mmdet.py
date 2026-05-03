@@ -168,7 +168,7 @@ def main():
                     help="Path to shared train/val split manifest JSON")
     ap.add_argument("--pseudo-label-json", default=None,
                     help="Path to COCO-format pseudo-label JSON to merge with GT training annotations")
-    ap.add_argument("--max-keep-ckpts", type=int, default=2,
+    ap.add_argument("--max-keep-ckpts", type=int, default=4,
                     help="Max number of periodic checkpoints to keep on disk")
     ap.add_argument("--launcher", choices=("none", "pytorch", "auto"), default="auto")
     ap.add_argument("--nproc-per-node", type=int, default=None,
