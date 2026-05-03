@@ -378,6 +378,75 @@ The mAP50-95 plateau begins around epoch 22 (0.354) with val_cls bottoming in th
 
 ---
 
+### T-008 — YOLOv26s corrective rerun with save_period=5 (PU-optimal epoch recovery)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~4h41m (~16,898 s) |
+| Seed | 42 |
+| Inputs | yolo26s.pt (COCO pretrained, Ultralytics) |
+| Repo commit | fa4238ce072ef87a5cfac28e6aa46e756899fa28 |
+| Config source | scripts/train_yolo.py |
+| Resolved config | artifacts/training-runs/T-008/resolved-config.json |
+| Stdout log | artifacts/training-runs/T-008/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-008/results.csv |
+| Selected checkpoint | artifacts/checkpoints/T-008-yolo26s-local/best.pt (epoch 44, Ultralytics fitness) |
+| Artifacts | artifacts/training-runs/T-008/, artifacts/checkpoints/T-008-yolo26s-local/ |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/krg5b6zq |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | YOLOv26s |
+| Pretrained weights | yolo26s.pt (COCO) |
+| Input resolution | imgsz=1152, rect=True |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images |
+| Val split | shared-train-val-v1 val: 647 images |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | none |
+| Augmentation | underwater_v1 profile (same as T-007) |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 50 |
+| Batch size | 4 |
+| save_period | 5 (saves epoch0, epoch5, epoch10, ..., epoch45 periodically) |
+| Optimizer | auto (Ultralytics default) |
+| AMP | True |
+| patience | 100 |
+| Best-epoch criterion | Ultralytics default fitness = 0.1×mAP50 + 0.9×mAP50-95 |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Best val mAP@[.5:.95] | **0.3659** (epoch 44, best.pt) |
+| Best val mAP@.50 | **0.4943** (epoch 44) |
+| val_cls minimum | epoch 26: val_cls=1.4547, mAP50-95=0.3359 |
+| val_cls at best.pt | 1.5041 (epoch 44) — drifted 0.05 above minimum |
+| last.pt (epoch 50) | mAP50-95=0.3584, val_cls=1.5416 |
+| Periodic checkpoints on disk | epoch0, epoch5, epoch10, epoch15, epoch20, epoch25, epoch30, epoch35, epoch40, epoch45 |
+
+#### Notes
+T-008 is a corrective rerun of T-007 with `--save-period 5` added to recover intermediate checkpoints for PU-optimal epoch selection. Same architecture, manifest, and augmentation profile as T-007 (yolo26s, shared-train-val-v1, underwater_v1); results are directly comparable.
+
+The val_cls minimum (PU-optimal heuristic: classifier overfitting minimum) lands at epoch 26 with mAP50-95=0.3359. The Ultralytics fitness-based best.pt is epoch 44 (mAP50-95=0.3659) — 0.030 higher mAP50-95 but val_cls has drifted 0.05 above the minimum. Epoch 26 is **not** on disk (save_period=5 saved epoch 25 and epoch 30); epoch 25 (mAP50-95=0.3167) is the closest available sub-minimum checkpoint but its mAP50-95 is substantially lower.
+
+Practical decision: infer best.pt (ep44) for LB; compare to T-007 best.pt to verify run-to-run reproducibility and detect regressor variance. Skip epoch25 inference — mAP50-95 gap vs best.pt is too large (0.049) to expect a LB win from classifier denoising alone at deadline.
+
+**run_name** logged as `smoke-yolo-T-008` (default — `--name` was not passed at launch); WandB run is identifiable by run ID `krg5b6zq`.
+
+---
+
 ## Training Entry Template
 
 <!--

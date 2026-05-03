@@ -1,0 +1,4 @@
+{
+  "relative_path": "outputs/smoke-yolo-T-008/run/weights/best.pt",
+  "selection": "training framework best checkpoint"
+}
