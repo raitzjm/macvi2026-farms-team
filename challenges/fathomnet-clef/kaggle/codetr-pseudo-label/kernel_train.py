@@ -540,11 +540,19 @@ def prepare_data(train_json_raw: Path, pseudo_label_json: Path | None,
         pl = json.loads(Path(pseudo_label_json).read_text())
         pl_anns = pl.get("annotations", [])
         # pseudo-labels use original cat_ids — remap to idx
+        # renumber IDs starting after the max existing GT ann ID to avoid collisions
+        max_gt_id = max((a["id"] for a in train_anns), default=0)
         pl_anns_remapped = []
+        next_id = max_gt_id + 1
         for a in pl_anns:
             if a["image_id"] in train_img_ids and a["category_id"] in cat_id_to_idx:
-                pl_anns_remapped.append({**a, "category_id": cat_id_to_idx[a["category_id"]]})
-        print(f"[data] merged {len(pl_anns_remapped)} pseudo-label annotations")
+                pl_anns_remapped.append({
+                    **a,
+                    "id": next_id,
+                    "category_id": cat_id_to_idx[a["category_id"]],
+                })
+                next_id += 1
+        print(f"[data] merged {len(pl_anns_remapped)} pseudo-label annotations (ids {max_gt_id+1}–{next_id-1})")
         train_anns = train_anns + pl_anns_remapped
     else:
         print(f"[data] no pseudo-labels (GT-only)")
