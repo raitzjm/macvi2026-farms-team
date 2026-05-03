@@ -1,0 +1,4 @@
+{
+  "relative_path": "outputs/yolo26s-sharedsplit-underwater-v1-T-007/run/weights/best.pt",
+  "selection": "training framework best checkpoint"
+}
