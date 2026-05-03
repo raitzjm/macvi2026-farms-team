@@ -864,13 +864,13 @@ WBF at weights [2,1] Co-DETR:YOLO produced 0.0537, below T-004/I-009 standalone 
 | Field | Value |
 |---|---|
 | Submitted | yes |
-| Submission ID | pending |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 10:55 UTC) |
 | Date | 2026-05-03 |
-| Public LB mAP | pending |
-| Notes | T-008 corrective rerun of T-007 with save_period=5; comparing to I-014 (T-007 best.pt, LB 0.0346) to measure run-to-run variance |
+| Public LB mAP | **0.0421** |
+| Notes | T-008 best.pt (ep44, workers=2) vs T-007 best.pt (ep46, workers=8): +0.0075 LB gain despite near-identical val mAP50-95 (0.366 vs 0.365). Likely run-to-run variance amplified by test PU distribution; workers=2 vs 8 may affect augmentation ordering despite seed=42 |
 
 #### Notes
-T-008 is a direct corrective rerun of T-007 (same architecture, manifest, augmentation) with save_period=5 added. Best.pt is epoch 44, mAP50-95=0.3659 (vs T-007 best.pt epoch ~46, mAP50-95=0.365 — essentially identical). Comparing I-018 vs I-014 LB scores measures run-to-run reproducibility of the YOLO training on this dataset.
+T-008 (LB=0.0421) outperforms T-007 (I-014, LB=0.0346) by +0.0075 despite essentially identical val mAP50-95 (0.366 vs 0.365). The only training differences are workers=2 (T-008) vs workers=8 (T-007) and save_period=5. Different worker counts change data loading concurrency and can produce different augmentation sequences even with the same seed, but the +0.0075 LB gap is large enough to suggest genuine run-to-run variance rather than just the workers change. T-008 is now the best YOLO checkpoint and a better input for ensembling.
 
 ---
 

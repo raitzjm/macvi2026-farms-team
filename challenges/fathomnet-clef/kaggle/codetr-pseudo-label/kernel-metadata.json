@@ -1,5 +1,5 @@
 {
-  "id": "raitzjm/fathomnet-codetr-pseudo-label",
+  "id": "raitzjm/fathomnet-co-detr-r50-pseudo-label",
   "title": "FathomNet Co-DETR R50 Pseudo-Label",
   "code_file": "kernel_train.py",
   "language": "python",
