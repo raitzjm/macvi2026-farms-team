@@ -36,6 +36,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-014 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt (epoch~46) local non-SAHI | — | 0.0346 | see notes |
 | I-015 | 2026-05-03 | YOLO | T-007 last.pt | T-007 yolo26s last.pt (epoch 50) local non-SAHI | — | 0.0329 | see notes |
 | I-016 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt SAHI (slice=640, conf=0.0001) | — | 0.0127 | see notes |
+| I-017 | 2026-05-03 | Ensemble | T-004ep7 + T-007best | WBF ensemble Co-DETR(w=2) + YOLO(w=1), iou=0.55 | — | 0.0537 | see notes |
 
 ---
 
@@ -771,6 +772,55 @@ T-007 yolo26s baseline (0.0346) vs T-001 yolo26l (0.0340): comparable despite sm
 
 #### Notes
 SAHI on FathomNet appears consistently harmful (I-003=0.0204, I-005=0.0166, I-008=0.0053, I-016=0.0127) — the tiling and low-confidence threshold produce far too many false positives in PU data. SAHI should be deprioritized for future submissions unless a substantially different NMS/merge strategy is applied.
+
+---
+
+### I-017 — WBF ensemble T-004ep7 (Co-DETR) + T-007best (YOLO)
+
+| Field | Value |
+|---|---|
+| Run ID | I-017 |
+| Date | 2026-05-03 |
+| Track | Ensemble |
+| Method | Weighted Box Fusion (wbf_ensemble.py) |
+| Repo commit | fa4238ce |
+| Config source | scripts/wbf_ensemble.py |
+| Resolved config | artifacts/inference-runs/I-017/metadata.json |
+| Artifacts | artifacts/inference-runs/I-017/, artifacts/submissions/I-017-ensemble-wbf-t004ep7-t007best/submission-I-017-ensemble-wbf-2-1.csv |
+
+#### Inputs
+| Source | Run | Checkpoint | Weight |
+|---|---|---|---|
+| Co-DETR (T-004) | I-009 | epoch_7.pth | 2.0 |
+| YOLO (T-007) | I-014 | best.pt (~epoch 46) | 1.0 |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF (ensemble_boxes.weighted_boxes_fusion) |
+| WBF IoU threshold | 0.55 |
+| WBF skip threshold | 0.001 |
+| Weights | [2.0, 1.0] (Co-DETR:YOLO) |
+| Scope | per (image_id, category_id) pair |
+| Test JSON | /home/farms/data/datasets/fathomnet-2026/test_dataset.json |
+
+#### Results
+| Metric | Value |
+|---|---|
+| μval mAP@[.5:.95] | — |
+| Public LB mAP | **0.0537** |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-03 |
+| Public LB mAP | 0.0537 |
+| Predictions in CSV | 334,831 |
+| Notes | Slightly below I-009 alone (0.0556); YOLO diversity insufficient to lift Co-DETR |
+
+#### Notes
+WBF at weights [2,1] Co-DETR:YOLO produced 0.0537, below T-004/I-009 standalone (0.0556) by −0.0019. The YOLO component (I-014=0.0346) has lower absolute precision than Co-DETR and adding it at weight 1 introduced enough noise to drag the ensemble down. A higher Co-DETR weight [3,1] might recover the gap — the Lead noted this as a low-effort hedge worth testing before the deadline if a submission slot is available. The ensemble does confirm that T-004/I-009 remains the leaderboard best.
 
 ---
 
