@@ -26,6 +26,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-003 | 2026-04-28 | Co-DETR | Co-DETR-R50-kaggle-v15: 12 epochs, torchrun T4x2, AMP, best val bbox mAP 0.326 | 42 | 0.326 (train-val 90/10) |
 | T-004 | 2026-05-01 | Co-DETR | Co-DETR-R50-tensordock: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090, official pretrain, shared split | 42 | 0.417 (shared-train-val-v1) |
 | T-006 | 2026-05-02 | Co-DETR | Co-DETR-R50-tensordock extended schedule: planned 24 epochs, 768×432, batch=6/GPU, stopped at epoch 12 when epoch 5 remained best | 42 | 0.427 (shared-train-val-v1) |
+| T-007 | 2026-05-03 | YOLOv26s | YOLOv26s local: 50 epochs, imgsz=1152, rect=True, batch=4, RTX 3050 4GB, underwater_v1 augmentation profile, shared-train-val-v1 split | 42 | 0.365 (shared-train-val-v1) |
 
 ---
 
@@ -309,6 +310,71 @@ Corrected Co-DETR baseline addressing issue #84: T-003 used a wrong 90/10 random
 
 #### Notes
 Sprint 1 issue #86 extended the corrected Co-DETR baseline to test whether a longer schedule would help. It did not: epoch 5 remained the best checkpoint through epoch 12, and training was stopped early rather than burning the remaining 12 epochs. The near-tie at epoch 11 (0.426 mAP, higher mAP@.50) makes it the only later checkpoint worth a Kaggle hedge; epochs 9, 10, and 12 were not selected for submission.
+
+---
+
+### T-007 — YOLOv26s local baseline with correct split + PU-aware augmentation
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~4h48m (~17,289 s) |
+| Seed | 42 |
+| Inputs | yolo26s.pt (COCO pretrained, Ultralytics) |
+| Repo commit | 82fb6c76ef86f8c7e0a6149e8504e8d3f4f45342 |
+| Config source | scripts/train_yolo.py |
+| Resolved config | artifacts/training-runs/T-007/resolved-config.json |
+| Stdout log | artifacts/training-runs/T-007/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-007/results.csv |
+| Selected checkpoint | artifacts/checkpoints/T-007-yolo26s-local/best.pt (epoch ~46, Ultralytics fitness) |
+| Artifacts | artifacts/training-runs/T-007/, artifacts/checkpoints/T-007-yolo26s-local/ |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/cxo72wkv |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | YOLOv26s |
+| Pretrained weights | yolo26s.pt (COCO) |
+| Input resolution | imgsz=1152, rect=True (short-side ~640) |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images |
+| Val split | shared-train-val-v1 val: 647 images |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | none |
+| Augmentation | underwater_v1 profile: mosaic=0, mixup=0, cutmix=0, copy_paste=0, erasing=0, auto_augment=None, close_mosaic=0, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.2, fliplr=0.5 |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 50 |
+| Batch size | 4 (manual; auto fit too large at imgsz=1152 on 4GB) |
+| Optimizer | auto (Ultralytics default: SGD-like, lr0=0.01) |
+| LR schedule | linear decay from lr_peak (~2.67e-4 at epoch 3) to lrf×lr0=8.3e-6 at epoch 50 |
+| AMP | True |
+| patience | 100 (no effective early stopping) |
+| Best-epoch criterion | Ultralytics default fitness = 0.1×mAP50 + 0.9×mAP50-95 |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Val mAP@[.5:.95] by epoch (selected) | ep1=0.044, ep10=0.251, ep22=0.354, ep31=0.357, ep43=0.365, ep46=0.365, ep50=0.354 |
+| Best val mAP@[.5:.95] | **0.365** (epoch ~46, best.pt) |
+| Best val mAP@.50 | **0.485** (epoch 22) |
+| val_cls loss minimum | epoch 21–31 (~1.46–1.48), drifts to 1.59 by epoch 50 |
+| val_box loss | monotonically decreasing (1.30 → 1.07) |
+| final epoch val mAP@[.5:.95] | 0.354 |
+
+#### Notes
+T-007 is a clean YOLO baseline: it uses the canonical shared train/val manifest (`shared-train-val-v1.json`, seed=42) and the `underwater_v1` augmentation profile (mosaic/mixup/cutmix/copy_paste/erasing all 0, mild HSV, flip + light translate/scale only), bringing it to philosophical parity with Co-DETR T-004/T-006 and making cross-architecture comparison against those runs valid. It is **not** directly comparable to YOLO T-001/T-002, which used a larger backbone (yolo26l vs. yolo26s — the latter chosen to fit a local 4GB RTX 3050), Ultralytics' unreproducible name-based val split, and stock aggressive augmentation. Treat any T-007 vs. T-001/T-002 mAP delta as confounded by three simultaneous changes (capacity, split, augmentation) and not interpretable.
+
+The mAP50-95 plateau begins around epoch 22 (0.354) with val_cls bottoming in the same range (~1.46). By epochs 43–46, mAP50-95 reaches 0.365 but val_cls has drifted to 1.56–1.58, a mild classifier-overfitting signature consistent with the PU noise pattern. Only best.pt (epoch ~46) and last.pt (epoch 50) were retained (save_period not set, patience=100). Inferences I-014/I-015 will test whether the Ultralytics fitness-based best.pt or last.pt generalizes better to the LB under PU noise, as a diagnostic for a potential T-008 corrective rerun with save_period=5.
 
 ---
 
