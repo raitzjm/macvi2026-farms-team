@@ -793,6 +793,12 @@ elif _local_rank is not None:
     cfg.launcher = "pytorch"
     runner = Runner.from_cfg(cfg)
     runner.train()
+    # Explicitly destroy the process group before sys.exit() to prevent
+    # NCCL __del__ from firing during Python 3.12 interpreter shutdown,
+    # which caused the v4 exitcode=120 crash (training+val had completed).
+    import torch.distributed as dist
+    if dist.is_initialized():
+        dist.destroy_process_group()
     sys.exit(0)
 else:
     cfg.launcher = "none"
