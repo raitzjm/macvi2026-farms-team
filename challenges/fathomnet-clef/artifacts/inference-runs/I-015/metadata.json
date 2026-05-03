@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-015",
+  "checkpoint_path": "challenges/fathomnet-clef/artifacts/checkpoints/T-007-yolo26s-local/last.pt",
+  "config_source": "scripts/infer_yolo.py",
+  "git_commit": "226c83555ebea3db14aabcb8542f4bdf5b311613",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-015-from-T-007-yolo-local-nonsahi/submission-I-015-from-T-007.csv",
+  "resolved_config": "artifacts/inference-runs/I-015/resolved-config.json",
+  "run_id": "I-015",
+  "source_train_id": "T-007",
+  "stdout_log": "artifacts/inference-runs/I-015/stdout.log",
+  "track": "YOLO"
+}

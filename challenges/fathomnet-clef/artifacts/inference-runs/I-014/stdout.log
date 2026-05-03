@@ -1,0 +1,34 @@
+WARNING ⚠️ user config directory '/home/farms/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.
+Creating new Ultralytics Settings v0.0.6 file ✅ 
+View Ultralytics Settings with 'yolo settings' or at '/tmp/Ultralytics/settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/quickstart/#ultralytics-settings.
+[infer] processed 50/1425 images
+[infer] processed 100/1425 images
+[infer] processed 150/1425 images
+[infer] processed 200/1425 images
+[infer] processed 250/1425 images
+[infer] processed 300/1425 images
+[infer] processed 350/1425 images
+[infer] processed 400/1425 images
+[infer] processed 450/1425 images
+[infer] processed 500/1425 images
+[infer] processed 550/1425 images
+[infer] processed 600/1425 images
+[infer] processed 650/1425 images
+[infer] processed 700/1425 images
+[infer] processed 750/1425 images
+[infer] processed 800/1425 images
+[infer] processed 850/1425 images
+[infer] processed 900/1425 images
+[infer] processed 950/1425 images
+[infer] processed 1000/1425 images
+[infer] processed 1050/1425 images
+[infer] processed 1100/1425 images
+[infer] processed 1150/1425 images
+[infer] processed 1200/1425 images
+[infer] processed 1250/1425 images
+[infer] processed 1300/1425 images
+[infer] processed 1350/1425 images
+[infer] processed 1400/1425 images
+[infer] processed 1425/1425 images
+Wrote: challenges/fathomnet-clef/artifacts/submissions/I-014-from-T-007-yolo-local-nonsahi/submission-I-014-from-T-007
