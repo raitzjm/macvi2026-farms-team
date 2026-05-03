@@ -5,6 +5,7 @@
 
 # Model weights and outputs
 *.pth
+*.pt
 *.onnx
 *.bin
 *.engine
