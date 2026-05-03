@@ -824,6 +824,56 @@ WBF at weights [2,1] Co-DETR:YOLO produced 0.0537, below T-004/I-009 standalone 
 
 ---
 
+### I-018 — T-008 yolo26s best.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-008 best.pt (Ultralytics fitness best, epoch 44) |
+| Repo commit | 137740a87881485f574c90c16efde5cd5505db5d |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-018/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-018/stdout.log |
+| Artifacts | artifacts/inference-runs/I-018/, artifacts/submissions/I-018-from-T-008/submission-I-018-from-T-008.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-008 | artifacts/checkpoints/T-008-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+| Duration | ~2 min |
+| Predictions | 37,110 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | pending |
+| Date | 2026-05-03 |
+| Public LB mAP | pending |
+| Notes | T-008 corrective rerun of T-007 with save_period=5; comparing to I-014 (T-007 best.pt, LB 0.0346) to measure run-to-run variance |
+
+#### Notes
+T-008 is a direct corrective rerun of T-007 (same architecture, manifest, augmentation) with save_period=5 added. Best.pt is epoch 44, mAP50-95=0.3659 (vs T-007 best.pt epoch ~46, mAP50-95=0.365 — essentially identical). Comparing I-018 vs I-014 LB scores measures run-to-run reproducibility of the YOLO training on this dataset.
+
+---
+
 ## Inference Entry Template
 
 <!--
