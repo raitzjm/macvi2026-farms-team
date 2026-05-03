@@ -150,9 +150,9 @@ def main():
     ap.add_argument("--epochs", type=int, default=1)
     ap.add_argument("--batch", type=int, default=1)
     ap.add_argument("--name", default="smoke-codetr")
-    ap.add_argument("--width", type=int, default=2000,
+    ap.add_argument("--width", type=int, default=768,
                     help="Resize long-side cap (mmdet scale=(width, height) with keep_ratio)")
-    ap.add_argument("--height", type=int, default=640,
+    ap.add_argument("--height", type=int, default=432,
                     help="Resize short-side target")
     ap.add_argument("--no-wandb", action="store_true")
     ap.add_argument("--no-amp", action="store_true",
