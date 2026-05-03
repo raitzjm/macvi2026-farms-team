@@ -445,6 +445,8 @@ Practical decision: infer best.pt (ep44) for LB; compare to T-007 best.pt to ver
 
 **run_name** logged as `smoke-yolo-T-008` (default — `--name` was not passed at launch); WandB run is identifiable by run ID `krg5b6zq`.
 
+**LB result:** I-018 (best.pt, non-SAHI) → **LB 0.0421**, +0.0075 vs T-007/I-014 (LB 0.0346). See inference-log.md for analysis.
+
 ---
 
 ## Training Entry Template
