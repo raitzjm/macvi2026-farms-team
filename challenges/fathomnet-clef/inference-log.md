@@ -33,6 +33,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-011 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_12.pth — T-005 PU checkpoint test | — | 0.0470 | see notes |
 | I-012 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, best_coco_bbox_mAP_epoch_5.pth — primary T-006 submission | — | 0.0535 | see notes |
 | I-013 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, epoch_11.pth — T-006 late-epoch hedge | — | 0.0508 | see notes |
+| I-014 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt (epoch~46) local non-SAHI | — | 0.0346 | see notes |
+| I-015 | 2026-05-03 | YOLO | T-007 last.pt | T-007 yolo26s last.pt (epoch 50) local non-SAHI | — | 0.0329 | see notes |
+| I-016 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt SAHI (slice=640, conf=0.0001) | — | 0.0127 | see notes |
 
 ---
 
@@ -624,6 +627,150 @@ Primary submission for T-006 after the lead data scientist review favored the ea
 
 #### Notes
 The only late T-006 checkpoint worth testing after epoch 5 was epoch 11 because its val mAP (0.426) nearly matched the best checkpoint and its val mAP@.50 was slightly higher. Kaggle rejected that hedge: epoch 11 underperformed both I-012 (epoch 5) and I-009 (T-004 epoch 7), strengthening the working PU hypothesis that later epochs overfit the labeled-positive subset rather than improving test-set generalization.
+
+---
+
+### I-014 — T-007 yolo26s best.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 best.pt (Ultralytics fitness best, epoch ~46) |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-014/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-014/stdout.log |
+| Artifacts | artifacts/inference-runs/I-014/, artifacts/submissions/I-014-from-T-007-yolo-local-nonsahi/submission-I-014-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0346** |
+| Notes | 31,604 predictions; best.pt beats last.pt (I-015: 0.0329) by +0.0017, confirming the PU late-epoch val_cls drift does hurt LB, though the effect is milder than in Co-DETR |
+
+#### Notes
+T-007 yolo26s baseline (0.0346) vs T-001 yolo26l (0.0340): comparable despite smaller backbone, because T-007 uses the correct shared split and PU-aware augmentation. Still well below the Co-DETR anchor T-004/I-009 (0.0556), indicating the Co-DETR architecture advantage on this dataset is substantial.
+
+---
+
+### I-015 — T-007 yolo26s last.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 last.pt (final epoch 50) |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-015/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-015/stdout.log |
+| Artifacts | artifacts/inference-runs/I-015/, artifacts/submissions/I-015-from-T-007-yolo-local-nonsahi/submission-I-015-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/last.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0329** |
+| Notes | 29,669 predictions; last.pt (epoch 50) underperforms best.pt (epoch 46) by -0.0017, confirming PU late-epoch drift in YOLO (mild but present) |
+
+---
+
+### I-016 — T-007 yolo26s best.pt local SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 best.pt (epoch ~46) with SAHI tiling |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-016/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-016/stdout.log |
+| Artifacts | artifacts/inference-runs/I-016/, artifacts/submissions/I-016-from-T-007-yolo-local-sahi/submission-I-016-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.0001 (lowered for SAHI) |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Slice size | 640 |
+| Overlap | 0.2 |
+| Postprocess match threshold | 0.5 (default) |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0127** |
+| Notes | 448,762 predictions; SAHI dramatically over-detected — ultra-low conf (0.0001) combined with slice tiling flooded the output with low-quality boxes, crushing precision. Compare I-003/I-005/I-008 — SAHI has consistently underperformed non-SAHI across all model families on this dataset |
+
+#### Notes
+SAHI on FathomNet appears consistently harmful (I-003=0.0204, I-005=0.0166, I-008=0.0053, I-016=0.0127) — the tiling and low-confidence threshold produce far too many false positives in PU data. SAHI should be deprioritized for future submissions unless a substantially different NMS/merge strategy is applied.
 
 ---
 
