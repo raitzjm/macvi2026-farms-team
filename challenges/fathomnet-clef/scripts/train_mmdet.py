@@ -60,7 +60,8 @@ def setup_wandb(disabled: bool) -> bool:
     return False
 
 
-def prepare_splits(train_json: Path, out_dir: Path, split_manifest_path: Path):
+def prepare_splits(train_json: Path, out_dir: Path, split_manifest_path: Path,
+                   pseudo_label_json: Path | None = None):
     """Build contiguous category map; write shared split COCO JSONs."""
     with open(train_json) as f:
         coco = json.load(f)
@@ -88,6 +89,29 @@ def prepare_splits(train_json: Path, out_dir: Path, split_manifest_path: Path):
 
     train_anns = [a for a in remapped_anns if a["image_id"] not in val_ids]
     val_anns = [a for a in remapped_anns if a["image_id"] in val_ids]
+
+    if pseudo_label_json is not None:
+        pl_path = Path(pseudo_label_json)
+        if pl_path.exists():
+            with open(pl_path) as f:
+                pl = json.load(f)
+            pl_anns = pl.get("annotations", [])
+            train_img_ids = {im["id"] for im in train_imgs}
+            max_gt_id = max((a["id"] for a in train_anns), default=0)
+            next_id = max_gt_id + 1
+            pl_merged = []
+            for a in pl_anns:
+                if a["image_id"] in train_img_ids and a["category_id"] in cat_id_to_idx:
+                    pl_merged.append({
+                        **a,
+                        "id": next_id,
+                        "category_id": cat_id_to_idx[a["category_id"]],
+                    })
+                    next_id += 1
+            train_anns = train_anns + pl_merged
+            print(f"[data] merged {len(pl_merged)} pseudo-label anns (ids {max_gt_id+1}–{next_id-1})")
+        else:
+            print(f"[data] pseudo-label-json not found, skipping: {pl_path}")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     train_path = out_dir / "coco_train.json"
@@ -142,6 +166,8 @@ def main():
                     help="Optional durable artifact directory override")
     ap.add_argument("--split-manifest", default=str(default_split_manifest_path()),
                     help="Path to shared train/val split manifest JSON")
+    ap.add_argument("--pseudo-label-json", default=None,
+                    help="Path to COCO-format pseudo-label JSON to merge with GT training annotations")
     ap.add_argument("--max-keep-ckpts", type=int, default=2,
                     help="Max number of periodic checkpoints to keep on disk")
     ap.add_argument("--launcher", choices=("none", "pytorch", "auto"), default="auto")
@@ -210,7 +236,9 @@ def _main(args, artifact_dir: Path | None):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     split_manifest_path = ensure_manifest(Path(TRAIN_JSON), Path(args.split_manifest))
-    train_json, val_json, class_names = prepare_splits(Path(TRAIN_JSON), out_dir, split_manifest_path)
+    pl_json = Path(args.pseudo_label_json) if args.pseudo_label_json else None
+    train_json, val_json, class_names = prepare_splits(
+        Path(TRAIN_JSON), out_dir, split_manifest_path, pseudo_label_json=pl_json)
     num_classes = len(class_names)
 
     # Import CO-DETR so its registries populate, then load config.
@@ -375,6 +403,7 @@ def _main(args, artifact_dir: Path | None):
                 "output_root": relpath_str(out_dir, CHALLENGE_ROOT),
                 "platform": "local",
                 "resolved_config": relpath_str(cfg_dump_path, CHALLENGE_ROOT),
+                "pseudo_label_json": str(pl_json) if pl_json else None,
                 "run_id": args.run_id,
                 "run_name": run_name,
                 "split_manifest": relpath_str(split_manifest_path, CHALLENGE_ROOT),
@@ -388,7 +417,7 @@ def _main(args, artifact_dir: Path | None):
     print(f"[cfg] run_name={run_name}")
     print(f"[cfg] split_manifest={split_manifest_path}")
     print(f"[cfg] load_from={args.load_from}")
-    print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb}")
+    print(f"[cfg] epochs={args.epochs} batch={args.batch} scale={scale} wandb={use_wandb} pseudo_labels={'yes' if pl_json else 'no'}")
 
     n_gpu = 0
     try:
@@ -442,6 +471,7 @@ def _main(args, artifact_dir: Path | None):
             + (["--load-from", str(args.load_from)] if args.load_from else [])
             + (["--no-wandb"] if args.no_wandb else [])
             + (["--no-amp"] if args.no_amp else [])
+            + (["--pseudo-label-json", str(args.pseudo_label_json)] if args.pseudo_label_json else [])
         )
         return
 
