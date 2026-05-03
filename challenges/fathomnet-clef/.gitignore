@@ -2,4 +2,5 @@ outputs/
 envs/
 wandb/
 *.pt
-!artifacts/**/*.pt
+artifacts/checkpoints/
+artifacts/submissions/

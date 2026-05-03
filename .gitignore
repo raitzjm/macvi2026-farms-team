@@ -92,9 +92,7 @@ challenges/common/lars-analysis/spatial_ood/aggregate_heatmap.npy
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384/logs/inference.log
 !challenges/common/lars-analysis/failure_analysis_embedded_768x384_v2/logs/inference.log
 
-# Explicitly track curated FathomNet artifacts despite *.pth / local *.pt rules
-!challenges/fathomnet-clef/artifacts/**/*.pth
-!challenges/fathomnet-clef/artifacts/**/*.pt
+# FathomNet checkpoints and submission CSVs are NOT committed — pull from remote locally
 
 # Per-challenge conda envs — created by bootstrap scripts inside challenge dirs,
 # gitignored because they are large and rebuild from the bootstrap script.
