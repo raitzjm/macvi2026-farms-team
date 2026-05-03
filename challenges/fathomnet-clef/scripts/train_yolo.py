@@ -138,6 +138,7 @@ def build_train_overrides(
     rect: bool,
     seed: int,
     augment_profile: str,
+    save_period: int = 0,
 ) -> dict:
     overrides = {
         "data": str(yaml_path),
@@ -155,6 +156,8 @@ def build_train_overrides(
         "seed": seed,
         "deterministic": True,
     }
+    if save_period > 0:
+        overrides["save_period"] = save_period
     overrides.update(augmentation_overrides(augment_profile))
     return overrides
 
@@ -278,6 +281,8 @@ def main():
     )
     p.add_argument("--no-rect", action="store_true")
     p.add_argument("--no-wandb", action="store_true")
+    p.add_argument("--save-period", type=int, default=0,
+                   help="Save checkpoint every N epochs (0 = disabled, only best+last saved)")
     args = p.parse_args()
 
     imgsz = args.imgsz if args.imgsz is not None else max(args.width, args.height)
@@ -369,6 +374,7 @@ def main():
             rect=not args.no_rect,
             seed=args.seed,
             augment_profile=args.augment_profile,
+            save_period=args.save_period,
         ))
 
         if artifact_dir:
