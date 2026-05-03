@@ -4,3 +4,4 @@ wandb/
 *.pt
 artifacts/checkpoints/
 artifacts/submissions/
+artifacts/pseudo-labels/
