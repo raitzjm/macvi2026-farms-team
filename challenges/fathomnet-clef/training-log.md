@@ -27,6 +27,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-004 | 2026-05-01 | Co-DETR | Co-DETR-R50-tensordock: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090, official pretrain, shared split | 42 | 0.417 (shared-train-val-v1) |
 | T-006 | 2026-05-02 | Co-DETR | Co-DETR-R50-tensordock extended schedule: planned 24 epochs, 768×432, batch=6/GPU, stopped at epoch 12 when epoch 5 remained best | 42 | 0.427 (shared-train-val-v1) |
 | T-007 | 2026-05-03 | YOLOv26s | YOLOv26s local: 50 epochs, imgsz=1152, rect=True, batch=4, RTX 3050 4GB, underwater_v1 augmentation profile, shared-train-val-v1 split | 42 | 0.365 (shared-train-val-v1) |
+| T-009 | 2026-05-03 | Co-DETR | Co-DETR-R50 pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, PL from T-004 (1058 anns on 822 imgs), shared split | 42 | **0.407** (shared-train-val-v1, ep7) |
 
 ---
 
@@ -446,6 +447,76 @@ Practical decision: infer best.pt (ep44) for LB; compare to T-007 best.pt to ver
 **run_name** logged as `smoke-yolo-T-008` (default — `--name` was not passed at launch); WandB run is identifiable by run ID `krg5b6zq`.
 
 **LB result:** I-018 (best.pt, non-SAHI) → **LB 0.0421**, +0.0075 vs T-007/I-014 (LB 0.0346). See inference-log.md for analysis.
+
+---
+
+### T-009 — Co-DETR R50 TensorDock pseudo-label training (12 epochs)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (2× RTX 4090, fathom1) |
+| Duration | ~2h37m (20:00–22:37 UTC) |
+| Seed | 42 |
+| Inputs | Co-DINO R50 official pretrain (https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth) + pseudo-labels from T-004 |
+| Repo commit | 0408fb05fa91e1375c816aaccba3ef25a2663c6a |
+| Config source | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Resolved config | artifacts/training-runs/T-009/resolved-config.py |
+| Stdout log | artifacts/training-runs/T-009/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-009/metrics.jsonl |
+| Selected checkpoint | artifacts/checkpoints/T-009/best_coco_bbox_mAP_epoch_7.pth (epoch 7) |
+| Artifacts | artifacts/training-runs/T-009/, artifacts/checkpoints/T-009/ |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw |
+| Executor | MiniMax worker (sub-issue #95) |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | Co-DETR R50 (5-scale) |
+| Pretrained weights | co_dino_5scale_r50_1x_coco-7481f903.pth (OpenMMLab official COCO pretrain) |
+| Input resolution | 768×432 |
+| Config file | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Modifications | Resolution 768×432, batch=5/GPU, AMP, 2-GPU torchrun (DDP), shared-split manifest, pseudo-label merge, max_keep_ckpts=12 |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images / 20,015 GT anns + 1,058 pseudo-label anns = 21,073 total |
+| Val split | shared-train-val-v1 val: 647 images / 2,210 annotations |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | pseudo-labels from T-004 (conf≥0.5, IoU<0.3 vs GT, cap=3/image) |
+| Pseudo-label source | artifacts/pseudo-labels/pseudo-labels-T-004-conf0.5-iou0.3-cap3.json (822 images, 1,058 annotations) |
+| Augmentation | mmdet defaults (RandomFlip, Normalize, Pad) |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 12 |
+| Batch size | 5 per GPU (10 effective on 2× RTX 4090) |
+| Optimizer | AdamW (mmdet Co-DETR defaults) |
+| LR initial | 1e-4 |
+| AMP | True |
+| max_keep_ckpts | 12 (all epoch checkpoints retained) |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Val mAP@[.5:.95] by epoch | 0.226, 0.311, 0.339, 0.361, 0.383, 0.390, **0.407**, 0.390, 0.383, 0.382, 0.402, 0.404 |
+| Best val mAP@[.5:.95] | **0.407** (epoch 7) |
+| Best val mAP@.50 | **0.530** (epoch 7) |
+| Best epoch | 7 |
+| Final epoch val mAP@[.5:.95] | 0.404 |
+| Final epoch val mAP@.50 | 0.534 |
+
+#### Notes
+T-009 is the pseudo-label successor to T-004 (12-ep corrected baseline). The training set merges the 5,816 GT-annotated images with 1,058 pseudo-label annotations on 822 previously-unlabeled images generated from T-004 at conf≥0.5 (tracked in sub-issues #94 and #95). Net improvement vs T-004: ep7 0.407 vs 0.417 — pseudo-labels did not improve val mAP in this configuration. The best epoch (7) is identical to T-004, confirming the plateau pattern. Val mAP late-epoch recovery (ep11=0.402, ep12=0.404) is similar to T-004. All 12 epoch checkpoints were retained locally under `artifacts/checkpoints/T-009/` for epoch-sweep inference.
+
+**OOM note:** An earlier launch attempt in a Claude session omitted `--width 768 --height 432`, causing `train_mmdet.py` to apply its wrong defaults (2000×640), exhausting 24 GiB VRAM at batch=5. Fixed in commit 0408fb05 (defaults corrected). This run was launched by the MiniMax worker (sub-issue #95) with explicit `--width 768 --height 432`.
+
+WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 
 ---
 
