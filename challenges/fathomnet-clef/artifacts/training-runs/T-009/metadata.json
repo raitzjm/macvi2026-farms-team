@@ -1,0 +1,45 @@
+{
+    "artifact_dir": "artifacts/training-runs/T-009",
+    "config_source": "envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py",
+    "git_commit": "0408fb05fa91e1375c816aaccba3ef25a2663c6a",
+    "kind": "training",
+    "load_from": "https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth",
+    "metrics_artifact": "artifacts/training-runs/T-009/metrics.jsonl",
+    "output_root": "outputs/codetr-r50-pseudo-label-T-009",
+    "platform": "TensorDock fathom1 (2\u00d7 RTX 4090)",
+    "resolved_config": "artifacts/training-runs/T-009/resolved-config.py",
+    "run_id": "T-009",
+    "run_name": "codetr-r50-pseudo-label-T-009",
+    "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+    "stdout_log": "artifacts/training-runs/T-009/stdout.log",
+    "track": "Co-DETR",
+    "scale": [
+        768,
+        432
+    ],
+    "batch_per_gpu": 5,
+    "world_size": 2,
+    "epochs": 12,
+    "lr": 0.0001,
+    "pseudo_label_json": "artifacts/pseudo-labels/pseudo-labels-T-004-conf0.5-iou0.3-cap3.json",
+    "pseudo_label_stats": {
+        "images_with_pl": 822,
+        "annotations": 1058,
+        "conf_threshold": 0.5,
+        "iou_threshold": 0.3,
+        "cap_per_image": 3
+    },
+    "max_keep_ckpts": 12,
+    "wandb": {
+        "entity": "little_farms",
+        "project": "fathomnet2026",
+        "run_id": "ams6sqgw",
+        "url": "https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw"
+    },
+    "best_epoch": 7,
+    "best_val_mAP": 0.407,
+    "last_epoch": 12,
+    "last_val_mAP": 0.404,
+    "executor": "MiniMax worker (sub-issue #95)",
+    "note": "Successor to T-004 (12-ep baseline) with merged pseudo-labels. OOM in earlier Claude session was caused by wrong launcher args (omitted --width/--height, so defaults 2000x640 were used); this run passed 768x432 explicitly. Fixed in commit 0408fb05."
+}
