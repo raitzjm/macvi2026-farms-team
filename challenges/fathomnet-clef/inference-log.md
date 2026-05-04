@@ -37,6 +37,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-015 | 2026-05-03 | YOLO | T-007 last.pt | T-007 yolo26s last.pt (epoch 50) local non-SAHI | — | 0.0329 | see notes |
 | I-016 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt SAHI (slice=640, conf=0.0001) | — | 0.0127 | see notes |
 | I-017 | 2026-05-03 | Ensemble | T-004ep7 + T-007best | WBF ensemble Co-DETR(w=2) + YOLO(w=1), iou=0.55 | — | 0.0537 | see notes |
+| I-019 | 2026-05-04 | Co-DETR | T-009 ep7 best | T-009 Co-DETR R50+PL ep7 best local non-SAHI | — | 0.0572 | see notes |
+| I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
 
 ---
 
@@ -871,6 +873,104 @@ WBF at weights [2,1] Co-DETR:YOLO produced 0.0537, below T-004/I-009 standalone 
 
 #### Notes
 T-008 (LB=0.0421) outperforms T-007 (I-014, LB=0.0346) by +0.0075 despite essentially identical val mAP50-95 (0.366 vs 0.365). The only training differences are workers=2 (T-008) vs workers=8 (T-007) and save_period=5. Different worker counts change data loading concurrency and can produce different augmentation sequences even with the same seed, but the +0.0075 LB gap is large enough to suggest genuine run-to-run variance rather than just the workers change. T-008 is now the best YOLO checkpoint and a better input for ensembling.
+
+---
+
+### I-019 — T-009 Co-DETR R50 + pseudo-labels ep7 best local non-SAHI
+
+> **Note on run ID:** This run was originally labeled I-016 by the inference script (ID conflict with the already-committed T-007 SAHI run I-016). The correct ID is I-019. The Kaggle submission filename retains the `I-016` prefix.
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, best ep7 (best_coco_bbox_mAP_epoch_7.pth, val mAP=0.407) |
+| Repo commit | bc586eae31d5e93235dfed28b1e0e96ab794c353 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-019/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-019/stdout.log |
+| Artifacts | artifacts/inference-runs/I-019/, artifacts/submissions/I-016-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/best_coco_bbox_mAP_epoch_7.pth (val mAP=0.407) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-04 14:45 UTC, filename submission-I-016-from-T-009.csv) |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0572** |
+| Notes | +0.0016 vs T-004/I-009 baseline (0.0556); pseudo-labels improve over T-004 baseline; ep7 is the val-best checkpoint |
+
+#### Notes
+T-009 ep7 (val mAP=0.407, pseudo-labels enabled) LB 0.0572 vs T-004 ep7 (val mAP=0.417, no PL) LB 0.0556: +0.0016 gain. Pseudo-labels contributed a small but positive signal. Notably, the last epoch (I-020) scored 0.0576, higher than the val-best epoch — contra the PU pattern observed in T-004/T-006. This suggests pseudo-label training may partially recover the late-epoch degradation seen in pure PU training.
+
+---
+
+### I-020 — T-009 Co-DETR R50 + pseudo-labels ep12 last local non-SAHI
+
+> **Note on run ID:** This run was originally labeled I-017 by the inference script (ID conflict with the already-committed WBF ensemble run I-017). The correct ID is I-020. The Kaggle submission filename retains the `I-017` prefix.
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, ep12 last (epoch_12.pth, val mAP=0.404) |
+| Repo commit | bc586eae31d5e93235dfed28b1e0e96ab794c353 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-020/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-020/stdout.log |
+| Artifacts | artifacts/inference-runs/I-020/, artifacts/submissions/I-017-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/epoch_12.pth (val mAP=0.404) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-04 14:45 UTC, filename submission-I-017-from-T-009.csv) |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0576** |
+| Notes | +0.0020 vs T-004/I-009 baseline (0.0556); **new best LB score**; last epoch beats val-best epoch (I-019: 0.0572) by +0.0004 |
+
+#### Notes
+T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-009 (0.0556) by +0.0020. Remarkably, ep12 last (val mAP=0.404) outscores ep7 val-best (val mAP=0.407) on the public leaderboard, reversing the PU early-stopping pattern seen in T-004 and T-006. This may indicate that pseudo-label training mitigates late-epoch PU label-noise overfitting, allowing later checkpoints to generalize better than they did without PLs.
 
 ---
 
