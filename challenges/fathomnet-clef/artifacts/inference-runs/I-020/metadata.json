@@ -1,0 +1,15 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-020",
+  "checkpoint_path": "challenges/fathomnet-clef/artifacts/checkpoints/T-009/epoch_12.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "bc586eae31d5e93235dfed28b1e0e96ab794c353",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-020-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv",
+  "kaggle_filename": "submission-I-017-from-T-009.csv",
+  "note": "Run ID is I-020. Kaggle submission filename retains I-017 prefix (submitted before ID conflict was detected).",
+  "resolved_config": "artifacts/inference-runs/I-020/resolved-config.json",
+  "run_id": "I-020",
+  "source_train_id": "T-009",
+  "stdout_log": "artifacts/inference-runs/I-020/stdout.log",
+  "track": "Co-DETR"
+}

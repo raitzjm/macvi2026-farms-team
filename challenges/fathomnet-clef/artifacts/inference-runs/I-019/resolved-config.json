@@ -1,0 +1,15 @@
+{
+  "checkpoint": "challenges/fathomnet-clef/artifacts/checkpoints/T-009/best_coco_bbox_mAP_epoch_7.pth",
+  "config_path": "challenges/fathomnet-clef/artifacts/training-runs/T-009/resolved-config.py",
+  "config_source": "scripts/infer_codetr.py",
+  "device": "0",
+  "idx_to_cat_id": null,
+  "output_csv": "artifacts/submissions/I-016-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv",
+  "overlap": 0.2,
+  "postprocess_match_threshold": 0.5,
+  "requested_output_csv": "challenges/fathomnet-clef/artifacts/submissions/I-016-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv",
+  "sahi": false,
+  "score_thr": 0.001,
+  "slice_size": 640,
+  "source_train_id": "T-009"
+}
