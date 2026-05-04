@@ -39,6 +39,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-017 | 2026-05-03 | Ensemble | T-004ep7 + T-007best | WBF ensemble Co-DETR(w=2) + YOLO(w=1), iou=0.55 | — | 0.0537 | see notes |
 | I-019 | 2026-05-04 | Co-DETR | T-009 ep7 best | T-009 Co-DETR R50+PL ep7 best local non-SAHI | — | 0.0572 | see notes |
 | I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
+| I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | pending | — |
+| I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
 
 ---
 
@@ -971,6 +973,84 @@ T-009 ep7 (val mAP=0.407, pseudo-labels enabled) LB 0.0572 vs T-004 ep7 (val mAP
 
 #### Notes
 T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-009 (0.0556) by +0.0020. Remarkably, ep12 last (val mAP=0.404) outscores ep7 val-best (val mAP=0.407) on the public leaderboard, reversing the PU early-stopping pattern seen in T-004 and T-006. This may indicate that pseudo-label training mitigates late-epoch PU label-noise overfitting, allowing later checkpoints to generalize better than they did without PLs.
+
+---
+
+### I-021 — T-009 Co-DETR R50 + pseudo-labels ep12 TTA-hflip
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, ep12 last (epoch_12.pth, val mAP=0.404) |
+| Repo commit | 0c7a7318 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-021/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-021/stdout.log |
+| Artifacts | artifacts/inference-runs/I-021/, artifacts/submissions/I-021-from-T-009-codetr-tta-ep12/ |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/epoch_12.pth (val mAP=0.404) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### TTA Config
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Transforms | horizontal flip |
+| Merge method | WBF, weights=[1,1], iou_thr=0.6, skip_box_thr=0.001 |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | pending |
+| Date | 2026-05-04 |
+| Public LB mAP | pending |
+| Notes | TTA-hflip hypothesis: double-view merging should tighten box localization and reduce false negatives on symmetric/side-view subjects |
+
+---
+
+### I-022 — WBF ensemble of T-009 ep7 + ep12
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Ensemble |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (CPU) |
+| Evaluated split | test set |
+| Inputs | I-019 CSV (T-009 ep7, LB=0.0572) + I-020 CSV (T-009 ep12, LB=0.0576) |
+| Repo commit | 0c7a7318 |
+| Config source | scripts/wbf_ensemble.py |
+| Artifacts | artifacts/inference-runs/I-022/, artifacts/submissions/I-022-wbf-t009ep7-t009ep12/ |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF |
+| Sources | I-019 (T-009 ep7 best), I-020 (T-009 ep12 last) |
+| WBF IoU thresh | 0.55 |
+| WBF skip thresh | 0.001 |
+| Weights | [1.0, 1.0] |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0523** |
+| Notes | **Regressed vs both sources** (I-019=0.0572, I-020=0.0576). Same-architecture WBF between similar checkpoints halves scores on non-overlapping boxes, hurting recall. Cross-architecture ensembling (e.g. Co-DETR + YOLO) is required for WBF to be beneficial. |
 
 ---
 
