@@ -118,6 +118,27 @@ def torch_load_weights_only_false():
         torch.load = orig_torch_load
 
 
+def _normalize_boxes(boxes_xyxy: list, img_w: int, img_h: int) -> list:
+    return [
+        [
+            max(0.0, min(1.0, b[0] / img_w)),
+            max(0.0, min(1.0, b[1] / img_h)),
+            max(0.0, min(1.0, b[2] / img_w)),
+            max(0.0, min(1.0, b[3] / img_h)),
+        ]
+        for b in boxes_xyxy
+    ]
+
+
+def _extract_preds(result) -> tuple[list, list, list]:
+    """Extract boxes, scores, labels from an MMDet result; returns CPU Python lists."""
+    pred = result.pred_instances
+    boxes = pred.bboxes.cpu().numpy().tolist()
+    scores = pred.scores.cpu().numpy().tolist()
+    labels = [int(lbl) for lbl in pred.labels.cpu().numpy().tolist()]
+    return boxes, scores, labels
+
+
 def run_regular_codetr(
     checkpoint: str,
     config_path: Path,
@@ -166,6 +187,73 @@ def run_regular_codetr(
         rows.extend(image_rows)
         if should_log_progress(processed, total, interval=25):
             print(f"[infer] processed {processed}/{total} images", flush=True)
+
+    write_submission_csv(output_csv, rows)
+
+
+def run_tta_codetr(
+    checkpoint: str,
+    config_path: Path,
+    images: list[dict],
+    idx_to_cat_id: dict[int, int],
+    output_csv: Path,
+    score_thr: float,
+    device: str,
+    wbf_iou_thr: float = 0.6,
+):
+    """Horizontal-flip TTA: infer original + hflip, merge predictions via WBF."""
+    try:
+        import cv2
+        from ensemble_boxes import weighted_boxes_fusion
+    except ImportError as exc:
+        raise RuntimeError("cv2 and ensemble_boxes are required for TTA; activate the mmdet env") from exc
+
+    prepare_codetr_imports()
+    from mmdet.apis import inference_detector, init_detector
+
+    with torch_load_weights_only_false():
+        model = init_detector(str(config_path), checkpoint, device=f"cuda:{device}" if device.isdigit() else device)
+
+    rows = []
+    annotation_id = 1
+    total = len(images)
+    for processed, im in enumerate(images, start=1):
+        image_path = TEST_IMGS / im["file_name"]
+        img_bgr = cv2.imread(str(image_path))
+        if img_bgr is None:
+            raise FileNotFoundError(f"Could not read image: {image_path}")
+        h, w = img_bgr.shape[:2]
+
+        result_orig = inference_detector(model, img_bgr)
+        result_flip = inference_detector(model, img_bgr[:, ::-1, :].copy())
+
+        orig_boxes, orig_scores, orig_labels = _extract_preds(result_orig)
+        flip_boxes_raw, flip_scores, flip_labels = _extract_preds(result_flip)
+
+        # Remap flipped boxes back to original image space (xyxy: swap and subtract from W)
+        flip_boxes = [[w - b[2], b[1], w - b[0], b[3]] for b in flip_boxes_raw]
+
+        boxes_list = [_normalize_boxes(orig_boxes, w, h), _normalize_boxes(flip_boxes, w, h)]
+        scores_list = [orig_scores, flip_scores]
+        labels_list = [orig_labels, flip_labels]
+
+        merged_boxes, merged_scores, merged_labels = weighted_boxes_fusion(
+            boxes_list, scores_list, labels_list,
+            iou_thr=wbf_iou_thr, skip_box_thr=score_thr, weights=[1, 1],
+        )
+
+        denorm_boxes = [(b[0] * w, b[1] * h, b[2] * w, b[3] * h) for b in merged_boxes]
+        image_rows, annotation_id = rows_from_xyxy(
+            image_id=im["id"],
+            boxes_xyxy=denorm_boxes,
+            scores=list(merged_scores),
+            labels=[int(lbl) for lbl in merged_labels],
+            idx_to_cat_id=idx_to_cat_id,
+            annotation_id_start=annotation_id,
+        )
+        rows.extend(image_rows)
+        if should_log_progress(processed, total, interval=25):
+            print(f"[infer-tta] processed {processed}/{total} images", flush=True)
 
     write_submission_csv(output_csv, rows)
 
@@ -258,6 +346,10 @@ def parse_args():
     parser.add_argument("--slice-size", type=int, default=640)
     parser.add_argument("--overlap", type=float, default=0.2)
     parser.add_argument("--postprocess-match-threshold", type=float, default=0.5)
+    parser.add_argument("--tta", action="store_true",
+                        help="Apply horizontal-flip TTA with WBF merge (overrides --sahi)")
+    parser.add_argument("--wbf-iou-thr", type=float, default=0.6,
+                        help="IoU threshold for WBF merge in TTA mode")
     return parser.parse_args()
 
 
@@ -292,6 +384,8 @@ def main():
                     "requested_output_csv": args.output,
                     "postprocess_match_threshold": args.postprocess_match_threshold,
                     "sahi": args.sahi,
+                    "tta": args.tta,
+                    "wbf_iou_thr": args.wbf_iou_thr,
                     "score_thr": args.score_thr,
                     "slice_size": args.slice_size,
                     "overlap": args.overlap,
@@ -315,7 +409,18 @@ def main():
                 },
             )
 
-        if args.sahi:
+        if args.tta:
+            run_tta_codetr(
+                checkpoint=str(checkpoint_path),
+                config_path=config_path,
+                images=images,
+                idx_to_cat_id=idx_to_cat_id,
+                output_csv=output_csv,
+                score_thr=args.score_thr,
+                device=args.device,
+                wbf_iou_thr=args.wbf_iou_thr,
+            )
+        elif args.sahi:
             run_sahi_codetr(
                 checkpoint=str(checkpoint_path),
                 config_path=config_path,
