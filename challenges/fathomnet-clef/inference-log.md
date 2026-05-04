@@ -892,7 +892,7 @@ T-008 (LB=0.0421) outperforms T-007 (I-014, LB=0.0346) by +0.0075 despite essent
 | Config source | scripts/infer_codetr.py |
 | Resolved config | artifacts/inference-runs/I-019/resolved-config.json |
 | Stdout log | artifacts/inference-runs/I-019/stdout.log |
-| Artifacts | artifacts/inference-runs/I-019/, artifacts/submissions/I-016-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv |
+| Artifacts | artifacts/inference-runs/I-019/, artifacts/submissions/I-019-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
@@ -941,7 +941,7 @@ T-009 ep7 (val mAP=0.407, pseudo-labels enabled) LB 0.0572 vs T-004 ep7 (val mAP
 | Config source | scripts/infer_codetr.py |
 | Resolved config | artifacts/inference-runs/I-020/resolved-config.json |
 | Stdout log | artifacts/inference-runs/I-020/stdout.log |
-| Artifacts | artifacts/inference-runs/I-020/, artifacts/submissions/I-017-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv |
+| Artifacts | artifacts/inference-runs/I-020/, artifacts/submissions/I-020-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv |
 
 #### Checkpoints Used
 | Role | Source exp | Path |
