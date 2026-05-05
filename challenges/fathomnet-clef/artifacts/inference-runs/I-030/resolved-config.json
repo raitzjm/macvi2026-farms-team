@@ -1,0 +1,17 @@
+{
+  "batch": 2,
+  "checkpoint": "challenges/fathomnet-clef/artifacts/checkpoints/T-011-yolo26s-kaggle/best.pt",
+  "conf": 0.001,
+  "config_source": "scripts/infer_yolo.py",
+  "device": "0",
+  "idx_to_cat_id": null,
+  "imgsz": 1024,
+  "iou": 0.6,
+  "output_csv": "artifacts/submissions/submission-I-030-from-T-011.csv",
+  "overlap": 0.2,
+  "postprocess_match_threshold": 0.5,
+  "requested_output_csv": "challenges/fathomnet-clef/artifacts/submissions/submission-I-030-from-T-011.csv",
+  "sahi": false,
+  "slice_size": 640,
+  "source_train_id": "T-011"
+}
