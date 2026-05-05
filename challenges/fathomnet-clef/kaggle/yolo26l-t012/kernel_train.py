@@ -235,12 +235,16 @@ _write_json(
 RUN_NAME = "fathomnet-yolo26l-T-012"
 WANDB_PROJECT = "fathomnet2026"
 if USE_WANDB:
+    import wandb
+    wandb.login(key=WANDB_API_KEY)
     os.environ["WANDB_ENTITY"] = "little_farms"
+    os.environ["WANDB_PROJECT"] = WANDB_PROJECT
     try:
         from ultralytics.utils import SETTINGS
         SETTINGS.update({"wandb": True})
     except Exception as e:
         print(f"[wandb] settings update failed: {e}")
+    print(f"[wandb] logged in — entity=little_farms project={WANDB_PROJECT} run={RUN_NAME}")
 
 # ---------------------------------------------------------------------------
 # 6. Train — T-008 parity settings.
