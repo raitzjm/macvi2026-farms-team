@@ -629,7 +629,7 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Periodic checkpoints | epoch0, epoch5, …, epoch45 (10 total) |
 
 #### Notes
-T-012 is the YOLO26l counterpart to T-011 (YOLO26s) with identical settings — model size is the only variable. T-012 outperforms T-011 by +0.022 mAP50-95 at best epoch (0.446 vs 0.424). Both peaked at epoch 39. T-012 produced 35,453 inference rows vs T-011's 56,408 — the larger model is more selective. val_cls min is earlier (epoch 25 vs 28), suggesting T-012's classifier fits faster. Pending LB inference to determine whether the val gain translates.
+T-012 is the YOLO26l counterpart to T-011 (YOLO26s) with identical settings — model size is the only variable. T-012 outperforms T-011 by +0.022 mAP50-95 at best epoch (0.446 vs 0.424). Both peaked at epoch 39. T-012 produced 35,453 inference rows vs T-011's 56,408 — the larger model is more selective. val_cls min is earlier (epoch 25 vs 28), suggesting T-012's classifier fits faster. The raw `stdout.log` was recovered after the fact from `kaggle kernels logs raitzjm/fathomnet-yolo26l-t-012`, so it is a Kaggle console JSON export rather than a tee'd `/kaggle/working/train.log`. Pending LB inference to determine whether the val gain translates.
 
 ---
 
