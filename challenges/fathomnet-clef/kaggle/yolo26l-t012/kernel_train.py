@@ -8,7 +8,7 @@ cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Run a full 50-epoch YOLO26l training at imgsz=1152 on Kaggle for
 S-vs-L comparison against T-011 (YOLO26s). Identical settings so model size
-is the only variable. batch=32 (16/GPU on T4x2). WandB disabled for this run;
+is the only variable. batch=16 (8/GPU on T4x2), imgsz=1024. WandB disabled;
 results tracked via results.csv download after training completes.
 
 Inputs (mounted automatically from kernel-metadata.json):
@@ -249,27 +249,23 @@ model = YOLO("yolo26l.pt")
 model.train(
     data=str(yaml_path),
     epochs=50,
-    patience=100,
-    imgsz=1152,
-    rect=False,        # rect=True auto-disabled by Ultralytics under DDP anyway
-    batch=32,          # 16/GPU on T4x2 (15 GB each) at imgsz=1152; if OOM reduce to 16 then 8
+    patience=0,        # disable early stopping — collect all 50 epochs for S-vs-L comparison
+    imgsz=1024,        # reduced from 1152: fits batch=16 on T4x2 for YOLO26l; saves ~20% compute
+    rect=False,        # rect=True incompatible with DDP; Lead ruling: use mosaic as compensation
+    batch=16,          # 8/GPU on T4x2 at imgsz=1024 for YOLO26l (larger model needs more headroom)
     save_period=5,
-    workers=2,
+    workers=4,
     optimizer="auto",
     lr0=0.01,
-    # Underwater augmentation set (mirrors T-008 augmentation profile)
-    mosaic=0,
-    mixup=0,
-    cutmix=0,
-    copy_paste=0,
-    erasing=0,
-    auto_augment=None,
-    close_mosaic=0,
+    cos_lr=True,       # smooth decay over 50 epochs
+    mosaic=0.5,        # 50% mosaic probability (reduced from default 1.0; preserves letterboxed view)
+    close_mosaic=10,
+    # Mild underwater-tuned color/spatial augs (non-default)
     hsv_h=0.01,
     hsv_s=0.2,
     hsv_v=0.15,
     translate=0.05,
-    scale=0.2,
+    scale=0.5,
     fliplr=0.5,
     project=WANDB_PROJECT,
     name=RUN_NAME,
@@ -309,6 +305,14 @@ if resolved_cfg_src.exists():
 results_csv_src = save_dir / "results.csv"
 if results_csv_src.exists():
     shutil.copy2(results_csv_src, WORK / "results.csv")
+
+# NCCL cleanup — prevents exitcode=120 crash at DDP teardown (same fix as Co-DETR kernel).
+try:
+    import torch.distributed as dist
+    if dist.is_available() and dist.is_initialized():
+        dist.destroy_process_group()
+except Exception:
+    pass
 
 # ---------------------------------------------------------------------------
 # 7. Inference on test_set -> submission.csv.
