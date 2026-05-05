@@ -7,7 +7,7 @@ Accelerator to "GPU T4 x2" in the Kaggle UI before running — the CLI metadata
 cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Recover the intermediate checkpoints lost in T-008 and run a full
-50-epoch YOLO26s DDP training at imgsz=1024, batch=24 (12/GPU on T4x2).
+50-epoch YOLO26s DDP training at imgsz=1024, batch=16 (8/GPU on T4x2).
 rect=False (DDP incompatible); mosaic=0.85. WandB key injected at push time.
 
 Inputs (mounted automatically from kernel-metadata.json):
@@ -255,9 +255,9 @@ model.train(
     data=str(yaml_path),
     epochs=50,
     patience=0,        # disable early stopping — collect all 50 epochs for S-vs-L comparison
-    imgsz=1024,        # reduced from 1152: fits batch=24 on T4x2; saves ~20% compute
+    imgsz=1024,        # reduced from 1152; batch=16 on T4x2
     rect=False,        # rect=True incompatible with DDP; Lead ruling: use mosaic as compensation
-    batch=24,          # 12/GPU on T4x2 at imgsz=1024 (reduce to 16 if OOM)
+    batch=16,          # 8/GPU on T4x2; batch=24 OOM'd with mosaic=0.85
     save_period=5,
     workers=4,
     optimizer="auto",
