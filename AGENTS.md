@@ -36,6 +36,7 @@ If the hook blocks a commit:
 - Branch naming: `{type}/{short-description}` (e.g. `exp/baseline-deeplabv3`, `fix/onnx-export`)
 - For issue-tracked branches: `gh issue develop <issue-number> --name <branch-name> --checkout`
   (never use plain `git checkout -b` — the `gh issue develop` form registers the dev link)
+- For grouped experiment families that share one decision thread (for example size comparisons or k-fold sweeps), prefer a single branch and a single tracking issue/sub-issue for the whole family; only split branches/issues when the workflow is materially separate (for example a distinct Co-DETR pseudo-labeling track)
 - All agent commits: subject starts with `[agent]`; body includes model name (e.g. `Claude Sonnet 4.6 Agent`)
 - Push and open PR for teammate review before merging branches
 - Every PR resolving an issue must include `Closes #N` in the PR body

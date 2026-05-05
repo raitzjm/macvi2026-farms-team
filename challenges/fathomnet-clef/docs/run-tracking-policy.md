@@ -40,7 +40,7 @@ Heavy payloads stay separate:
 Every new tracked training run must create `artifacts/training-runs/T-NNN/` with:
 
 - `metadata.json`
-- raw `stdout.log` when available
+- raw `stdout.log` when available; if a run did not tee a local log file but a recoverable remote console log exists, backfill it and note the provenance in metadata
 - resolved config snapshot: `resolved-config.json`, `resolved-config.yaml`, or `resolved-config.py`
 - native metrics artifact: `results.csv`, `metrics.jsonl`, or equivalent
 
@@ -58,7 +58,8 @@ Every new tracked inference run must create `artifacts/inference-runs/I-NNN/` wi
 
 - `metadata.json`
 - resolved inference config snapshot, typically `resolved-config.json`
-- raw `stdout.log` when available
+
+Raw inference `stdout.log` is optional. Keep it locally when useful for debugging or provenance, but the durable committed bundle only requires the structured metadata and resolved config unless a future workflow explicitly depends on the raw log.
 
 The submission CSV is not duplicated into the run bundle. `metadata.json` points to the durable CSV path under `artifacts/submissions/`.
 
@@ -114,6 +115,16 @@ When historical Kaggle raw logs need to be recovered and no explicit `train.log`
 - `kaggle kernels logs <owner>/<slug>`
 
 This is recovery-only. New kernels should write `train.log` directly.
+
+## Branch and Issue Scope Policy
+
+Closely related experiment families that are being evaluated as one decision should stay on one branch and one tracking issue by default. Examples:
+
+- model-size comparisons within the same workflow
+- k-fold sweeps for the same modeling idea
+- checkpoint-selection probes for one training family
+
+Split into separate branches/issues only when the workflow is materially independent and likely to merge or be reviewed separately, such as a distinct Co-DETR pseudo-labeling track.
 
 ## TensorDock Policy
 

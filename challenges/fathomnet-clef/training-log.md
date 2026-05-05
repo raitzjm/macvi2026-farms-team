@@ -590,7 +590,7 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Repo commit | 5baf5e19 (kernel pushed as Kaggle v4) |
 | Config source | kaggle/yolo26l-t012/kernel_train.py |
 | Resolved config | artifacts/training-runs/T-012/resolved-config.yaml |
-| Stdout log | None (not in kernel output) |
+| Stdout log | artifacts/training-runs/T-012/stdout.log |
 | Metrics artifact | artifacts/training-runs/T-012/results.csv |
 | Selected checkpoint | artifacts/checkpoints/T-012-yolo26l-kaggle/best.pt (epoch 39) |
 | Artifacts | artifacts/training-runs/T-012/, artifacts/checkpoints/T-012-yolo26l-kaggle/ |
