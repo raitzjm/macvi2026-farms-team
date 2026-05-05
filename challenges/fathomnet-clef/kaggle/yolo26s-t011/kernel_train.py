@@ -8,8 +8,7 @@ cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Recover the intermediate checkpoints lost in T-008 and run a full
 50-epoch YOLO26s DDP training at imgsz=1024, batch=24 (12/GPU on T4x2).
-rect=False (DDP incompatible); mosaic=1.0 as compensation per Lead ruling.
-WandB disabled; results tracked via results.csv download.
+rect=False (DDP incompatible); mosaic=0.85. WandB key injected at push time.
 
 Inputs (mounted automatically from kernel-metadata.json):
   /kaggle/input/fathomnet-2026/                  -> JSONs only (no images)
@@ -60,9 +59,15 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
 # ---------------------------------------------------------------------------
 WORK = Path("/kaggle/working")
 
-# WandB: disabled for T-011/T-012 (push-time injection unreliable on Kaggle;
-# results tracked via results.csv and kaggle kernels output download).
-USE_WANDB = False
+WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
+if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":
+    os.environ["WANDB_API_KEY"] = WANDB_API_KEY
+    USE_WANDB = True
+    print("[setup] WANDB_API_KEY set via push-time injection")
+else:
+    os.environ.pop("WANDB_API_KEY", None)
+    USE_WANDB = False
+    print("[setup] WANDB disabled: no key injected at push time")
 
 
 class _TeeWriter:
