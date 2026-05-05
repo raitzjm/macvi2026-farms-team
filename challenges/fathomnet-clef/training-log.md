@@ -552,9 +552,9 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 #### Dataset Config
 | Field | Value |
 |---|---|
-| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (~5,832 train / ~648 val) |
+| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (5,816 train / 647 val) |
 | Classes | all 32 |
-| Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.2, fliplr=0.5 |
+| Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.5, fliplr=0.5 |
 
 #### Hyperparameters
 | Field | Value |
@@ -606,9 +606,9 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 #### Dataset Config
 | Field | Value |
 |---|---|
-| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (~5,832 train / ~648 val) |
+| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (5,816 train / 647 val) |
 | Classes | all 32 |
-| Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.2, fliplr=0.5 |
+| Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.5, fliplr=0.5 |
 
 #### Hyperparameters
 | Field | Value |
