@@ -57,15 +57,16 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
 # ---------------------------------------------------------------------------
 # 2. WandB key from Kaggle Secrets.
 # ---------------------------------------------------------------------------
-try:
-    from kaggle_secrets import UserSecretsClient
-    os.environ["WANDB_API_KEY"] = UserSecretsClient().get_secret("WANDB_API_KEY")
+WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
+if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":
+    os.environ["WANDB_API_KEY"] = WANDB_API_KEY
     USE_WANDB = True
-    print("[setup] WANDB_API_KEY loaded from Kaggle Secrets")
-except Exception:
-    os.environ["WANDB_API_KEY"] = "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"
-    USE_WANDB = True
-    print("[setup] WANDB_API_KEY set from fallback")
+    print("[setup] WANDB_API_KEY set via push-time injection")
+else:
+    # removed — use push_kernel.sh --wandb-key $WANDB_API_KEY instead of embedding credentials
+    os.environ.pop("WANDB_API_KEY", None)
+    USE_WANDB = False
+    print("[setup] WANDB disabled: no key injected at push time")
 
 # ---------------------------------------------------------------------------
 # 3. Paths.

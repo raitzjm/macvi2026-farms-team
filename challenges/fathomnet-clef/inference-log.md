@@ -39,7 +39,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-017 | 2026-05-03 | Ensemble | T-004ep7 + T-007best | WBF ensemble Co-DETR(w=2) + YOLO(w=1), iou=0.55 | — | 0.0537 | see notes |
 | I-019 | 2026-05-04 | Co-DETR | T-009 ep7 best | T-009 Co-DETR R50+PL ep7 best local non-SAHI | — | 0.0572 | see notes |
 | I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
-| I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | pending | — |
+| I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
 | I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
 
 ---
@@ -1014,10 +1014,10 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 #### Submission
 | Field | Value |
 |---|---|
-| Submitted | pending |
+| Submitted | yes |
 | Date | 2026-05-04 |
-| Public LB mAP | pending |
-| Notes | TTA-hflip hypothesis: double-view merging should tighten box localization and reduce false negatives on symmetric/side-view subjects |
+| Public LB mAP | 0.0521 |
+| Notes | TTA-hflip hurt vs no-TTA (0.0521 vs 0.0576 for I-020). Suggests Co-DETR predictions are already well-calibrated and the hflip view introduces noise rather than signal at this dataset scale. |
 
 ---
 
