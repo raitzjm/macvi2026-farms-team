@@ -42,8 +42,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
 | I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
 | I-025 | 2026-05-05 | YOLO | T-012 ep39 best | T-012 YOLO26l best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0459 | see notes |
-| I-026 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=2) + T-012best(w=1), iou_thr=0.55 | — | pending | see notes |
-| I-027 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=1) + T-012best(w=1), iou_thr=0.55 | — | pending | see notes |
+| I-026 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=2) + T-012best(w=1), iou_thr=0.55 | — | 0.0518 | see notes |
+| I-027 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=1) + T-012best(w=1), iou_thr=0.55 | — | 0.0546 | see notes |
 
 ---
 
@@ -1126,8 +1126,8 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
-| Public LB mAP | **pending** |
-| Notes | Cross-architecture WBF (Co-DETR + YOLO). Hypothesis: different architecture predictions are complementary; WBF should help unlike same-arch I-022 which regressed. |
+| Public LB mAP | **0.0518** |
+| Notes | Cross-architecture WBF (Co-DETR + YOLO) did not beat T-009 solo (0.0576). Up-weighting Co-DETR too aggressively (w=2) diluted YOLO's complementary detections. Compare with I-027 equal weights (0.0546). |
 
 ---
 
@@ -1159,8 +1159,8 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
-| Public LB mAP | **pending** |
-| Notes | Equal-weights ablation vs I-026 (w=[2,1]). Determines whether up-weighting Co-DETR matters. |
+| Public LB mAP | **0.0546** |
+| Notes | Equal weights (0.0546) beat 2:1 weighting I-026 (0.0518), but both below T-009 solo (0.0576). The YOLO26l at LB=0.0459 is too weak to improve WBF — it adds low-confidence detections that dilute precision. Need stronger YOLO or better weight tuning. |
 
 ---
 
