@@ -8,11 +8,8 @@ cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Recover the intermediate checkpoints lost in T-008 and run a full
 50-epoch YOLO26s training at imgsz=1152 on Kaggle. T-008 equivalent settings
-with batch=-1 (Ultralytics autobatch) instead of manual batch=4.
-
-WandB key injected at push time via push_kernel.sh --wandb-key.
-The placeholder __WANDB_KEY_PLACEHOLDER__ is replaced by sed before push;
-tracked source stays clean.
+with batch=16 (8/GPU on T4x2). WandB disabled for this run; results tracked
+via results.csv download after training completes.
 
 Inputs (mounted automatically from kernel-metadata.json):
   /kaggle/input/fathomnet-2026/                  -> JSONs only (no images)
@@ -63,15 +60,9 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
 # ---------------------------------------------------------------------------
 WORK = Path("/kaggle/working")
 
-WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
-if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":
-    os.environ["WANDB_API_KEY"] = WANDB_API_KEY
-    USE_WANDB = True
-    print("[setup] WANDB_API_KEY set via push-time injection")
-else:
-    os.environ.pop("WANDB_API_KEY", None)
-    USE_WANDB = False
-    print("[setup] WANDB disabled: no key injected at push time")
+# WandB: disabled for T-011/T-012 (push-time injection unreliable on Kaggle;
+# results tracked via results.csv and kaggle kernels output download).
+USE_WANDB = False
 
 
 class _TeeWriter:
@@ -260,8 +251,8 @@ model.train(
     epochs=50,
     patience=100,
     imgsz=1152,
-    rect=True,
-    batch=-1,          # Ultralytics autobatch (~60% VRAM)
+    rect=False,        # rect=True auto-disabled by Ultralytics under DDP anyway
+    batch=32,          # 16/GPU on T4x2 (15 GB each) at imgsz=1152; autobatch unsupported with DDP
     save_period=5,
     workers=2,
     optimizer="auto",
