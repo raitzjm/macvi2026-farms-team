@@ -1,0 +1,20 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-008",
+  "config_source": "scripts/train_yolo.py",
+  "git_commit": "fa4238ce072ef87a5cfac28e6aa46e756899fa28",
+  "git_commit_note": "fa4238ce was HEAD at launch (I-014/I-015/I-016 inference log commit). train_yolo.py --save-period flag was already committed at 287c022d before launch.",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-008/results.csv",
+  "output_root": "outputs/smoke-yolo-T-008",
+  "platform": "local",
+  "resolved_config": "artifacts/training-runs/T-008/resolved-config.json",
+  "run_id": "T-008",
+  "run_name": "smoke-yolo-T-008",
+  "run_name_note": "run_name defaulted to 'smoke-yolo-T-008' because --name was not specified at launch; WandB run is correctly named 'smoke-yolo-T-008' tracking under T-008.",
+  "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+  "stdout_log": "artifacts/training-runs/T-008/stdout.log",
+  "track": "YOLO",
+  "train_labels_yaml": "outputs/smoke-yolo-T-008/yolo_data/fathomnet.yaml",
+  "wandb_run": "https://wandb.ai/little_farms/fathomnet2026/runs/krg5b6zq",
+  "wandb_run_id": "krg5b6zq"
+}

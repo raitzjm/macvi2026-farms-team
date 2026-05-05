@@ -1,0 +1,20 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-007",
+  "checkpoint_dir": "challenges/fathomnet-clef/artifacts/checkpoints/T-007-yolo26s-local",
+  "config_source": "scripts/train_yolo.py",
+  "git_commit": "82fb6c76ef86f8c7e0a6149e8504e8d3f4f45342",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-007/results.csv",
+  "notes": "git_commit recorded at launch time (0d6dc5f5) predated the augmentation-profile commit; corrected to 82fb6c76 which is the first commit containing the underwater_v1 profile and WandB plumbing that were active in the working tree when T-007 was launched.",
+  "output_root": "outputs/yolo26s-sharedsplit-underwater-v1-T-007",
+  "platform": "local",
+  "resolved_config": "artifacts/training-runs/T-007/resolved-config.json",
+  "run_id": "T-007",
+  "run_name": "yolo26s-sharedsplit-underwater-v1-T-007",
+  "selected_checkpoint": "artifacts/checkpoints/T-007-yolo26s-local/best.pt",
+  "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+  "stdout_log": "artifacts/training-runs/T-007/stdout.log",
+  "track": "YOLO",
+  "train_labels_yaml": "outputs/yolo26s-sharedsplit-underwater-v1-T-007/yolo_data/fathomnet.yaml",
+  "wandb_run_url": "https://wandb.ai/little_farms/fathomnet2026/runs/cxo72wkv"
+}

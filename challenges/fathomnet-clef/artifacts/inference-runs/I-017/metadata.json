@@ -1,0 +1,29 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-017",
+  "config_source": "scripts/wbf_ensemble.py",
+  "git_commit": "fa4238ce072ef87a5cfac28e6aa46e756899fa28",
+  "kind": "ensemble",
+  "output_csv": "artifacts/submissions/I-017-ensemble-wbf-t004ep7-t007best/submission-I-017-ensemble-wbf-2-1.csv",
+  "run_id": "I-017",
+  "sources": [
+    {
+      "inference_run": "I-009",
+      "train_run": "T-004",
+      "checkpoint": "epoch_7.pth",
+      "track": "Co-DETR",
+      "weight": 2.0
+    },
+    {
+      "inference_run": "I-014",
+      "train_run": "T-007",
+      "checkpoint": "best.pt",
+      "track": "YOLO",
+      "weight": 1.0
+    }
+  ],
+  "ensemble_method": "WBF",
+  "wbf_iou_thr": 0.55,
+  "wbf_skip_box_thr": 0.001,
+  "wbf_weights": [2.0, 1.0],
+  "track": "Ensemble"
+}

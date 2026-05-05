@@ -1,0 +1,30 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-022",
+  "config_source": "scripts/wbf_ensemble.py",
+  "git_commit": "186015dd2121db80eb307c099f941a53694d5608",
+  "kind": "ensemble",
+  "output_csv": "artifacts/submissions/I-022-wbf-t009ep7-t009ep12/submission-I-022-wbf-t009ep7-ep12.csv",
+  "run_id": "I-022",
+  "sources": [
+    {
+      "inference_run": "I-019",
+      "train_run": "T-009",
+      "checkpoint": "best_coco_bbox_mAP_epoch_7.pth",
+      "track": "Co-DETR",
+      "weight": 1.0
+    },
+    {
+      "inference_run": "I-020",
+      "train_run": "T-009",
+      "checkpoint": "epoch_12.pth",
+      "track": "Co-DETR",
+      "weight": 1.0
+    }
+  ],
+  "ensemble_method": "WBF",
+  "wbf_iou_thr": 0.55,
+  "wbf_skip_box_thr": 0.001,
+  "wbf_weights": [1.0, 1.0],
+  "track": "Ensemble",
+  "note": "Equal-weight WBF of T-009 ep7 (best val) and ep12 (last/best LB). Both from same Co-DETR R50 + pseudo-labels run."
+}

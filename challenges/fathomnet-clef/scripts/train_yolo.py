@@ -34,10 +34,179 @@ from split_manifest import (  # noqa: E402
 )
 
 
+AUGMENT_PROFILES = {
+    "ultralytics_default": {},
+    "underwater_v1": {
+        "hsv_h": 0.01,
+        "hsv_s": 0.2,
+        "hsv_v": 0.15,
+        "translate": 0.05,
+        "scale": 0.2,
+        "fliplr": 0.5,
+        "mosaic": 0.0,
+        "mixup": 0.0,
+        "cutmix": 0.0,
+        "copy_paste": 0.0,
+        "erasing": 0.0,
+        "close_mosaic": 0,
+        "auto_augment": None,
+    },
+}
+
+
 def load_wandb_key() -> str | None:
     if os.environ.get("WANDB_API_KEY"):
         return os.environ["WANDB_API_KEY"]
     return None
+
+
+def setup_wandb(
+    run_name: str,
+    enabled: bool,
+    *,
+    settings=None,
+    wandb_module=None,
+) -> bool:
+    if not enabled:
+        os.environ["WANDB_DISABLED"] = "true"
+        return False
+
+    key = load_wandb_key()
+    if not key:
+        print("[warn] no WANDB_API_KEY; running without wandb")
+        os.environ["WANDB_DISABLED"] = "true"
+        return False
+
+    os.environ["WANDB_API_KEY"] = key
+    os.environ["WANDB_PROJECT"] = "fathomnet2026"
+    os.environ["WANDB_ENTITY"] = "little_farms"
+    os.environ["WANDB_RUN_NAME"] = run_name
+    os.environ.pop("WANDB_DISABLED", None)
+
+    if settings is None:
+        try:
+            from ultralytics.utils import SETTINGS as settings  # type: ignore
+        except Exception as exc:  # pragma: no cover - runtime guard
+            print(f"[warn] unable to load Ultralytics settings for wandb: {exc}")
+            settings = None
+    if settings is not None:
+        settings["wandb"] = True
+
+    if wandb_module is None:
+        try:
+            import wandb as wandb_module  # type: ignore
+        except Exception as exc:  # pragma: no cover - runtime guard
+            print(f"[warn] wandb package unavailable; running without wandb: {exc}")
+            os.environ["WANDB_DISABLED"] = "true"
+            return False
+
+    try:
+        wandb_module.login(key=key, relogin=True)
+    except Exception as exc:  # pragma: no cover - runtime guard
+        print(f"[warn] wandb login failed; continuing with best effort: {exc}")
+
+    _orig_wandb_init = wandb_module.init
+
+    def _patched_wandb_init(*a, **kw):
+        kw["project"] = "fathomnet2026"
+        kw["entity"] = "little_farms"
+        kw["name"] = run_name
+        kw.pop("id", None)
+        kw.setdefault("resume", "never")
+        print(f"[wandb] init project={kw['project']} entity={kw['entity']} name={kw['name']}")
+        return _orig_wandb_init(*a, **kw)
+
+    wandb_module.init = _patched_wandb_init
+    print(f"[wandb] enabled for run {run_name}")
+    return True
+
+
+def augmentation_overrides(profile: str) -> dict:
+    if profile not in AUGMENT_PROFILES:
+        raise ValueError(f"Unknown augmentation profile: {profile}")
+    return dict(AUGMENT_PROFILES[profile])
+
+
+def build_train_overrides(
+    *,
+    yaml_path: Path,
+    out_root: Path,
+    epochs: int,
+    imgsz: int,
+    batch: int,
+    workers: int,
+    rect: bool,
+    seed: int,
+    augment_profile: str,
+    save_period: int = 0,
+) -> dict:
+    overrides = {
+        "data": str(yaml_path),
+        "epochs": epochs,
+        "imgsz": imgsz,
+        "batch": batch,
+        "rect": rect,
+        "workers": workers,
+        "project": str(out_root),
+        "name": "run",
+        "exist_ok": True,
+        "device": 0,
+        "amp": True,
+        "plots": True,
+        "seed": seed,
+        "deterministic": True,
+    }
+    if save_period > 0:
+        overrides["save_period"] = save_period
+    overrides.update(augmentation_overrides(augment_profile))
+    return overrides
+
+
+def build_resolved_config_payload(
+    *,
+    batch: int,
+    class_names: list[str],
+    dataset_root: str,
+    epochs: int,
+    height: int,
+    imgsz: int,
+    model: str,
+    requested_name: str,
+    run_name: str,
+    rect: bool,
+    seed: int,
+    split_manifest: str,
+    train_json: str,
+    wandb_enabled: bool,
+    width: int,
+    workers: int,
+    yaml_path: str,
+    augment_profile: str,
+    augment_overrides: dict,
+) -> dict:
+    return {
+        "augment_overrides": augment_overrides,
+        "augment_profile": augment_profile,
+        "batch": batch,
+        "class_count": len(class_names),
+        "class_names": class_names,
+        "config_source": "scripts/train_yolo.py",
+        "dataset_root": dataset_root,
+        "epochs": epochs,
+        "height": height,
+        "imgsz": imgsz,
+        "model": model,
+        "name": run_name,
+        "rect": rect,
+        "requested_name": requested_name,
+        "seed": seed,
+        "split_manifest": split_manifest,
+        "train_json": train_json,
+        "wandb_enabled": wandb_enabled,
+        "width": width,
+        "workers": workers,
+        "yaml_path": yaml_path,
+    }
 
 
 def coco_to_yolo(coco_json: Path, dst_root: Path, train_imgs_dir: Path, split_manifest_path: Path):
@@ -103,12 +272,22 @@ def main():
                    help="Optional durable artifact directory override")
     p.add_argument("--split-manifest", default=str(default_split_manifest_path()),
                    help="Path to shared train/val split manifest JSON")
+    p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--augment-profile",
+        default="underwater_v1",
+        choices=sorted(AUGMENT_PROFILES.keys()),
+        help="Named augmentation profile for comparable YOLO experiments",
+    )
     p.add_argument("--no-rect", action="store_true")
     p.add_argument("--no-wandb", action="store_true")
+    p.add_argument("--save-period", type=int, default=0,
+                   help="Save checkpoint every N epochs (0 = disabled, only best+last saved)")
     args = p.parse_args()
 
     imgsz = args.imgsz if args.imgsz is not None else max(args.width, args.height)
     run_name = tracked_run_name(args.name, args.run_id)
+    wandb_enabled = setup_wandb(run_name, not args.no_wandb)
 
     challenge_root = Path(__file__).resolve().parent.parent
     out_root = challenge_root / "outputs" / run_name
@@ -141,27 +320,27 @@ def main():
         if artifact_dir:
             write_json(
                 artifact_dir / "resolved-config.json",
-                {
-                    "batch": args.batch,
-                    "class_count": len(class_names),
-                    "class_names": class_names,
-                    "config_source": "scripts/train_yolo.py",
-                    "dataset_root": str(DATASET_ROOT),
-                    "epochs": args.epochs,
-                    "height": args.height,
-                    "imgsz": imgsz,
-                    "model": args.model,
-                    "name": run_name,
-                    "rect": not args.no_rect,
-                    "requested_name": args.name,
-                    "seed": 42,
-                    "split_manifest": relpath_str(split_manifest_path, challenge_root),
-                    "train_json": str(TRAIN_JSON),
-                    "wandb_enabled": not args.no_wandb,
-                    "width": args.width,
-                    "workers": args.workers,
-                    "yaml_path": relpath_str(yaml_path, challenge_root),
-                },
+                build_resolved_config_payload(
+                    batch=args.batch,
+                    class_names=class_names,
+                    dataset_root=str(DATASET_ROOT),
+                    epochs=args.epochs,
+                    height=args.height,
+                    imgsz=imgsz,
+                    model=args.model,
+                    requested_name=args.name,
+                    run_name=run_name,
+                    rect=not args.no_rect,
+                    seed=args.seed,
+                    split_manifest=relpath_str(split_manifest_path, challenge_root),
+                    train_json=str(TRAIN_JSON),
+                    wandb_enabled=wandb_enabled,
+                    width=args.width,
+                    workers=args.workers,
+                    yaml_path=relpath_str(yaml_path, challenge_root),
+                    augment_profile=args.augment_profile,
+                    augment_overrides=augmentation_overrides(args.augment_profile),
+                ),
             )
             write_json(
                 artifact_dir / "metadata.json",
@@ -183,41 +362,20 @@ def main():
                 },
             )
 
-        if not args.no_wandb:
-            key = load_wandb_key()
-            if key:
-                os.environ["WANDB_API_KEY"] = key
-                import wandb as _wandb
-                _orig_wandb_init = _wandb.init
-                _run_name = run_name
-
-                def _patched_wandb_init(*a, **kw):
-                    kw["project"] = "fathomnet2026"
-                    kw["entity"] = "little_farms"
-                    kw["name"] = _run_name
-                    kw.pop("id", None)
-                    return _orig_wandb_init(*a, **kw)
-
-                _wandb.init = _patched_wandb_init
-            else:
-                print("[warn] no WANDB_API_KEY; running without wandb")
-
         from ultralytics import YOLO
         model = YOLO(args.model)
-        model.train(
-            data=str(yaml_path),
+        model.train(**build_train_overrides(
+            yaml_path=yaml_path,
+            out_root=out_root,
             epochs=args.epochs,
             imgsz=imgsz,
             batch=args.batch,
-            rect=not args.no_rect,
             workers=args.workers,
-            project=str(out_root),
-            name="run",
-            exist_ok=True,
-            device=0,
-            amp=True,
-            plots=True,
-        )
+            rect=not args.no_rect,
+            seed=args.seed,
+            augment_profile=args.augment_profile,
+            save_period=args.save_period,
+        ))
 
         if artifact_dir:
             copy_if_exists(out_root / "run" / "results.csv", artifact_dir / "results.csv")

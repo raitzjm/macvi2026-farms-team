@@ -1,0 +1,18 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-006",
+  "config_source": "envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py",
+  "git_commit": "a8c91d55e4fe7559c2f76bba029ef99b88fffd99",
+  "kind": "training",
+  "load_from": "/home/user/.cache/torch/hub/checkpoints/co_dino_5scale_r50_1x_coco-7481f903.pth",
+  "metrics_artifact": "artifacts/training-runs/T-006/metrics.jsonl",
+  "note": "Planned 24-epoch TensorDock run was stopped after epoch 12 because epoch 5 remained the best checkpoint.",
+  "output_root": "outputs/codetr-r50-extended-T-006",
+  "platform": "TensorDock (fathom1, 2x RTX 4090)",
+  "resolved_config": "artifacts/training-runs/T-006/resolved-config.py",
+  "run_id": "T-006",
+  "run_name": "codetr-r50-extended-T-006",
+  "selected_checkpoint": "artifacts/checkpoints/T-006-codetr-tensordock/best.pth",
+  "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+  "stdout_log": "artifacts/training-runs/T-006/stdout.log",
+  "track": "Co-DETR"
+}

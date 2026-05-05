@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-013",
+  "checkpoint_path": "challenges/fathomnet-clef/outputs/codetr-r50-extended-T-006/mmdet_run/epoch_11.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "a8c91d55e4fe7559c2f76bba029ef99b88fffd99",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/I-013-from-T-006ep11-codetr-local-nonsahi/submission-I-013-from-T-006ep11.csv",
+  "resolved_config": "artifacts/inference-runs/I-013/resolved-config.json",
+  "run_id": "I-013",
+  "source_train_id": "T-006",
+  "stdout_log": "artifacts/inference-runs/I-013/stdout.log",
+  "track": "Co-DETR"
+}

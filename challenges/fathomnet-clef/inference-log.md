@@ -31,6 +31,16 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-009 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI inference on test set; corrected baseline (official pretrain + shared split) | — | 0.0556 | see notes |
 | I-010 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_11.pth — T-005 PU checkpoint test | — | 0.0485 | see notes |
 | I-011 | 2026-05-01 | Co-DETR | T-004 | Local non-SAHI, epoch_12.pth — T-005 PU checkpoint test | — | 0.0470 | see notes |
+| I-012 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, best_coco_bbox_mAP_epoch_5.pth — primary T-006 submission | — | 0.0535 | see notes |
+| I-013 | 2026-05-02 | Co-DETR | T-006 | Local non-SAHI, epoch_11.pth — T-006 late-epoch hedge | — | 0.0508 | see notes |
+| I-014 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt (epoch~46) local non-SAHI | — | 0.0346 | see notes |
+| I-015 | 2026-05-03 | YOLO | T-007 last.pt | T-007 yolo26s last.pt (epoch 50) local non-SAHI | — | 0.0329 | see notes |
+| I-016 | 2026-05-03 | YOLO | T-007 best.pt | T-007 yolo26s best.pt SAHI (slice=640, conf=0.0001) | — | 0.0127 | see notes |
+| I-017 | 2026-05-03 | Ensemble | T-004ep7 + T-007best | WBF ensemble Co-DETR(w=2) + YOLO(w=1), iou=0.55 | — | 0.0537 | see notes |
+| I-019 | 2026-05-04 | Co-DETR | T-009 ep7 best | T-009 Co-DETR R50+PL ep7 best local non-SAHI | — | 0.0572 | see notes |
+| I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
+| I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
+| I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
 
 ---
 
@@ -528,6 +538,519 @@ Part of T-005 PU checkpoint selection experiment. Epoch 11 on LB (0.0485) is -0.
 
 #### Notes
 Part of T-005 PU checkpoint selection experiment. Epoch 12 on LB (0.0470) is -0.0086 vs epoch 7 (I-009, 0.0556) and -0.0015 vs epoch 11 (I-010, 0.0485). The monotonic decline across epochs 7→11→12 strongly confirms the PU hypothesis: epoch 7 is the better checkpoint for test-set generalization despite epochs 11/12 having higher val mAP on the shared split.
+
+---
+
+### I-012 — Co-DETR T-006 epoch5 local non-SAHI inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-02 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-006 checkpoint, best epoch 5 |
+| Repo commit | a8c91d55e4fe7559c2f76bba029ef99b88fffd99 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-012/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-012/stdout.log |
+| Artifacts | artifacts/inference-runs/I-012/, artifacts/submissions/I-012-from-T-006ep5-codetr-local-nonsahi/submission-I-012-from-T-006ep5.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-006 | artifacts/checkpoints/T-006-codetr-tensordock/best.pth (epoch 5, val mAP=0.427) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-02 01:36 UTC) |
+| Date | 2026-05-02 |
+| Public LB mAP | **0.0535** |
+| Notes | 401,611 predictions (401,612 CSV lines incl. header); primary T-006 submission; below I-009 best baseline (0.0556) by 0.0021 |
+
+#### Notes
+Primary submission for T-006 after the lead data scientist review favored the early best checkpoint. Epoch 5 beat the later T-006 hedge (I-013, 0.0508) by 0.0027 on the public leaderboard, which is consistent with the T-004/T-005 PU pattern: later training epochs do not reliably improve held-out test performance even when they remain competitive on validation.
+
+---
+
+### I-013 — Co-DETR T-006 epoch11 local non-SAHI inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-02 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (fathom1, 1× RTX 4090) |
+| Evaluated split | test set |
+| Inputs | T-006 checkpoint, epoch 11 |
+| Repo commit | a8c91d55e4fe7559c2f76bba029ef99b88fffd99 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-013/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-013/stdout.log |
+| Artifacts | artifacts/inference-runs/I-013/, artifacts/submissions/I-013-from-T-006ep11-codetr-local-nonsahi/submission-I-013-from-T-006ep11.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-006 | outputs/codetr-r50-extended-T-006/mmdet_run/epoch_11.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-02 01:39 UTC) |
+| Date | 2026-05-02 |
+| Public LB mAP | **0.0508** |
+| Notes | 385,807 predictions (385,808 CSV lines incl. header); later-epoch hedge scored below epoch 5 (0.0535) by 0.0027 |
+
+#### Notes
+The only late T-006 checkpoint worth testing after epoch 5 was epoch 11 because its val mAP (0.426) nearly matched the best checkpoint and its val mAP@.50 was slightly higher. Kaggle rejected that hedge: epoch 11 underperformed both I-012 (epoch 5) and I-009 (T-004 epoch 7), strengthening the working PU hypothesis that later epochs overfit the labeled-positive subset rather than improving test-set generalization.
+
+---
+
+### I-014 — T-007 yolo26s best.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 best.pt (Ultralytics fitness best, epoch ~46) |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-014/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-014/stdout.log |
+| Artifacts | artifacts/inference-runs/I-014/, artifacts/submissions/I-014-from-T-007-yolo-local-nonsahi/submission-I-014-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0346** |
+| Notes | 31,604 predictions; best.pt beats last.pt (I-015: 0.0329) by +0.0017, confirming the PU late-epoch val_cls drift does hurt LB, though the effect is milder than in Co-DETR |
+
+#### Notes
+T-007 yolo26s baseline (0.0346) vs T-001 yolo26l (0.0340): comparable despite smaller backbone, because T-007 uses the correct shared split and PU-aware augmentation. Still well below the Co-DETR anchor T-004/I-009 (0.0556), indicating the Co-DETR architecture advantage on this dataset is substantial.
+
+---
+
+### I-015 — T-007 yolo26s last.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 last.pt (final epoch 50) |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-015/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-015/stdout.log |
+| Artifacts | artifacts/inference-runs/I-015/, artifacts/submissions/I-015-from-T-007-yolo-local-nonsahi/submission-I-015-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/last.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0329** |
+| Notes | 29,669 predictions; last.pt (epoch 50) underperforms best.pt (epoch 46) by -0.0017, confirming PU late-epoch drift in YOLO (mild but present) |
+
+---
+
+### I-016 — T-007 yolo26s best.pt local SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-007 best.pt (epoch ~46) with SAHI tiling |
+| Repo commit | e3f28322 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-016/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-016/stdout.log |
+| Artifacts | artifacts/inference-runs/I-016/, artifacts/submissions/I-016-from-T-007-yolo-local-sahi/submission-I-016-from-T-007.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-007 | artifacts/checkpoints/T-007-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.0001 (lowered for SAHI) |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Slice size | 640 |
+| Overlap | 0.2 |
+| Postprocess match threshold | 0.5 (default) |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 05:36 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0127** |
+| Notes | 448,762 predictions; SAHI dramatically over-detected — ultra-low conf (0.0001) combined with slice tiling flooded the output with low-quality boxes, crushing precision. Compare I-003/I-005/I-008 — SAHI has consistently underperformed non-SAHI across all model families on this dataset |
+
+#### Notes
+SAHI on FathomNet appears consistently harmful (I-003=0.0204, I-005=0.0166, I-008=0.0053, I-016=0.0127) — the tiling and low-confidence threshold produce far too many false positives in PU data. SAHI should be deprioritized for future submissions unless a substantially different NMS/merge strategy is applied.
+
+---
+
+### I-017 — WBF ensemble T-004ep7 (Co-DETR) + T-007best (YOLO)
+
+| Field | Value |
+|---|---|
+| Run ID | I-017 |
+| Date | 2026-05-03 |
+| Track | Ensemble |
+| Method | Weighted Box Fusion (wbf_ensemble.py) |
+| Repo commit | fa4238ce |
+| Config source | scripts/wbf_ensemble.py |
+| Resolved config | artifacts/inference-runs/I-017/metadata.json |
+| Artifacts | artifacts/inference-runs/I-017/, artifacts/submissions/I-017-ensemble-wbf-t004ep7-t007best/submission-I-017-ensemble-wbf-2-1.csv |
+
+#### Inputs
+| Source | Run | Checkpoint | Weight |
+|---|---|---|---|
+| Co-DETR (T-004) | I-009 | epoch_7.pth | 2.0 |
+| YOLO (T-007) | I-014 | best.pt (~epoch 46) | 1.0 |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF (ensemble_boxes.weighted_boxes_fusion) |
+| WBF IoU threshold | 0.55 |
+| WBF skip threshold | 0.001 |
+| Weights | [2.0, 1.0] (Co-DETR:YOLO) |
+| Scope | per (image_id, category_id) pair |
+| Test JSON | /home/farms/data/datasets/fathomnet-2026/test_dataset.json |
+
+#### Results
+| Metric | Value |
+|---|---|
+| μval mAP@[.5:.95] | — |
+| Public LB mAP | **0.0537** |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-03 |
+| Public LB mAP | 0.0537 |
+| Predictions in CSV | 334,831 |
+| Notes | Slightly below I-009 alone (0.0556); YOLO diversity insufficient to lift Co-DETR |
+
+#### Notes
+WBF at weights [2,1] Co-DETR:YOLO produced 0.0537, below T-004/I-009 standalone (0.0556) by −0.0019. The YOLO component (I-014=0.0346) has lower absolute precision than Co-DETR and adding it at weight 1 introduced enough noise to drag the ensemble down. A higher Co-DETR weight [3,1] might recover the gap — the Lead noted this as a low-effort hedge worth testing before the deadline if a submission slot is available. The ensemble does confirm that T-004/I-009 remains the leaderboard best.
+
+---
+
+### I-018 — T-008 yolo26s best.pt local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-03 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | T-008 best.pt (Ultralytics fitness best, epoch 44) |
+| Repo commit | 137740a87881485f574c90c16efde5cd5505db5d |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-018/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-018/stdout.log |
+| Artifacts | artifacts/inference-runs/I-018/, artifacts/submissions/I-018-from-T-008/submission-I-018-from-T-008.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-008 | artifacts/checkpoints/T-008-yolo26s-local/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1152 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 8 |
+| Duration | ~2 min |
+| Predictions | 37,110 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-03 10:55 UTC) |
+| Date | 2026-05-03 |
+| Public LB mAP | **0.0421** |
+| Notes | T-008 best.pt (ep44, workers=2) vs T-007 best.pt (ep46, workers=8): +0.0075 LB gain despite near-identical val mAP50-95 (0.366 vs 0.365). Likely run-to-run variance amplified by test PU distribution; workers=2 vs 8 may affect augmentation ordering despite seed=42 |
+
+#### Notes
+T-008 (LB=0.0421) outperforms T-007 (I-014, LB=0.0346) by +0.0075 despite essentially identical val mAP50-95 (0.366 vs 0.365). The only training differences are workers=2 (T-008) vs workers=8 (T-007) and save_period=5. Different worker counts change data loading concurrency and can produce different augmentation sequences even with the same seed, but the +0.0075 LB gap is large enough to suggest genuine run-to-run variance rather than just the workers change. T-008 is now the best YOLO checkpoint and a better input for ensembling.
+
+---
+
+### I-019 — T-009 Co-DETR R50 + pseudo-labels ep7 best local non-SAHI
+
+> **Note on run ID:** This run was originally labeled I-016 by the inference script (ID conflict with the already-committed T-007 SAHI run I-016). The correct ID is I-019. The Kaggle submission filename retains the `I-016` prefix.
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, best ep7 (best_coco_bbox_mAP_epoch_7.pth, val mAP=0.407) |
+| Repo commit | bc586eae31d5e93235dfed28b1e0e96ab794c353 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-019/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-019/stdout.log |
+| Artifacts | artifacts/inference-runs/I-019/, artifacts/submissions/I-019-from-T-009-codetr-best-ep7/submission-I-016-from-T-009.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/best_coco_bbox_mAP_epoch_7.pth (val mAP=0.407) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-04 14:45 UTC, filename submission-I-016-from-T-009.csv) |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0572** |
+| Notes | +0.0016 vs T-004/I-009 baseline (0.0556); pseudo-labels improve over T-004 baseline; ep7 is the val-best checkpoint |
+
+#### Notes
+T-009 ep7 (val mAP=0.407, pseudo-labels enabled) LB 0.0572 vs T-004 ep7 (val mAP=0.417, no PL) LB 0.0556: +0.0016 gain. Pseudo-labels contributed a small but positive signal. Notably, the last epoch (I-020) scored 0.0576, higher than the val-best epoch — contra the PU pattern observed in T-004/T-006. This suggests pseudo-label training may partially recover the late-epoch degradation seen in pure PU training.
+
+---
+
+### I-020 — T-009 Co-DETR R50 + pseudo-labels ep12 last local non-SAHI
+
+> **Note on run ID:** This run was originally labeled I-017 by the inference script (ID conflict with the already-committed WBF ensemble run I-017). The correct ID is I-020. The Kaggle submission filename retains the `I-017` prefix.
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, ep12 last (epoch_12.pth, val mAP=0.404) |
+| Repo commit | bc586eae31d5e93235dfed28b1e0e96ab794c353 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-020/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-020/stdout.log |
+| Artifacts | artifacts/inference-runs/I-020/, artifacts/submissions/I-020-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/epoch_12.pth (val mAP=0.404) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI (submitted 2026-05-04 14:45 UTC, filename submission-I-017-from-T-009.csv) |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0576** |
+| Notes | +0.0020 vs T-004/I-009 baseline (0.0556); **new best LB score**; last epoch beats val-best epoch (I-019: 0.0572) by +0.0004 |
+
+#### Notes
+T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-009 (0.0556) by +0.0020. Remarkably, ep12 last (val mAP=0.404) outscores ep7 val-best (val mAP=0.407) on the public leaderboard, reversing the PU early-stopping pattern seen in T-004 and T-006. This may indicate that pseudo-label training mitigates late-epoch PU label-noise overfitting, allowing later checkpoints to generalize better than they did without PLs.
+
+---
+
+### I-021 — T-009 Co-DETR R50 + pseudo-labels ep12 TTA-hflip
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (RTX 3050 4GB) |
+| Evaluated split | test set |
+| Inputs | T-009 checkpoint, ep12 last (epoch_12.pth, val mAP=0.404) |
+| Repo commit | 0c7a7318 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-021/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-021/stdout.log |
+| Artifacts | artifacts/inference-runs/I-021/, artifacts/submissions/I-021-from-T-009-codetr-tta-ep12/ |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-009 | artifacts/checkpoints/T-009/epoch_12.pth (val mAP=0.404) |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 (matches training resolution via resolved config) |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### TTA Config
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Transforms | horizontal flip |
+| Merge method | WBF, weights=[1,1], iou_thr=0.6, skip_box_thr=0.001 |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-04 |
+| Public LB mAP | 0.0521 |
+| Notes | TTA-hflip hurt vs no-TTA (0.0521 vs 0.0576 for I-020). Suggests Co-DETR predictions are already well-calibrated and the hflip view introduces noise rather than signal at this dataset scale. |
+
+---
+
+### I-022 — WBF ensemble of T-009 ep7 + ep12
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-04 |
+| Track | Ensemble |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (CPU) |
+| Evaluated split | test set |
+| Inputs | I-019 CSV (T-009 ep7, LB=0.0572) + I-020 CSV (T-009 ep12, LB=0.0576) |
+| Repo commit | 0c7a7318 |
+| Config source | scripts/wbf_ensemble.py |
+| Artifacts | artifacts/inference-runs/I-022/, artifacts/submissions/I-022-wbf-t009ep7-t009ep12/ |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF |
+| Sources | I-019 (T-009 ep7 best), I-020 (T-009 ep12 last) |
+| WBF IoU thresh | 0.55 |
+| WBF skip thresh | 0.001 |
+| Weights | [1.0, 1.0] |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-04 |
+| Public LB mAP | **0.0523** |
+| Notes | **Regressed vs both sources** (I-019=0.0572, I-020=0.0576). Same-architecture WBF between similar checkpoints halves scores on non-overlapping boxes, hurting recall. Cross-architecture ensembling (e.g. Co-DETR + YOLO) is required for WBF to be beneficial. |
 
 ---
 

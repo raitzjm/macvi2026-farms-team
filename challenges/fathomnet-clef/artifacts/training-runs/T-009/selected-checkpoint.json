@@ -1,0 +1,5 @@
+{
+    "relative_path": "artifacts/checkpoints/T-009/best_coco_bbox_mAP_epoch_7.pth",
+    "selection": "training framework best checkpoint (coco/bbox_mAP at epoch 7 = 0.4070)",
+    "rationale": "Val mAP plateau from epoch 7 onward (ep7=0.407, ep12=0.404). All 12 epoch checkpoints retained locally (max_keep_ckpts=12)."
+}

@@ -35,9 +35,12 @@ challenges/fathomnet-clef/
     run-tracking-policy.md      # required run/artifact/config/logging policy
     tensordock-remote-workflow.md # SSH-based TensorDock orchestration policy
     discussions/                # saved discussion threads
-  artifacts/                    # curated checkpoints and submission CSVs
-    training-runs/              # durable training run bundles (logs/config/metrics metadata)
-    inference-runs/             # durable inference run bundles (logs/config metadata)
+  artifacts/
+    training-runs/              # committed — metadata JSON, results.csv, stdout.log per run
+    inference-runs/             # committed — metadata JSON per inference run
+    checkpoints/                # NOT committed — local only; pull from remote via scp/rsync
+    submissions/                # NOT committed — local only; pull from Kaggle CLI or remote
+    split-manifests/            # committed — shared train/val split JSON files
   configs/                      # model configs (YOLO, MMDet)
   scripts/
     _paths.py                   # multi-environment data path resolution
@@ -92,9 +95,11 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 
 ## Agent Conventions
 - All commits: `[agent]` prefix, body includes model name
-- Do not run full training locally (RTX 3050 4GB) — use TensorDock or Kaggle
+- Use judgment for local training: full local runs are allowed when the model is fast enough to fit the available GPU and the run is expected to complete safely; prefer local YOLO runs when they are materially faster than remote execution, and use TensorDock or Kaggle for larger or expensive runs that do not fit well on the RTX 3050 4GB
 - Outputs go to `outputs/` (gitignored)
-- Curated checkpoints and submission CSVs go to `artifacts/`; both checkpoints and submission CSVs are Git LFS tracked
+- Checkpoints (`.pt`, `.pth`) and submission CSVs are **not committed to git** — store locally under `artifacts/checkpoints/` and `artifacts/submissions/` (both gitignored). Pull from remotes via `kaggle kernels output` (Kaggle) or `scp`/`rsync` (TensorDock). Only metadata JSON files and small results CSVs under `artifacts/training-runs/` and `artifacts/inference-runs/` are committed. *(History: checkpoints and submission CSVs were previously LFS-tracked; this was stopped during the T-006/T-007 sprint, commit 96b2eda5, to reduce repo bloat. At end of challenge, selectively LFS-track curated artifacts as needed.)*
+- Pseudo-label JSON files (< 30 MB) are committed directly to git (no LFS needed). Generated merged annotation files (GT + pseudo-labels, produced by `train_mmdet.py --pseudo-label-json`) are NOT committed — regenerate locally or on fathom1 before each training run. Everything produced on remote machines (fathom1, Kaggle) must be copied back to this machine via scp/rsync so the local repo is the canonical artifact hub.
+- After any YOLO local training run completes, **immediately copy** `best.pt`, `last.pt`, and all periodic epoch checkpoints (e.g. `epoch5.pt` from `--save_period`) to `artifacts/checkpoints/<run-id>/` before any cleanup or output directory removal. T-008 lost its periodic checkpoints because this step was skipped — periodic epochs cannot be inferred after deletion and the fitness-best pick cannot be audited.
 - Agents working on training, inference, Kaggle/TensorDock run execution, or logging/backfilling training or inference results must read and follow `docs/run-tracking-policy.md`
 - Agents working on TensorDock orchestration or remote training execution must read and follow `docs/tensordock-remote-workflow.md`
 - For FathomNet sprint execution, the primary agent should act as an orchestrator and manager: delegate implementation, monitoring, review, and other sidecar work to sub-agents where practical, and keep the top-level thread focused on coordination, decisions, and information flow between lead, worker, and reviewer agents
