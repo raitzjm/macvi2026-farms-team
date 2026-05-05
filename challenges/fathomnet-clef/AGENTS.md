@@ -36,8 +36,8 @@ challenges/fathomnet-clef/
     tensordock-remote-workflow.md # SSH-based TensorDock orchestration policy
     discussions/                # saved discussion threads
   artifacts/
-    training-runs/              # committed — metadata JSON, results.csv, stdout.log per run
-    inference-runs/             # committed — metadata JSON per inference run
+    training-runs/              # committed — metadata JSON, metrics artifact, resolved config, raw training stdout.log when available
+    inference-runs/             # committed — metadata JSON per inference run; raw inference stdout.log is optional/local
     checkpoints/                # NOT committed — local only; pull from remote via scp/rsync
     submissions/                # NOT committed — local only; pull from Kaggle CLI or remote
     split-manifests/            # committed — shared train/val split JSON files
@@ -98,6 +98,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Use judgment for local training: full local runs are allowed when the model is fast enough to fit the available GPU and the run is expected to complete safely; prefer local YOLO runs when they are materially faster than remote execution, and use TensorDock or Kaggle for larger or expensive runs that do not fit well on the RTX 3050 4GB
 - Outputs go to `outputs/` (gitignored)
 - Checkpoints (`.pt`, `.pth`) and submission CSVs are **not committed to git** — store locally under `artifacts/checkpoints/` and `artifacts/submissions/` (both gitignored). Pull from remotes via `kaggle kernels output` (Kaggle) or `scp`/`rsync` (TensorDock). Only metadata JSON files and small results CSVs under `artifacts/training-runs/` and `artifacts/inference-runs/` are committed. *(History: checkpoints and submission CSVs were previously LFS-tracked; this was stopped during the T-006/T-007 sprint, commit 96b2eda5, to reduce repo bloat. At end of challenge, selectively LFS-track curated artifacts as needed.)*
+- Raw training logs under `artifacts/training-runs/` are durable committed artifacts and must not be blocked by gitignore. Raw inference launcher logs are optional debugging artifacts: keep them locally when useful, but they do not need to be committed by default.
 - Pseudo-label JSON files (< 30 MB) are committed directly to git (no LFS needed). Generated merged annotation files (GT + pseudo-labels, produced by `train_mmdet.py --pseudo-label-json`) are NOT committed — regenerate locally or on fathom1 before each training run. Everything produced on remote machines (fathom1, Kaggle) must be copied back to this machine via scp/rsync so the local repo is the canonical artifact hub.
 - After any YOLO local training run completes, **immediately copy** `best.pt`, `last.pt`, and all periodic epoch checkpoints (e.g. `epoch5.pt` from `--save_period`) to `artifacts/checkpoints/<run-id>/` before any cleanup or output directory removal. T-008 lost its periodic checkpoints because this step was skipped — periodic epochs cannot be inferred after deletion and the fitness-best pick cannot be audited.
 - Agents working on training, inference, Kaggle/TensorDock run execution, or logging/backfilling training or inference results must read and follow `docs/run-tracking-policy.md`
@@ -108,6 +109,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Tracked training run names must append the training run ID suffix (example: `codetr-r50-baseline-T-004`)
 - Training run IDs are only burned by retained tracked runs; if a launch is scrapped before it yields a run worth logging, reuse that `T-NNN` on the corrected relaunch rather than incrementing
 - Tracked inference CSV filenames must append the inference run ID, and the source training run ID when known (example: `submission-I-009-from-T-004.csv`) so Kaggle UI entries remain identifiable
+- Closely related experiment families that are being judged together (for example model-size comparisons or k-fold campaigns) should stay on one branch and one tracking issue unless the workstreams are operationally distinct enough to justify separate review and merge paths
 - If a training launch fails after creating a WandB run, delete that failed WandB run before retrying so the project history stays clean
 - Keep the sprint issue journal terse: post only when a run starts and survives the babysitting period, when a meaningful event or issue occurs, and when the run finishes
 - For experiment-specific detail that would otherwise bloat the sprint issue, open a linked follow-up issue, document the experiment there, and close that follow-up issue when appropriate

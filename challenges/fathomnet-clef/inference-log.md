@@ -41,6 +41,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
 | I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
 | I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
+| I-025 | 2026-05-05 | YOLO | T-012 ep39 best | T-012 YOLO26l best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0459 | see notes |
+| I-026 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=2) + T-012best(w=1), iou_thr=0.55 | — | 0.0518 | see notes |
+| I-027 | 2026-05-05 | Ensemble | T-009ep12 + T-012best | WBF T-009ep12(w=1) + T-012best(w=1), iou_thr=0.55 | — | 0.0546 | see notes |
 | I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
@@ -1054,6 +1057,113 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 | Date | 2026-05-04 |
 | Public LB mAP | **0.0523** |
 | Notes | **Regressed vs both sources** (I-019=0.0572, I-020=0.0576). Same-architecture WBF between similar checkpoints halves scores on non-overlapping boxes, hurting recall. Cross-architecture ensembling (e.g. Co-DETR + YOLO) is required for WBF to be beneficial. |
+
+---
+
+### I-025 — T-012 YOLO26l best.pt local inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4 GB |
+| Evaluated split | test set |
+| Inputs | T-012 ep39 best.pt |
+| Repo commit | bb974cbdcb1a17d580e14dd1d375885410d58cbd |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-025/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-025/stdout.log |
+| Artifacts | artifacts/inference-runs/I-025/, artifacts/submissions/submission-I-025-from-T-012.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-012 ep39 best | artifacts/checkpoints/T-012-yolo26l-kaggle/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| imgsz | 1280 |
+| conf | 0.001 |
+| iou | 0.6 |
+| batch | 2 (reduced from 8 to avoid OOM on 3.68 GiB RTX 3050) |
+| augment | false |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0459** |
+| Notes | First local YOLO26l inference from Kaggle-trained T-012. imgsz=1280 matches training resolution; batch=2 required due to RTX 3050 VRAM. YOLO26l (0.0459) significantly underperforms Co-DETR T-009 (0.0576). Cross-architecture WBF (I-026/I-027) is the next experiment. |
+
+---
+
+### I-026 — WBF ensemble T-009ep12(w=2) + T-012best(w=1)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | Ensemble |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (CPU) |
+| Evaluated split | test set |
+| Inputs | I-020 CSV (T-009 ep12, LB=0.0576) + I-025 CSV (T-012 ep39, LB=0.0459) |
+| Repo commit | 8e90326d |
+| Config source | scripts/wbf_ensemble.py |
+| Artifacts | artifacts/submissions/submission-I-026-wbf-t009ep12-t012best.csv |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF |
+| Sources | I-020 (T-009 ep12 Co-DETR), I-025 (T-012 YOLO26l best) |
+| WBF IoU thresh | 0.55 |
+| WBF skip thresh | 0.001 |
+| Weights | [2.0, 1.0] — Co-DETR weighted higher per LB ratio |
+| Total predictions | 329,478 |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0518** |
+| Notes | Cross-architecture WBF (Co-DETR + YOLO) did not beat T-009 solo (0.0576). Up-weighting Co-DETR too aggressively (w=2) diluted YOLO's complementary detections. Compare with I-027 equal weights (0.0546). |
+
+---
+
+### I-027 — WBF ensemble T-009ep12(w=1) + T-012best(w=1) equal weights
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | Ensemble |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | local (CPU) |
+| Evaluated split | test set |
+| Inputs | I-020 CSV (T-009 ep12, LB=0.0576) + I-025 CSV (T-012 ep39, LB=0.0459) |
+| Repo commit | 8e90326d |
+| Config source | scripts/wbf_ensemble.py |
+| Artifacts | artifacts/submissions/submission-I-027-wbf-t009ep12-t012best-equal.csv |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF |
+| Sources | I-020 (T-009 ep12 Co-DETR), I-025 (T-012 YOLO26l best) |
+| WBF IoU thresh | 0.55 |
+| WBF skip thresh | 0.001 |
+| Weights | [1.0, 1.0] — equal weights ablation vs I-026 |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0546** |
+| Notes | Equal weights (0.0546) beat 2:1 weighting I-026 (0.0518), but both below T-009 solo (0.0576). The YOLO26l at LB=0.0459 is too weak to improve WBF — it adds low-confidence detections that dilute precision. Need stronger YOLO or better weight tuning. |
 
 ---
 

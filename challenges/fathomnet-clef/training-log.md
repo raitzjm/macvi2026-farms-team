@@ -29,6 +29,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-007 | 2026-05-03 | YOLOv26s | YOLOv26s local: 50 epochs, imgsz=1152, rect=True, batch=4, RTX 3050 4GB, underwater_v1 augmentation profile, shared-train-val-v1 split | 42 | 0.365 (shared-train-val-v1) |
 | T-009 | 2026-05-03 | Co-DETR | Co-DETR-R50 pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, PL from T-004 (1058 anns on 822 imgs), shared split | 42 | **0.407** (shared-train-val-v1, ep7) |
 | T-011 | 2026-05-05 | YOLO26s | YOLO26s Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4239** (ep39 best) |
+| T-012 | 2026-05-05 | YOLO26l | YOLO26l Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4462** (ep39 best) |
 
 ---
 
@@ -529,7 +530,7 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Track | YOLO |
 | Env | Kaggle kernel (ultralytics==8.4.42, torch==2.4.1+cu121) |
 | Platform | Kaggle T4×2 (NvidiaTeslaT4 x2) |
-| Duration | ~10.5h (50 epochs, Kaggle batch session) |
+| Duration | ~10.5h |
 | Seed | 42 |
 | Inputs | yolo26s.pt (COCO pretrained, Ultralytics) |
 | Repo commit | 6d906e02 (kernel pushed as Kaggle v5) |
@@ -537,52 +538,98 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Resolved config | artifacts/training-runs/T-011/resolved-config.yaml |
 | Stdout log | artifacts/training-runs/T-011/stdout.log |
 | Metrics artifact | artifacts/training-runs/T-011/results.csv |
-| Selected checkpoint | artifacts/checkpoints/T-011-yolo26s-kaggle/best.pt (epoch 39, Ultralytics fitness) |
+| Selected checkpoint | artifacts/checkpoints/T-011-yolo26s-kaggle/best.pt (epoch 39) |
 | Artifacts | artifacts/training-runs/T-011/, artifacts/checkpoints/T-011-yolo26s-kaggle/ |
-| WandB | None (wandb.login() not wired in v5; fixed in v6+) |
+| WandB | None (wandb.login() fix in v6+; v5 completed without it) |
 
 #### Model & Architecture
 | Field | Value |
 |---|---|
 | Architecture | YOLO26s |
 | Pretrained weights | yolo26s.pt (COCO) |
-| Input resolution | imgsz=1024, rect=False (DDP incompatible with rect) |
+| Input resolution | imgsz=1024, rect=False (DDP incompatible) |
 
 #### Dataset Config
 | Field | Value |
 |---|---|
-| Train split | kernel coco_to_yolo() val_split=0.1 seed=42 (~5,832 train / ~648 val) |
-| Val split | ~10% held out |
+| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (~5,832 train / ~648 val) |
 | Classes | all 32 |
-| PU strategy | none |
 | Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.2, fliplr=0.5 |
 
 #### Hyperparameters
 | Field | Value |
 |---|---|
 | Epochs | 50 |
-| Batch size | 16 (8/GPU on T4×2); batch=24 OOM'd with mosaic=0.85 |
-| save_period | 5 (epoch0, epoch5, …, epoch45) |
-| Optimizer | auto (Ultralytics default) |
-| lr0 | 0.01, cos_lr=True |
-| AMP | True |
-| patience | 0 (disabled — collect all epochs) |
+| Batch size | 16 (8/GPU); batch=24 OOM'd with mosaic=0.85 |
+| save_period | 5 |
+| Optimizer | auto, lr0=0.01, cos_lr=True |
+| patience | 0 |
 
 #### Results
 | Metric | Value |
 |---|---|
-| Best val mAP@[.5:.95] | **0.4239** (epoch 39, best.pt) |
+| Best val mAP@[.5:.95] | **0.4239** (epoch 39) |
 | Best val mAP@.50 | **0.5437** (epoch 39) |
-| val_cls minimum (PU-optimal) | epoch 28: val_cls=1.2192, mAP50-95=0.4092 |
-| last (epoch 50) | mAP50-95=0.3993, mAP50=0.5127 |
-| Periodic checkpoints on disk | epoch0, epoch5, epoch10, epoch15, epoch20, epoch25, epoch30, epoch35, epoch40, epoch45 |
+| val_cls min (PU-optimal) | epoch 28: val_cls=1.2192, mAP50-95=0.4092 |
+| Last (epoch 50) | mAP50-95=0.3993 |
+| Periodic checkpoints | epoch0, epoch5, …, epoch45 (10 total) |
+
+---
+
+### T-012 — YOLO26l Kaggle T4×2 (S-vs-L comparison vs T-011)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | Kaggle kernel (ultralytics==8.4.42, torch==2.4.1+cu121) |
+| Platform | Kaggle T4×2 (NvidiaTeslaT4 x2) |
+| Duration | ~13h |
+| Seed | 42 |
+| Inputs | yolo26l.pt (COCO pretrained, Ultralytics) |
+| Repo commit | 5baf5e19 (kernel pushed as Kaggle v4) |
+| Config source | kaggle/yolo26l-t012/kernel_train.py |
+| Resolved config | artifacts/training-runs/T-012/resolved-config.yaml |
+| Stdout log | artifacts/training-runs/T-012/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-012/results.csv |
+| Selected checkpoint | artifacts/checkpoints/T-012-yolo26l-kaggle/best.pt (epoch 39) |
+| Artifacts | artifacts/training-runs/T-012/, artifacts/checkpoints/T-012-yolo26l-kaggle/ |
+| WandB | None (wandb.login() fix in v6+; v4 completed without it) |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | YOLO26l |
+| Pretrained weights | yolo26l.pt (COCO) |
+| Input resolution | imgsz=1024, rect=False (DDP incompatible) |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train/val split | coco_to_yolo() val_split=0.1 seed=42 (~5,832 train / ~648 val) |
+| Classes | all 32 |
+| Augmentation | mosaic=0.85, close_mosaic=10, cos_lr, hsv_h=0.01, hsv_s=0.2, hsv_v=0.15, translate=0.05, scale=0.2, fliplr=0.5 |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 50 |
+| Batch size | 16 (8/GPU) |
+| save_period | 5 |
+| Optimizer | auto, lr0=0.01, cos_lr=True |
+| patience | 0 |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Best val mAP@[.5:.95] | **0.4462** (epoch 39) |
+| Best val mAP@.50 | **0.5781** (epoch 39) |
+| val_cls min (PU-optimal) | epoch 25: val_cls=1.1537, mAP50-95=0.4014 |
+| Last (epoch 50) | mAP50-95=0.4383 |
+| Periodic checkpoints | epoch0, epoch5, …, epoch45 (10 total) |
 
 #### Notes
-T-011 is the Kaggle rerun of T-008 with the primary goal of recovering intermediate checkpoints lost when T-008's output directory was wiped. Key differences from T-008: imgsz=1024 (vs 1152, reduced for DDP headroom), rect=False (DDP-incompatible), batch=16, mosaic=0.85 (vs 0 in T-008's underwater_v1 profile), cos_lr=True.
-
-Val metrics are substantially higher than T-008 (mAP50-95 0.424 vs 0.366). The mosaic augmentation and imgsz difference are confounders — direct comparison to T-008 LB is needed to isolate the effect. Best epoch (39) is the Ultralytics fitness selection; PU-optimal candidate is epoch 28 (val_cls min). Epoch 25 and epoch 30 are both on disk and bracket the min.
-
-Kernel exited with ERROR status due to non-fatal SyntaxWarnings in nbconvert (mistune, filter_links); all training and inference completed normally and artifacts were downloaded successfully.
+T-012 is the YOLO26l counterpart to T-011 (YOLO26s) with identical settings — model size is the only variable. T-012 outperforms T-011 by +0.022 mAP50-95 at best epoch (0.446 vs 0.424). Both peaked at epoch 39. T-012 produced 35,453 inference rows vs T-011's 56,408 — the larger model is more selective. val_cls min is earlier (epoch 25 vs 28), suggesting T-012's classifier fits faster. The raw `stdout.log` was recovered after the fact from `kaggle kernels logs raitzjm/fathomnet-yolo26l-t-012`, so it is a Kaggle console JSON export rather than a tee'd `/kaggle/working/train.log`. Pending LB inference to determine whether the val gain translates.
 
 ---
 

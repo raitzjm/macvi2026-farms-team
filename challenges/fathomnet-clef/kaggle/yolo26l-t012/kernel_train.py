@@ -8,11 +8,8 @@ cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Run a full 50-epoch YOLO26l training at imgsz=1152 on Kaggle for
 S-vs-L comparison against T-011 (YOLO26s). Identical settings so model size
-is the only variable. batch=-1 (Ultralytics autobatch).
-
-WandB key injected at push time via push_kernel.sh --wandb-key.
-The placeholder __WANDB_KEY_PLACEHOLDER__ is replaced by sed before push;
-tracked source stays clean.
+is the only variable. batch=16 (8/GPU on T4x2), imgsz=1024. mosaic=0.85.
+WandB key injected at push time.
 
 Inputs (mounted automatically from kernel-metadata.json):
   /kaggle/input/fathomnet-2026/                  -> JSONs only (no images)
@@ -238,12 +235,16 @@ _write_json(
 RUN_NAME = "fathomnet-yolo26l-T-012"
 WANDB_PROJECT = "fathomnet2026"
 if USE_WANDB:
+    import wandb
+    wandb.login(key=WANDB_API_KEY)
     os.environ["WANDB_ENTITY"] = "little_farms"
+    os.environ["WANDB_PROJECT"] = WANDB_PROJECT
     try:
         from ultralytics.utils import SETTINGS
         SETTINGS.update({"wandb": True})
     except Exception as e:
         print(f"[wandb] settings update failed: {e}")
+    print(f"[wandb] logged in — entity=little_farms project={WANDB_PROJECT} run={RUN_NAME}")
 
 # ---------------------------------------------------------------------------
 # 6. Train — T-008 parity settings.
@@ -258,27 +259,23 @@ model = YOLO("yolo26l.pt")
 model.train(
     data=str(yaml_path),
     epochs=50,
-    patience=100,
-    imgsz=1152,
-    rect=True,
-    batch=-1,          # Ultralytics autobatch (~60% VRAM)
+    patience=0,        # disable early stopping — collect all 50 epochs for S-vs-L comparison
+    imgsz=1024,        # reduced from 1152: fits batch=16 on T4x2 for YOLO26l; saves ~20% compute
+    rect=False,        # rect=True incompatible with DDP; Lead ruling: use mosaic as compensation
+    batch=16,          # 8/GPU on T4x2 at imgsz=1024 for YOLO26l (larger model needs more headroom)
     save_period=5,
-    workers=2,
+    workers=4,
     optimizer="auto",
     lr0=0.01,
-    # Underwater augmentation set (mirrors T-008 augmentation profile)
-    mosaic=0,
-    mixup=0,
-    cutmix=0,
-    copy_paste=0,
-    erasing=0,
-    auto_augment=None,
-    close_mosaic=0,
+    cos_lr=True,       # smooth decay over 50 epochs
+    mosaic=0.85,       # 85% mosaic probability
+    close_mosaic=10,
+    # Mild underwater-tuned color/spatial augs (non-default)
     hsv_h=0.01,
     hsv_s=0.2,
     hsv_v=0.15,
     translate=0.05,
-    scale=0.2,
+    scale=0.5,
     fliplr=0.5,
     project=WANDB_PROJECT,
     name=RUN_NAME,
@@ -318,6 +315,14 @@ if resolved_cfg_src.exists():
 results_csv_src = save_dir / "results.csv"
 if results_csv_src.exists():
     shutil.copy2(results_csv_src, WORK / "results.csv")
+
+# NCCL cleanup — prevents exitcode=120 crash at DDP teardown (same fix as Co-DETR kernel).
+try:
+    import torch.distributed as dist
+    if dist.is_available() and dist.is_initialized():
+        dist.destroy_process_group()
+except Exception:
+    pass
 
 # ---------------------------------------------------------------------------
 # 7. Inference on test_set -> submission.csv.
