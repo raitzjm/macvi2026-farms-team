@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-025",
+  "checkpoint_path": "/home/farms/macvi2026-farms-team/challenges/fathomnet-clef/artifacts/checkpoints/T-012-yolo26l-kaggle/best.pt",
+  "config_source": "scripts/infer_yolo.py",
+  "git_commit": "bb974cbdcb1a17d580e14dd1d375885410d58cbd",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/submission-I-025-from-T-012.csv",
+  "resolved_config": "artifacts/inference-runs/I-025/resolved-config.json",
+  "run_id": "I-025",
+  "source_train_id": "T-012",
+  "stdout_log": "artifacts/inference-runs/I-025/stdout.log",
+  "track": "YOLO"
+}

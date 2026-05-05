@@ -41,6 +41,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
 | I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
 | I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
+| I-025 | 2026-05-05 | YOLO | T-012 ep39 best | T-012 YOLO26l best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | pending | see notes |
 
 ---
 
@@ -1051,6 +1052,46 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 | Date | 2026-05-04 |
 | Public LB mAP | **0.0523** |
 | Notes | **Regressed vs both sources** (I-019=0.0572, I-020=0.0576). Same-architecture WBF between similar checkpoints halves scores on non-overlapping boxes, hurting recall. Cross-architecture ensembling (e.g. Co-DETR + YOLO) is required for WBF to be beneficial. |
+
+---
+
+### I-025 — T-012 YOLO26l best.pt local inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4 GB |
+| Evaluated split | test set |
+| Inputs | T-012 ep39 best.pt |
+| Repo commit | bb974cbdcb1a17d580e14dd1d375885410d58cbd |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-025/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-025/stdout.log |
+| Artifacts | artifacts/inference-runs/I-025/, artifacts/submissions/submission-I-025-from-T-012.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-012 ep39 best | artifacts/checkpoints/T-012-yolo26l-kaggle/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| imgsz | 1280 |
+| conf | 0.001 |
+| iou | 0.6 |
+| batch | 2 (reduced from 8 to avoid OOM on 3.68 GiB RTX 3050) |
+| augment | false |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | **pending** |
+| Notes | First local YOLO26l inference from Kaggle-trained T-012. imgsz=1280 matches training resolution; batch=2 required due to RTX 3050 VRAM. |
 
 ---
 
