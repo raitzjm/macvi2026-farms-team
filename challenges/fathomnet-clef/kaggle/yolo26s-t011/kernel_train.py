@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-FathomNet-CLEF 2026 — YOLO26s T-011 (Kaggle T4x2 rerun of T-008).
+FathomNet-CLEF 2026 — YOLO26s T-011 (Kaggle rerun of T-008).
+
+NOTE: kernel-metadata.json sets machine_shape=NvidiaTeslaT4. For T4×2, set
+Accelerator to "GPU T4 x2" in the Kaggle UI before running — the CLI metadata
+cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Recover the intermediate checkpoints lost in T-008 and run a full
 50-epoch YOLO26s training at imgsz=1152 on Kaggle. T-008 equivalent settings
@@ -276,7 +280,7 @@ model.train(
     translate=0.05,
     scale=0.2,
     fliplr=0.5,
-    project=str(WORK),
+    project=WANDB_PROJECT,
     name=RUN_NAME,
     exist_ok=True,
     device=device,
@@ -344,7 +348,7 @@ for i in range(0, len(test_paths), BATCH):
     chunk_ids = test_ids[i: i + BATCH]
     results = infer_model.predict(
         source=[str(p) for p in chunk],
-        imgsz=640,
+        imgsz=640,  # intentional: quick Kaggle submission; local re-inference at imgsz=1152 done separately
         conf=0.001,
         iou=0.6,
         device=0,
