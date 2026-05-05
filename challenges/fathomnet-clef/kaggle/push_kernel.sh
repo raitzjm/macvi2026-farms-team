@@ -32,7 +32,7 @@ done
 [[ -n "$WANDB_KEY" ]] || { echo "missing --wandb-key" >&2; exit 2; }
 
 KERNEL_DIR_ABS="$(cd "$KERNEL_DIR" && pwd)"
-SLUG=$(jq -r '.id' "$KERNEL_DIR_ABS/kernel-metadata.json")
+SLUG=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['id'])" "$KERNEL_DIR_ABS/kernel-metadata.json")
 TMP="$(mktemp -d "/tmp/kaggle-push-${SLUG//\//-}-XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
