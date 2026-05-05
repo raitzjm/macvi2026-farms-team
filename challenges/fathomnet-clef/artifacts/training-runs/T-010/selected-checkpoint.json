@@ -1,0 +1,4 @@
+{
+  "relative_path": "outputs/codetr-r50-pseudo-label-T-010/mmdet_run/best_coco_bbox_mAP_epoch_10.pth",
+  "selection": "training framework best checkpoint"
+}
