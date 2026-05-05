@@ -2,11 +2,15 @@
 # push_kernel.sh — push a Kaggle kernel with WandB key injected at push time.
 #
 # Usage:
-#   ./push_kernel.sh <kernel-dir> --wandb-key $WANDB_API_KEY [--no-follow]
+#   ./push_kernel.sh <kernel-dir> [--wandb-key $WANDB_API_KEY] [--no-follow]
+#
+# --wandb-key is optional. If not provided and the kernel has no placeholder,
+# the push proceeds without WandB injection (e.g. kernels with USE_WANDB=False).
+# If not provided but a placeholder exists, the push errors rather than sending a blank key.
 #
 # Behavior:
 #   1. Copy the kernel dir to a temp dir
-#   2. sed-replace __WANDB_KEY_PLACEHOLDER__ with the provided key in *.py
+#   2. If --wandb-key given: sed-replace __WANDB_KEY_PLACEHOLDER__ with the key
 #   3. kaggle kernels push from the temp dir
 #   4. trap: always rm -rf the temp dir on exit (no key left on disk)
 #
@@ -16,7 +20,7 @@
 # (user rotates post-sprint per AGENTS.md guidance).
 set -euo pipefail
 
-KERNEL_DIR="${1:?Usage: $0 <kernel-dir> --wandb-key <key> [--no-follow]}"
+KERNEL_DIR="${1:?Usage: $0 <kernel-dir> [--wandb-key <key>] [--no-follow]}"
 shift
 
 WANDB_KEY=""
@@ -29,8 +33,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-[[ -n "$WANDB_KEY" ]] || { echo "missing --wandb-key" >&2; exit 2; }
-
 KERNEL_DIR_ABS="$(cd "$KERNEL_DIR" && pwd)"
 SLUG=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['id'])" "$KERNEL_DIR_ABS/kernel-metadata.json")
 TMP="$(mktemp -d "/tmp/kaggle-push-${SLUG//\//-}-XXXXXX")"
@@ -38,13 +40,15 @@ trap 'rm -rf "$TMP"' EXIT
 
 cp -r "$KERNEL_DIR_ABS"/. "$TMP/"
 
-# Substitute placeholder; use | as sed delim to avoid escaping slashes in the key.
-find "$TMP" -maxdepth 2 -type f -name '*.py' -print0 \
-    | xargs -0 sed -i "s|__WANDB_KEY_PLACEHOLDER__|$WANDB_KEY|g"
+if [[ -n "$WANDB_KEY" ]]; then
+    # Substitute placeholder; use | as sed delim to avoid escaping slashes in the key.
+    find "$TMP" -maxdepth 2 -type f -name '*.py' -print0 \
+        | xargs -0 sed -i "s|__WANDB_KEY_PLACEHOLDER__|$WANDB_KEY|g"
+fi
 
-# Sanity check: any remaining placeholder means we missed a file.
+# Sanity check: if a placeholder remains but no key was provided, error rather than push a blank key.
 if grep -RIln '__WANDB_KEY_PLACEHOLDER__' "$TMP" 2>/dev/null | grep -q .; then
-    echo "[push] ERROR: placeholder remained after substitution — check kernel .py files" >&2
+    echo "[push] ERROR: placeholder found but --wandb-key not provided — pass the key or remove the placeholder" >&2
     exit 3
 fi
 

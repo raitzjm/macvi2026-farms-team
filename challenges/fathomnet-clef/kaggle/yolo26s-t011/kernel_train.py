@@ -258,7 +258,7 @@ model.train(
     optimizer="auto",
     lr0=0.01,
     cos_lr=True,       # smooth decay over 50 epochs
-    mosaic=0.5,        # 50% mosaic probability (reduced from default 1.0; preserves letterboxed view)
+    mosaic=0.85,       # 85% mosaic probability
     close_mosaic=10,
     # Mild underwater-tuned color/spatial augs (non-default)
     hsv_h=0.01,
