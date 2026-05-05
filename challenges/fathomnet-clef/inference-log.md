@@ -41,6 +41,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-020 | 2026-05-04 | Co-DETR | T-009 ep12 last | T-009 Co-DETR R50+PL ep12 last local non-SAHI | — | 0.0576 | see notes |
 | I-021 | 2026-05-04 | Co-DETR | T-009 ep12 | TTA-hflip on T-009 ep12, WBF iou=0.6 | — | 0.0521 | see notes |
 | I-022 | 2026-05-04 | Ensemble | T-009 ep7+ep12 | WBF(I-019, I-020) equal weights, iou=0.55 | — | 0.0523 | see notes |
+| I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
+| I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
+| I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
 
 ---
 
@@ -1051,6 +1054,153 @@ T-009 ep12 (val mAP=0.404) LB 0.0576 is the new sprint best, exceeding T-004/I-0
 | Date | 2026-05-04 |
 | Public LB mAP | **0.0523** |
 | Notes | **Regressed vs both sources** (I-019=0.0572, I-020=0.0576). Same-architecture WBF between similar checkpoints halves scores on non-overlapping boxes, hurting recall. Cross-architecture ensembling (e.g. Co-DETR + YOLO) is required for WBF to be beneficial. |
+
+---
+
+### I-028 — T-011 yolo26s best.pt local inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~1m50s |
+| Evaluated split | test set |
+| Inputs | T-011 best.pt (Ultralytics fitness best, epoch 39) |
+| Repo commit | 1c7db99ebe71219c6b4896ff11457956a1c2b116 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-028/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-028/stdout.log |
+| Artifacts | artifacts/inference-runs/I-028/, artifacts/submissions/submission-I-028-from-T-011.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-011 | artifacts/checkpoints/T-011-yolo26s-kaggle/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1280 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 2 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0449** |
+| Notes | Fair apples-to-apples comparator against T-012 I-025, which used the same inference settings and scored 0.0459. T-011 best.pt lands only 0.0010 behind T-012 best.pt on LB despite the larger validation mAP gap. |
+
+#### Notes
+Produced 46,451 predictions (46,452 CSV lines including header). This establishes the direct S-vs-L comparison under matched inference settings: YOLO26s is slightly worse than YOLO26l, but the LB gap is small.
+
+---
+
+### I-029 — T-011 yolo26s epoch30.pt local inference
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~1m50s |
+| Evaluated split | test set |
+| Inputs | T-011 epoch30.pt (nearest saved checkpoint after val_cls minimum at epoch 28) |
+| Repo commit | 1c7db99ebe71219c6b4896ff11457956a1c2b116 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-029/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-029/stdout.log |
+| Artifacts | artifacts/inference-runs/I-029/, artifacts/submissions/submission-I-029-from-T-011.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-011 | artifacts/checkpoints/T-011-yolo26s-kaggle/epoch30.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1280 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 2 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0467** |
+| Notes | Beats both T-011 best.pt at 1280 (I-028=0.0449) and T-012 best.pt at 1280 (I-025=0.0459). The val-cls-adjacent checkpoint generalized better than the fitness-best checkpoint on LB. |
+
+#### Notes
+Produced 65,251 predictions (65,252 CSV lines including header). This is the strongest evidence from the T-011 comparison set: for the smaller YOLO26s model, the checkpoint near the classifier-loss minimum transfers better to the leaderboard than the validation-fitness best checkpoint.
+
+---
+
+### I-030 — T-011 yolo26s best.pt local inference at train resolution
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | YOLO |
+| Env | ultralytics (challenges/fathomnet-clef/envs/ultralytics/) |
+| Platform | local RTX 3050 4GB |
+| Duration | ~1m36s |
+| Evaluated split | test set |
+| Inputs | T-011 best.pt (Ultralytics fitness best, epoch 39) |
+| Repo commit | 1c7db99ebe71219c6b4896ff11457956a1c2b116 |
+| Config source | scripts/infer_yolo.py |
+| Resolved config | artifacts/inference-runs/I-030/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-030/stdout.log |
+| Artifacts | artifacts/inference-runs/I-030/, artifacts/submissions/submission-I-030-from-T-011.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-011 | artifacts/checkpoints/T-011-yolo26s-kaggle/best.pt |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | imgsz=1024 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+| Batch | 2 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | see Kaggle UI |
+| Date | 2026-05-05 |
+| Public LB mAP | **0.0497** |
+| Notes | Best score of the T-011 comparison set. For YOLO26s, test-time inference at the training resolution outperformed the larger 1280 setting by +0.0048 over I-028. |
+
+#### Notes
+Produced 46,009 predictions (46,010 CSV lines including header). The smaller YOLO26s model appears to prefer train-resolution inference over the 1280 upscaling used for the T-012 comparison pass. Combined with I-029, this suggests YOLO26s is viable for lightweight side-track experiments and should not be judged only by the 1280 best.pt comparator.
 
 ---
 

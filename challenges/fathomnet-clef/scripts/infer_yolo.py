@@ -105,6 +105,23 @@ def assert_gpu_if_needed(device: str):
         raise RuntimeError("CUDA device requested but torch.cuda.is_available() is False")
 
 
+def infer_platform(device: str) -> str:
+    normalized = str(device).strip().lower()
+    if normalized == "cpu":
+        return "local (CPU)"
+
+    import torch
+
+    try:
+        device_idx = int(normalized)
+    except ValueError:
+        return f"local ({device})"
+
+    if not torch.cuda.is_available():
+        return f"local ({device})"
+    return f"local {torch.cuda.get_device_name(device_idx)}"
+
+
 def run_regular_yolo(
     checkpoint: str,
     images: list[dict],
@@ -298,6 +315,7 @@ def main():
                     "git_commit": git_commit(challenge_root),
                     "kind": "inference",
                     "output_csv": relpath_str(output_csv, challenge_root),
+                    "platform": infer_platform(args.device),
                     "resolved_config": relpath_str(artifact_dir / "resolved-config.json", challenge_root),
                     "run_id": args.run_id,
                     "source_train_id": args.source_train_id,
