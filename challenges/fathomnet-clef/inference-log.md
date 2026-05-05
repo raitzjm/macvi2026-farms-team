@@ -47,7 +47,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
-| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | TBD | see notes |
+| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0576 | see notes |
 | I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | TBD | see notes |
 | I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | TBD | see notes |
 
@@ -1352,11 +1352,11 @@ Produced 46,009 predictions (46,010 CSV lines including header). The smaller YOL
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
-| Public LB mAP | TBD (pending) |
+| Public LB mAP | **0.0576** |
 | Predictions | 300,674 |
 
 #### Notes
-Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). Final epoch (ep12) inference. LB pending — baseline T-009 ep12 reached 0.0576.
+Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). LB matched T-009 ep12 baseline exactly — no improvement from iterative PL.
 
 ---
 
