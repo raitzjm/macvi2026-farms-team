@@ -8,8 +8,8 @@ cannot pin the dual-GPU type (consistent with all other kernels in this repo).
 
 Purpose: Run a full 50-epoch YOLO26l training at imgsz=1152 on Kaggle for
 S-vs-L comparison against T-011 (YOLO26s). Identical settings so model size
-is the only variable. batch=16 (8/GPU on T4x2), imgsz=1024. WandB disabled;
-results tracked via results.csv download after training completes.
+is the only variable. batch=16 (8/GPU on T4x2), imgsz=1024. mosaic=0.85.
+WandB key injected at push time.
 
 Inputs (mounted automatically from kernel-metadata.json):
   /kaggle/input/fathomnet-2026/                  -> JSONs only (no images)
@@ -60,9 +60,15 @@ subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
 # ---------------------------------------------------------------------------
 WORK = Path("/kaggle/working")
 
-# WandB: disabled for T-011/T-012 (push-time injection unreliable on Kaggle;
-# results tracked via results.csv and kaggle kernels output download).
-USE_WANDB = False
+WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
+if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":
+    os.environ["WANDB_API_KEY"] = WANDB_API_KEY
+    USE_WANDB = True
+    print("[setup] WANDB_API_KEY set via push-time injection")
+else:
+    os.environ.pop("WANDB_API_KEY", None)
+    USE_WANDB = False
+    print("[setup] WANDB disabled: no key injected at push time")
 
 
 class _TeeWriter:
@@ -258,7 +264,7 @@ model.train(
     optimizer="auto",
     lr0=0.01,
     cos_lr=True,       # smooth decay over 50 epochs
-    mosaic=0.5,        # 50% mosaic probability (reduced from default 1.0; preserves letterboxed view)
+    mosaic=0.85,       # 85% mosaic probability
     close_mosaic=10,
     # Mild underwater-tuned color/spatial augs (non-default)
     hsv_h=0.01,
