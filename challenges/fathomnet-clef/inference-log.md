@@ -47,6 +47,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
+| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | TBD | see notes |
+| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | TBD | see notes |
+| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | TBD | see notes |
 
 ---
 
@@ -1311,6 +1314,135 @@ Produced 65,251 predictions (65,252 CSV lines including header). This is the str
 
 #### Notes
 Produced 46,009 predictions (46,010 CSV lines including header). The smaller YOLO26s model appears to prefer train-resolution inference over the 1280 upscaling used for the T-012 comparison pass. Combined with I-029, this suggests YOLO26s is viable for lightweight side-track experiments and should not be judged only by the 1280 best.pt comparator.
+
+---
+
+### I-031 — T-010 Co-DETR R50+2ndPL epoch_12 last local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | Co-DETR |
+| Env | mmdet |
+| Platform | local RTX 3050 4GB |
+| Duration | ~8m |
+| Evaluated split | test set |
+| Inputs | T-010 epoch_12.pth |
+| Config source | scripts/infer_codetr.py |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-010 | artifacts/checkpoints/T-010/epoch_12.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | TBD (pending) |
+| Predictions | 300,674 |
+
+#### Notes
+Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). Final epoch (ep12) inference. LB pending — baseline T-009 ep12 reached 0.0576.
+
+---
+
+### I-032 — T-010 Co-DETR R50+2ndPL epoch_10 (best val mAP) local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | Co-DETR |
+| Env | mmdet |
+| Platform | local RTX 3050 4GB |
+| Duration | ~8m |
+| Evaluated split | test set |
+| Inputs | T-010 epoch_10.pth (best val mAP=0.353) |
+| Config source | scripts/infer_codetr.py |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-010 | artifacts/checkpoints/T-010/epoch_10.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | TBD (pending) |
+| Predictions | 278,952 |
+
+#### Notes
+Best val mAP checkpoint for T-010. LB pending to compare with ep12 and ep8.
+
+---
+
+### I-033 — T-010 Co-DETR R50+2ndPL epoch_8 local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-05 |
+| Track | Co-DETR |
+| Env | mmdet |
+| Platform | local RTX 3050 4GB |
+| Duration | ~8m |
+| Evaluated split | test set |
+| Inputs | T-010 epoch_8.pth |
+| Config source | scripts/infer_codetr.py |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-010 | artifacts/checkpoints/T-010/epoch_8.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | 0.6 |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-05 |
+| Public LB mAP | TBD (pending) |
+| Predictions | 298,870 |
+
+#### Notes
+Early checkpoint (ep8) as hedge per codex recommendation. LB pending.
 
 ---
 
