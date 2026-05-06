@@ -105,6 +105,7 @@ Do not leave stale or incorrect documentation — future agents depend on it.
 - Agents working on TensorDock orchestration or remote training execution must read and follow `docs/tensordock-remote-workflow.md`
 - For FathomNet sprint execution, the primary agent should act as an orchestrator and manager: delegate implementation, monitoring, review, and other sidecar work to sub-agents where practical, and keep the top-level thread focused on coordination, decisions, and information flow between lead, worker, and reviewer agents
 - WandB credentials must come from the `WANDB_API_KEY` environment variable; do not add file-based secret fallbacks in tracked scripts
+- FathomNet Kaggle GPU kernels should keep `kernel-metadata.json` set to `"machine_shape": "NvidiaTeslaT4"` as the standard metadata value unless the lead explicitly changes the accelerator strategy
 - All FathomNet training runs must log to WandB entity `little_farms`, project `fathomnet2026`
 - Tracked training run names must append the training run ID suffix (example: `codetr-r50-baseline-T-004`)
 - Training run IDs are only burned by retained tracked runs; if a launch is scrapped before it yields a run worth logging, reuse that `T-NNN` on the corrected relaunch rather than incrementing

@@ -1,0 +1,9 @@
+{
+  "fold_index": 2,
+  "fold_name": "fold-2",
+  "kernel_dir_name": "yolo26s-t014-fold2",
+  "machine_shape": "NvidiaTeslaT4",
+  "manifest_file": "t014-yolo26s-kfold-v1.json",
+  "run_id": "T-016",
+  "run_name": "fathomnet-yolo26s-T-016-fold-2"
+}
