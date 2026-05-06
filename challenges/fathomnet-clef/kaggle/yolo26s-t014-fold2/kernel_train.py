@@ -166,7 +166,12 @@ _img_candidates = [
 ]
 IMG_ROOT = next((path for path in _img_candidates if (path / "train").exists()), None)
 if IMG_ROOT is None:
-    raise RuntimeError("Image mirror not found under /kaggle/input")
+    for path in Path("/kaggle/input").rglob("train"):
+        if path.is_dir() and any(path.iterdir()):
+            IMG_ROOT = path.parent
+            break
+if IMG_ROOT is None:
+    raise RuntimeError(f"Image mirror not found under /kaggle/input; contents={list(Path('/kaggle/input').iterdir())}")
 
 print(f"[cfg] run_id={FOLD_CONFIG['run_id']} fold={FOLD_CONFIG['fold_name']}")
 print(f"[cfg] manifest={FOLD_CONFIG['manifest_file']}")
