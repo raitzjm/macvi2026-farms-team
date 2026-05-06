@@ -18,7 +18,7 @@ MANIFEST_PATH = CHALLENGE_ROOT / "artifacts" / "split-manifests" / "t014-yolo26s
 
 def main():
     manifest_name = MANIFEST_PATH.name
-    manifest_text = MANIFEST_PATH.read_text()
+    manifest_python = repr(json.loads(MANIFEST_PATH.read_text()))
     template_text = (TEMPLATE_DIR / "kernel_train.py").read_text()
     for spec in all_fold_specs():
         kernel_dir_name = f"yolo26s-t014-fold{spec['fold_index']}"
@@ -38,10 +38,10 @@ def main():
         }
         rendered_kernel = template_text.replace(
             "__FOLD_CONFIG_JSON__",
-            json.dumps(fold_config, indent=2, sort_keys=True),
+            repr(fold_config),
         ).replace(
             "__MANIFEST_JSON__",
-            manifest_text.strip(),
+            manifest_python,
         )
         (kernel_dir / "kernel_train.py").write_text(rendered_kernel)
 
