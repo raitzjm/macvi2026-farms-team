@@ -53,8 +53,8 @@ subprocess.check_call(
 
 WORK = Path("/kaggle/working")
 KERNEL_ROOT = Path(__file__).resolve().parent
-FOLD_CONFIG = json.loads((KERNEL_ROOT / "fold-config.json").read_text())
-MANIFEST = json.loads((KERNEL_ROOT / FOLD_CONFIG["manifest_file"]).read_text())
+FOLD_CONFIG = __FOLD_CONFIG_JSON__
+MANIFEST = __MANIFEST_JSON__
 
 WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
 if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":

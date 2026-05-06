@@ -18,13 +18,14 @@ MANIFEST_PATH = CHALLENGE_ROOT / "artifacts" / "split-manifests" / "t014-yolo26s
 
 def main():
     manifest_name = MANIFEST_PATH.name
+    manifest_text = MANIFEST_PATH.read_text()
+    template_text = (TEMPLATE_DIR / "kernel_train.py").read_text()
     for spec in all_fold_specs():
         kernel_dir_name = f"yolo26s-t014-fold{spec['fold_index']}"
         kernel_dir = KAGGLE_ROOT / kernel_dir_name
         if kernel_dir.exists():
             shutil.rmtree(kernel_dir)
         shutil.copytree(TEMPLATE_DIR, kernel_dir)
-        shutil.copy2(MANIFEST_PATH, kernel_dir / manifest_name)
 
         fold_config = {
             "run_id": spec["run_id"],
@@ -35,7 +36,14 @@ def main():
             "kernel_dir_name": kernel_dir_name,
             "machine_shape": spec["machine_shape"],
         }
-        (kernel_dir / "fold-config.json").write_text(json.dumps(fold_config, indent=2, sort_keys=True) + "\n")
+        rendered_kernel = template_text.replace(
+            "__FOLD_CONFIG_JSON__",
+            json.dumps(fold_config, indent=2, sort_keys=True),
+        ).replace(
+            "__MANIFEST_JSON__",
+            manifest_text.strip(),
+        )
+        (kernel_dir / "kernel_train.py").write_text(rendered_kernel)
 
         metadata = {
             "id": spec["slug"],
