@@ -8,11 +8,12 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 > Backfill of historical entries is not required — note the effective date of each format change.
 > Last updated: 2026-04-30
 
-> **2026-04-30 artifact policy:** every new tracked inference run must have a durable bundle at
+> **2026-04-30 artifact policy:** every new tracked inference run must have a tracked bundle at
 > `artifacts/inference-runs/I-NNN/` with `metadata.json`, the resolved inference config snapshot,
-> and a raw `stdout.log` whenever the launcher can capture it. The submission CSV remains the
-> durable payload under `artifacts/submissions/` and is referenced from both the bundle and the
-> log entry.
+> and a raw `stdout.log` whenever the launcher can capture it. Submission CSVs under
+> `artifacts/submissions/` are local payloads by default under the current ignore rules, so tracked
+> bundles and log entries must record enough metadata to identify the submitted file even when the
+> CSV itself is not versioned.
 
 ---
 
@@ -47,9 +48,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
-| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | 52368031 | 0.0503 | see notes |
-| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | 52368142 | 0.0404 | see notes |
-| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | 52368235 | 0.0384 | see notes |
+| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | 52368031 |
+| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | 52368142 |
+| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | 52368235 |
 
 ---
 
