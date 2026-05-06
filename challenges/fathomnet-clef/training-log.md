@@ -591,6 +591,8 @@ Recovered artifacts also show this run was not initialized from the official Co-
 
 This extra pseudo-label coverage did not help validation. T-010 peaked at 0.353 mAP@[.5:.95], well below T-009's 0.407. The framework-best checkpoint is epoch 10, but epoch 12 ties it on mAP@[.5:.95] and is slightly stronger on mAP@.75 and large-object AP, so both deserved leaderboard comparison.
 
+Post-hoc regression review after the local `I-031`/`I-032`/`I-033` submissions showed that T-010 is a confounded experiment, not a clean test of second-iteration pseudo-labeling. Relative to T-009, it changed two variables at once: the pseudo-label source and the initialization regime. The strongest current hypothesis is that losing the official Co-DINO `load_from` checkpoint was the primary regression driver, because T-010 starts far behind T-009 in early validation and only partially closes the gap late. That means T-010 should not be treated as evidence that second-iteration pseudo-labeling is intrinsically worse; the highest-value follow-up is a controlled rerun of T-010 with the T-009-derived pseudo-labels but the T-009 initialization restored.
+
 Recovered locally on 2026-05-05 from the remote `fathom1` clone: the durable training bundle now lives under `artifacts/training-runs/T-010/`, and the full retained checkpoint set was mirrored into `artifacts/checkpoints/T-010/`. Remote `T-009` and `T-010` checkpoint files were then deleted from `fathom1` after local verification.
 
 WandB: https://wandb.ai/little_farms/fathomnet2026/runs/kvrvlc7i
