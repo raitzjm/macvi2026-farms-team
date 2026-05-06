@@ -47,9 +47,9 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-028 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0449 | see notes |
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
-| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | see notes |
-| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | see notes |
-| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | see notes |
+| I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | 52368031 | 0.0503 | see notes |
+| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | 52368142 | 0.0404 | see notes |
+| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | 52368235 | 0.0384 | see notes |
 
 ---
 
@@ -1352,11 +1352,12 @@ Produced 46,009 predictions (46,010 CSV lines including header). The smaller YOL
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
+| Kaggle submission ID | 52368031 |
 | Public LB mAP | **0.0503** |
 | Predictions | 300,674 |
 
 #### Notes
-Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). LB dropped vs T-009 ep12 baseline (0.0576 → 0.0503, -0.0073). Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
+Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). LB dropped vs T-009 ep12 baseline (0.0576 → 0.0503, -0.0073). Audit rerun on 2026-05-06 reproduced the previously-submitted local CSV byte-for-byte. Recorded local CSV fingerprint: `sha256=85693701ec15a473e742cec7d21c7ff8f851c236e344c3802265bc168c6d681b`, `300,675` lines including header. The submission CSV itself remains local-only and is ignored by git.
 
 ---
 
@@ -1395,11 +1396,12 @@ Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 a
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
+| Kaggle submission ID | 52368142 |
 | Public LB mAP | **0.0404** |
 | Predictions | 278,952 |
 
 #### Notes
-Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 baseline on the public LB. Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
+Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 baseline on the public LB. Audit rerun on 2026-05-06 reproduced the previously-submitted local CSV byte-for-byte. Recorded local CSV fingerprint: `sha256=4c0af357c70366afd91ce89db5c4ff587c1e6e7e67f0754f17b21e513082fd3f`, `278,953` lines including header. The submission CSV itself remains local-only and is ignored by git.
 
 ---
 
@@ -1438,11 +1440,12 @@ Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 bas
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
+| Kaggle submission ID | 52368235 |
 | Public LB mAP | **0.0384** |
 | Predictions | 298,870 |
 
 #### Notes
-Early checkpoint (ep8) as hedge per codex recommendation. It finished below both ep12 and ep10 on the public LB. Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
+Early checkpoint (ep8) as hedge per codex recommendation. It finished below both ep12 and ep10 on the public LB. Audit rerun on 2026-05-06 reproduced the previously-submitted local CSV byte-for-byte. Recorded local CSV fingerprint: `sha256=7b1f5915657cd494de0974cb05137f702ea59fdd796b31bbeef81b9343175e29`, `298,871` lines including header. The submission CSV itself remains local-only and is ignored by git.
 
 ---
 

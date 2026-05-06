@@ -1,5 +1,5 @@
 {
   "relative_path": "artifacts/checkpoints/T-010/best_coco_bbox_mAP_epoch_10.pth",
   "selection": "training framework best checkpoint (coco/bbox_mAP at epoch 10 = 0.3530)",
-  "rationale": "Epochs 10 and 12 tied on val mAP@[.5:.95], but the framework selected epoch 10 as best. The durable retained checkpoint lives under artifacts/checkpoints/T-010/."
+  "rationale": "Epochs 10 and 12 tied on val mAP@[.5:.95], but the framework selected epoch 10 as best. The referenced checkpoint path is a local mirror under artifacts/checkpoints/T-010/ and is not versioned in git."
 }
