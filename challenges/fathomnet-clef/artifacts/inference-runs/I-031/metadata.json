@@ -1,0 +1,17 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-031",
+  "checkpoint_path": "artifacts/checkpoints/T-010/epoch_12.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "c42a687d92e0dbb622882ffce59803032ec3e04d",
+  "kind": "inference",
+  "kaggle_submission_id": 52368031,
+  "output_csv": "artifacts/submissions/submission-I-031-from-T-010-ep12.csv",
+  "output_csv_note": "Local CSV only; submissions are ignored by git.",
+  "output_csv_sha256": "85693701ec15a473e742cec7d21c7ff8f851c236e344c3802265bc168c6d681b",
+  "prediction_rows": 300674,
+  "resolved_config": "artifacts/inference-runs/I-031/resolved-config.json",
+  "run_id": "I-031",
+  "source_train_id": "T-010",
+  "stdout_log": "artifacts/inference-runs/I-031/stdout.log",
+  "track": "Co-DETR"
+}

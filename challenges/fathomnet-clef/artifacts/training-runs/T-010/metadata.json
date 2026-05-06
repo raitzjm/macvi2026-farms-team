@@ -1,0 +1,20 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-010",
+  "config_source": "envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py",
+  "git_commit": "31b2cfa7aa287b3c0bb6c0fa00cd418b9051282d",
+  "kind": "training",
+  "load_from": null,
+  "metrics_artifact": "artifacts/training-runs/T-010/metrics.jsonl",
+  "output_root": "outputs/codetr-r50-pseudo-label-T-010",
+  "platform": "TensorDock (fathom1, 2x RTX 4090)",
+  "pseudo_label_json": "artifacts/pseudo-labels/pseudo-labels-T-009-ep12-conf0.5-iou0.3-cap3.json",
+  "resolved_config": "artifacts/training-runs/T-010/resolved-config.py",
+  "selected_checkpoint": "artifacts/checkpoints/T-010/best_coco_bbox_mAP_epoch_10.pth",
+  "selected_checkpoint_note": "Local checkpoint mirror only; weights are not versioned in git.",
+  "selected_checkpoint_manifest": "artifacts/training-runs/T-010/selected-checkpoint.json",
+  "run_id": "T-010",
+  "run_name": "codetr-r50-pseudo-label-T-010",
+  "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
+  "stdout_log": "artifacts/training-runs/T-010/stdout.log",
+  "track": "Co-DETR"
+}
