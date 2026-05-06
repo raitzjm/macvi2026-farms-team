@@ -1356,7 +1356,7 @@ Produced 46,009 predictions (46,010 CSV lines including header). The smaller YOL
 | Predictions | 300,674 |
 
 #### Notes
-Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). LB dropped vs T-009 ep12 baseline (0.0576 → 0.0503, -0.0073).
+Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 annotations). LB dropped vs T-009 ep12 baseline (0.0576 → 0.0503, -0.0073). Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
 
 ---
 
@@ -1395,11 +1395,11 @@ Second PL iteration (T-010). Uses pseudo-labels from T-009 ep12 teacher (1,370 a
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
-| Public LB mAP | TBD (pending) |
+| Public LB mAP | **0.0404** |
 | Predictions | 278,952 |
 
 #### Notes
-Best val mAP checkpoint for T-010. LB pending to compare with ep12 and ep8.
+Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 baseline on the public LB. Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
 
 ---
 
@@ -1438,11 +1438,11 @@ Best val mAP checkpoint for T-010. LB pending to compare with ep12 and ep8.
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-05 |
-| Public LB mAP | TBD (pending) |
+| Public LB mAP | **0.0384** |
 | Predictions | 298,870 |
 
 #### Notes
-Early checkpoint (ep8) as hedge per codex recommendation. LB pending.
+Early checkpoint (ep8) as hedge per codex recommendation. It finished below both ep12 and ep10 on the public LB. Audit rerun on 2026-05-06 reproduced the original submission CSV byte-for-byte.
 
 ---
 

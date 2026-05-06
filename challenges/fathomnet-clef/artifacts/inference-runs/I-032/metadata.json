@@ -1,12 +1,13 @@
 {
+  "artifact_dir": "artifacts/inference-runs/I-032",
+  "checkpoint_path": "/home/farms/.config/superpowers/worktrees/macvi2026-farms-team/exp-t-010-codetr-iter-pl/challenges/fathomnet-clef/artifacts/checkpoints/T-010/epoch_10.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "c42a687d92e0dbb622882ffce59803032ec3e04d",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/submission-I-032-from-T-010-ep10.csv",
+  "resolved_config": "artifacts/inference-runs/I-032/resolved-config.json",
   "run_id": "I-032",
   "source_train_id": "T-010",
-  "checkpoint": "artifacts/checkpoints/T-010/epoch_10.pth",
-  "config": "artifacts/checkpoints/T-010/co_dino_5scale_r50_8xb2_1x_coco.py",
-  "date": "2026-05-05",
-  "platform": "local RTX 3050 4GB",
-  "duration_minutes": 8,
-  "score_thr": 0.001,
-  "predictions": 278952,
-  "submitted": true
+  "stdout_log": "artifacts/inference-runs/I-032/stdout.log",
+  "track": "Co-DETR"
 }

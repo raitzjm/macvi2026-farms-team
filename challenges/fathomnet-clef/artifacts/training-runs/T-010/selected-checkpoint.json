@@ -1,4 +1,5 @@
 {
-  "relative_path": "outputs/codetr-r50-pseudo-label-T-010/mmdet_run/best_coco_bbox_mAP_epoch_10.pth",
-  "selection": "training framework best checkpoint"
+  "relative_path": "artifacts/checkpoints/T-010/best_coco_bbox_mAP_epoch_10.pth",
+  "selection": "training framework best checkpoint (coco/bbox_mAP at epoch 10 = 0.3530)",
+  "rationale": "Epochs 10 and 12 tied on val mAP@[.5:.95], but the framework selected epoch 10 as best. The durable retained checkpoint lives under artifacts/checkpoints/T-010/."
 }

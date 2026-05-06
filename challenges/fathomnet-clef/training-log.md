@@ -28,7 +28,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-006 | 2026-05-02 | Co-DETR | Co-DETR-R50-tensordock extended schedule: planned 24 epochs, 768×432, batch=6/GPU, stopped at epoch 12 when epoch 5 remained best | 42 | 0.427 (shared-train-val-v1) |
 | T-007 | 2026-05-03 | YOLOv26s | YOLOv26s local: 50 epochs, imgsz=1152, rect=True, batch=4, RTX 3050 4GB, underwater_v1 augmentation profile, shared-train-val-v1 split | 42 | 0.365 (shared-train-val-v1) |
 | T-009 | 2026-05-03 | Co-DETR | Co-DETR-R50 pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, PL from T-004 (1058 anns on 822 imgs), shared split | 42 | **0.407** (shared-train-val-v1, ep7) |
-| T-010 | 2026-05-05 | Co-DETR | Co-DETR-R50 iterative pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, PL from T-009 ep12 (1370 anns on 1008 imgs), shared split | 42 | **0.353** (shared-train-val-v1, ep10/12 tie) |
+| T-010 | 2026-05-05 | Co-DETR | Co-DETR-R50 iterative pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, `torchvision://resnet50` init, PL from T-009 ep12 (1370 anns on 1008 imgs), shared split | 42 | **0.353** (shared-train-val-v1, ep10/12 tie) |
 | T-011 | 2026-05-05 | YOLO26s | YOLO26s Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4239** (ep39 best) |
 | T-012 | 2026-05-05 | YOLO26l | YOLO26l Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4462** (ep39 best) |
 
@@ -533,7 +533,7 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Platform | TensorDock (2× RTX 4090, fathom1) |
 | Duration | ~2h55m (03:40–06:35 UTC) |
 | Seed | 42 |
-| Inputs | Co-DINO R50 official pretrain (https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth) + pseudo-labels from T-009 ep12 |
+| Inputs | `torchvision://resnet50` backbone init (`load_from=None`) + pseudo-labels from T-009 ep12 |
 | Repo commit | 31b2cfa7aa287b3c0bb6c0fa00cd418b9051282d |
 | Config source | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
 | Resolved config | artifacts/training-runs/T-010/resolved-config.py |
@@ -548,7 +548,7 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Field | Value |
 |---|---|
 | Architecture | Co-DETR R50 (5-scale) |
-| Pretrained weights | co_dino_5scale_r50_1x_coco-7481f903.pth (OpenMMLab official COCO pretrain) |
+| Pretrained weights | `torchvision://resnet50` backbone init; recovered artifacts show this run did not use the OpenMMLab Co-DINO checkpoint |
 | Input resolution | 768×432 |
 | Config file | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
 | Modifications | Resolution 768×432, batch=5/GPU, AMP, 2-GPU torchrun (DDP), shared-split manifest, pseudo-label merge, max_keep_ckpts=12 |
@@ -585,9 +585,11 @@ WandB: https://wandb.ai/little_farms/fathomnet2026/runs/ams6sqgw
 | Final epoch val mAP@.50 | 0.518 (epoch 12) |
 
 #### Notes
-T-010 is the second pseudo-label iteration after T-009. It keeps the same Co-DETR R50 training recipe and shared split, but swaps in a stronger pseudo-label set generated from T-009 epoch 12: 1,370 annotations on 1,008 previously-unlabeled images, versus T-009's 1,058 annotations on 822 images from the T-004 teacher.
+T-010 is the second pseudo-label iteration after T-009. It keeps the same shared split and pseudo-label generation recipe, but swaps in a stronger pseudo-label set generated from T-009 epoch 12: 1,370 annotations on 1,008 previously-unlabeled images, versus T-009's 1,058 annotations on 822 images from the T-004 teacher.
 
-This extra pseudo-label coverage did not help validation. T-010 peaked at 0.353 mAP@[.5:.95], well below T-009's 0.407. The framework-best checkpoint is epoch 10, but epoch 12 ties it on mAP@[.5:.95] and is slightly stronger on mAP@.75 and large-object AP, so both deserve leaderboard comparison.
+Recovered artifacts also show this run was not initialized from the official Co-DINO checkpoint used by T-004/T-009. `load_from=None`, and both the resolved config and framework log show `torchvision://resnet50` backbone initialization instead. That makes T-010 a mixed change relative to T-009: pseudo-label iteration changed, but so did the initialization regime.
+
+This extra pseudo-label coverage did not help validation. T-010 peaked at 0.353 mAP@[.5:.95], well below T-009's 0.407. The framework-best checkpoint is epoch 10, but epoch 12 ties it on mAP@[.5:.95] and is slightly stronger on mAP@.75 and large-object AP, so both deserved leaderboard comparison.
 
 Recovered locally on 2026-05-05 from the remote `fathom1` clone: the durable training bundle now lives under `artifacts/training-runs/T-010/`, and the full retained checkpoint set was mirrored into `artifacts/checkpoints/T-010/`. Remote `T-009` and `T-010` checkpoint files were then deleted from `fathom1` after local verification.
 

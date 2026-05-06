@@ -9,6 +9,8 @@
   "platform": "TensorDock (fathom1, 2x RTX 4090)",
   "pseudo_label_json": "challenges/fathomnet-clef/artifacts/pseudo-labels/pseudo-labels-T-009-ep12-conf0.5-iou0.3-cap3.json",
   "resolved_config": "artifacts/training-runs/T-010/resolved-config.py",
+  "selected_checkpoint": "artifacts/checkpoints/T-010/best_coco_bbox_mAP_epoch_10.pth",
+  "selected_checkpoint_manifest": "artifacts/training-runs/T-010/selected-checkpoint.json",
   "run_id": "T-010",
   "run_name": "codetr-r50-pseudo-label-T-010",
   "split_manifest": "artifacts/split-manifests/shared-train-val-v1.json",
