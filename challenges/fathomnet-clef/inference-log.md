@@ -48,8 +48,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-029 | 2026-05-05 | YOLO | T-011 epoch30.pt | T-011 YOLO26s epoch30.pt imgsz=1280 conf=0.001 iou=0.6 local RTX3050 | — | 0.0467 | see notes |
 | I-030 | 2026-05-05 | YOLO | T-011 best.pt | T-011 YOLO26s best.pt imgsz=1024 conf=0.001 iou=0.6 local RTX3050 | — | 0.0497 | see notes |
 | I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | see notes |
-| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | TBD | see notes |
-| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | TBD | see notes |
+| I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | see notes |
+| I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | see notes |
 
 ---
 
