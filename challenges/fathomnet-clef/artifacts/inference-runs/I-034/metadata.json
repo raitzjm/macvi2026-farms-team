@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-034",
+  "checkpoint_path": "artifacts/checkpoints/T-013/best_coco_bbox_mAP_epoch_7.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "5f4d7102217ddefac144d813ac9dbb7a2ab4a591",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/submission-I-034-from-T-013.csv",
+  "resolved_config": "artifacts/inference-runs/I-034/resolved-config.json",
+  "run_id": "I-034",
+  "source_train_id": "T-013",
+  "stdout_log": "artifacts/inference-runs/I-034/stdout.log",
+  "track": "Co-DETR"
+}

@@ -1,0 +1,193 @@
+/home/farms/.config/superpowers/worktrees/macvi2026-farms-team/exp-t-012-yolo26l-kaggle/challenges/fathomnet-clef/envs/mmdet-src/projects/CO-DETR/codetr/transformer.py:1325: UserWarning: If you want to reduce GPU memory usage,                               please install fairscale by executing the                               following command: pip install fairscale.
+  warnings.warn('If you want to reduce GPU memory usage, \
+05/07 04:03:28 - mmengine - INFO - 
+rpn_conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+rpn_conv.bias - torch.Size([256]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+rpn_cls.weight - torch.Size([9, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+rpn_cls.bias - torch.Size([9]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+rpn_reg.weight - torch.Size([36, 256, 1, 1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+rpn_reg.bias - torch.Size([36]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.fc_cls.weight - torch.Size([33, 1024]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.fc_cls.bias - torch.Size([33]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.fc_reg.weight - torch.Size([128, 1024]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.fc_reg.bias - torch.Size([128]): 
+NormalInit: mean=0, std=0.001, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.shared_fcs.0.weight - torch.Size([1024, 12544]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.shared_fcs.0.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.shared_fcs.1.weight - torch.Size([1024, 1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+bbox_head.shared_fcs.1.bias - torch.Size([1024]): 
+XavierInit: gain=1, distribution=uniform, bias=0 
+ 
+/home/farms/macvi2026-farms-team/challenges/fathomnet-clef/envs/mmdet/lib/python3.11/site-packages/mmdet/models/dense_heads/anchor_head.py:108: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
+  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
+05/07 04:03:28 - mmengine - INFO - 
+cls_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+cls_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+cls_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+reg_convs.0.conv.weight - torch.Size([256, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+reg_convs.0.gn.weight - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+reg_convs.0.gn.bias - torch.Size([256]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_cls.weight - torch.Size([32, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_cls.bias - torch.Size([32]): 
+NormalInit: mean=0, std=0.01, bias=-4.59511985013459 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_reg.weight - torch.Size([4, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_reg.bias - torch.Size([4]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_centerness.weight - torch.Size([1, 256, 3, 3]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+atss_centerness.bias - torch.Size([1]): 
+NormalInit: mean=0, std=0.01, bias=0 
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.0.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.1.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.2.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.3.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.4.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+05/07 04:03:28 - mmengine - INFO - 
+scales.5.scale - torch.Size([]): 
+The value is the same before and after calling `init_weights` of CoATSSHead  
+ 
+Loads checkpoint by local backend from path: artifacts/checkpoints/T-013/epoch_12.pth
+/home/farms/macvi2026-farms-team/challenges/fathomnet-clef/envs/mmdet/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+[infer] processed 25/1425 images
+[infer] processed 50/1425 images
+[infer] processed 75/1425 images
+[infer] processed 100/1425 images
+[infer] processed 125/1425 images
+[infer] processed 150/1425 images
+[infer] processed 175/1425 images
+[infer] processed 200/1425 images
+[infer] processed 225/1425 images
+[infer] processed 250/1425 images
+[infer] processed 275/1425 images
+[infer] processed 300/1425 images
+[infer] processed 325/1425 images
+[infer] processed 350/1425 images
+[infer] processed 375/1425 images
+[infer] processed 400/1425 images
+[infer] processed 425/1425 images
+[infer] processed 450/1425 images
+[infer] processed 475/1425 images
+[infer] processed 500/1425 images
+[infer] processed 525/1425 images
+[infer] processed 550/1425 images
+[infer] processed 575/1425 images
+[infer] processed 600/1425 images
+[infer] processed 625/1425 images
+[infer] processed 650/1425 images
+[infer] processed 675/1425 images
+[infer] processed 700/1425 images
+[infer] processed 725/1425 images
+[infer] processed 750/1425 images
+[infer] processed 775/1425 images
+[infer] processed 800/1425 images
+[infer] processed 825/1425 images
+[infer] processed 850/1425 images
+[infer] processed 875/1425 images
+[infer] processed 900/1425 images
+[infer] processed 925/1425 images
+[infer] processed 950/1425 images
+[infer] processed 975/1425 images
+[infer] processed 1000/1425 images
+[infer] processed 1025/1425 images
+[infer] processed 1050/1425 images
+[infer] processed 1075/1425 images
+[infer] processed 1100/1425 images
+[infer] processed 1125/1425 images
+[infer] processed 1150/1425 images
+[infer] processed 1175/1425 images
+[infer] processed 1200/1425 images
+[infer] processed 1225/1425 images
+[infer] processed 1250/1425 images
+[infer] processed 1275/1425 images
+[infer] processed 1300/1425 images
+[infer] processed 1325/1425 images
+[infer] processed 1350/1425 images
+[infer] processed 1375/1425 images
+[infer] processed 1400/1425 images
+[infer] processed 1425/1425 images
+Wrote: artifacts/submissions/submission-I-035-from-T-013.csv
