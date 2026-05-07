@@ -1,0 +1,17 @@
+{
+  "checkpoint": "artifacts/checkpoints/T-013/best_coco_bbox_mAP_epoch_7.pth",
+  "config_path": "artifacts/training-runs/T-013/resolved-config.py",
+  "config_source": "scripts/infer_codetr.py",
+  "device": "0",
+  "idx_to_cat_id": null,
+  "output_csv": "artifacts/submissions/submission-I-034-from-T-013.csv",
+  "overlap": 0.2,
+  "postprocess_match_threshold": 0.5,
+  "requested_output_csv": "artifacts/submissions/submission-I-034-from-T-013.csv",
+  "sahi": false,
+  "score_thr": 0.001,
+  "slice_size": 640,
+  "source_train_id": "T-013",
+  "tta": false,
+  "wbf_iou_thr": 0.6
+}

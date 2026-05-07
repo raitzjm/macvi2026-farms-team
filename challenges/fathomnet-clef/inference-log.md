@@ -51,6 +51,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | 52368031 |
 | I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | 52368142 |
 | I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | 52368235 |
+| I-034 | 2026-05-07 | Co-DETR | T-013 ep7 best | T-013 Co-DETR R50+2ndPL+restored load_from ep7 best local non-SAHI | — | 0.0567 | 52409380 |
+| I-035 | 2026-05-07 | Co-DETR | T-013 ep12 last | T-013 Co-DETR R50+2ndPL+restored load_from ep12 last local non-SAHI | — | 0.0525 | 52409621 |
 
 ---
 
@@ -1447,6 +1449,106 @@ Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 bas
 
 #### Notes
 Early checkpoint (ep8) as hedge per codex recommendation. It finished below both ep12 and ep10 on the public LB. Audit rerun on 2026-05-06 reproduced the previously-submitted local CSV byte-for-byte. Recorded local CSV fingerprint: `sha256=7b1f5915657cd494de0974cb05137f702ea59fdd796b31bbeef81b9343175e29`, `298,871` lines including header. The submission CSV itself remains local-only and is ignored by git.
+
+---
+
+### I-034 — T-013 Co-DETR R50+2ndPL+restored load_from epoch_7 best local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-07 |
+| Track | Co-DETR |
+| Env | mmdet |
+| Platform | local RTX 3050 4GB |
+| Duration | ~8m |
+| Evaluated split | test set |
+| Inputs | T-013 best_coco_bbox_mAP_epoch_7.pth |
+| Repo commit | 5f4d7102217ddefac144d813ac9dbb7a2ab4a591 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-034/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-034/stdout.log |
+| Artifacts | artifacts/inference-runs/I-034/, artifacts/submissions/submission-I-034-from-T-013.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-013 | artifacts/checkpoints/T-013/best_coco_bbox_mAP_epoch_7.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-07 |
+| Kaggle submission ID | 52409380 |
+| Public LB mAP | **0.0567** |
+| Predictions | 410,155 |
+
+#### Notes
+Lead-guided first probe for T-013. Restoring the official Co-DINO warm start recovered almost all of the T-010 regression: `0.0567` is `+0.0064` above T-010 ep12 (`0.0503`) and only `-0.0009` below the sprint-best T-009 ep12 (`0.0576`). It did not take the sprint lead, but it establishes that the missing `load_from` was the dominant cause of the T-010 collapse.
+
+Recorded local CSV fingerprint: `sha256=ff32eca285a298a24353660d1b10098f8b69fb4c48725886170d364da3ab2c8e`, `410,156` lines including header.
+
+---
+
+### I-035 — T-013 Co-DETR R50+2ndPL+restored load_from epoch_12 last local non-SAHI
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-07 |
+| Track | Co-DETR |
+| Env | mmdet |
+| Platform | local RTX 3050 4GB |
+| Duration | ~8m |
+| Evaluated split | test set |
+| Inputs | T-013 epoch_12.pth |
+| Repo commit | 5f4d7102217ddefac144d813ac9dbb7a2ab4a591 |
+| Config source | scripts/infer_codetr.py |
+| Resolved config | artifacts/inference-runs/I-035/resolved-config.json |
+| Stdout log | artifacts/inference-runs/I-035/stdout.log |
+| Artifacts | artifacts/inference-runs/I-035/, artifacts/submissions/submission-I-035-from-T-013.csv |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| primary | T-013 | artifacts/checkpoints/T-013/epoch_12.pth |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | 768×432 |
+| Conf threshold | 0.001 |
+| IoU threshold (NMS) | detector defaults |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Date | 2026-05-07 |
+| Kaggle submission ID | 52409621 |
+| Public LB mAP | **0.0525** |
+| Predictions | 392,676 |
+
+#### Notes
+Late-epoch hedge after `I-034` came back competitive. Unlike T-009, T-013 did not improve on the public LB at the final epoch: `I-035` trails `I-034` by `-0.0042` and remains `-0.0051` behind the sprint-best `T-009` ep12 result. So the controlled rerun resolves the T-010 regression diagnosis, but it does not displace T-009 as the preferred Sprint 1 Co-DETR submission.
+
+Recorded local CSV fingerprint: `sha256=21edac0684e2af8e2567402e99af52e827ebf3675b8721327ba476641482a09c`, `392,677` lines including header.
 
 ---
 
