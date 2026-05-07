@@ -34,6 +34,15 @@ if not os.environ.get("_TORCH_COMPAT"):
             "https://download.pytorch.org/whl/cu121",
         ]
     )
+    # Kaggle base images may ship a newer torchaudio tied to a different torch build.
+    # We do not use torchaudio in this kernel, so remove the incompatible package
+    # to avoid recurring resolver noise after torch is pinned.
+    subprocess.run(
+        [sys.executable, "-m", "pip", "uninstall", "-y", "torchaudio"],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     os.environ["_TORCH_COMPAT"] = "1"
     os.execv(sys.executable, [sys.executable] + sys.argv)
 
@@ -57,7 +66,7 @@ FOLD_CONFIG = __FOLD_CONFIG_JSON__
 MANIFEST = __MANIFEST_JSON__
 
 WANDB_API_KEY = "__WANDB_KEY_PLACEHOLDER__"
-if WANDB_API_KEY and WANDB_API_KEY != "__WANDB_KEY_PLACEHOLDER__":
+if WANDB_API_KEY.startswith("wandb_"):
     os.environ["WANDB_API_KEY"] = WANDB_API_KEY
     USE_WANDB = True
     print("[setup] WANDB_API_KEY set via push-time injection")
