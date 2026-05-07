@@ -202,6 +202,21 @@ def _load_json(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
+def load_idx_to_cat_id(path: Path) -> dict[int, int]:
+    raw = _load_json(path)
+    return {int(key): int(value) for key, value in raw.items()}
+
+
+def remap_prediction_categories(predictions: dict[int, list[dict]], idx_to_cat_id: dict[int, int]) -> dict[int, list[dict]]:
+    remapped: dict[int, list[dict]] = {}
+    for image_id, rows in predictions.items():
+        remapped[image_id] = []
+        for row in rows:
+            cls_idx = int(row["category_id"])
+            remapped[image_id].append({**row, "category_id": idx_to_cat_id[cls_idx]})
+    return remapped
+
+
 def load_train_context(train_json: Path, manifest_path: Path) -> tuple[dict, dict, dict[int, list[dict]]]:
     coco = _load_json(train_json)
     manifest = load_manifest(manifest_path)
@@ -301,15 +316,24 @@ def build_oof_pseudo_labels(
         fold_index = int(fold["fold_index"])
         val_images = [images_by_id[int(image_id)] for image_id in fold["val_ids"]]
         checkpoint_paths = plateau_checkpoint_paths(outputs_root, fold_index)
+        idx_to_cat_id = load_idx_to_cat_id(outputs_root / OUTPUT_TAGS[fold_index] / "idx_to_cat_id.json")
+        confirm_idx_to_cat_id = {
+            other_fold: load_idx_to_cat_id(outputs_root / OUTPUT_TAGS[other_fold] / "idx_to_cat_id.json")
+            for other_fold in range(len(RUN_IDS))
+            if other_fold != fold_index
+        }
         oof_predictions = {
-            checkpoint_path.name: _infer_checkpoint(
-                checkpoint_path,
-                val_images,
-                conf=conf,
-                iou=iou,
-                imgsz=imgsz,
-                device=device,
-                batch=batch,
+            checkpoint_path.name: remap_prediction_categories(
+                _infer_checkpoint(
+                    checkpoint_path,
+                    val_images,
+                    conf=conf,
+                    iou=iou,
+                    imgsz=imgsz,
+                    device=device,
+                    batch=batch,
+                ),
+                idx_to_cat_id,
             )
             for checkpoint_path in checkpoint_paths
         }
@@ -335,20 +359,26 @@ def build_oof_pseudo_labels(
             confirm_rows: list[dict] = []
             if medium:
                 confirm_paths = [
-                    outputs_root / OUTPUT_TAGS[other_fold] / "checkpoints" / "epoch40.pt"
+                    (
+                        other_fold,
+                        outputs_root / OUTPUT_TAGS[other_fold] / "checkpoints" / "epoch40.pt",
+                    )
                     for other_fold in range(len(RUN_IDS))
                     if other_fold != fold_index
                 ]
                 confirm_images = [image]
-                for checkpoint_path in confirm_paths:
-                    confirm_map = _infer_checkpoint(
-                        checkpoint_path,
-                        confirm_images,
-                        conf=conf,
-                        iou=iou,
-                        imgsz=imgsz,
-                        device=device,
-                        batch=1,
+                for other_fold, checkpoint_path in confirm_paths:
+                    confirm_map = remap_prediction_categories(
+                        _infer_checkpoint(
+                            checkpoint_path,
+                            confirm_images,
+                            conf=conf,
+                            iou=iou,
+                            imgsz=imgsz,
+                            device=device,
+                            batch=1,
+                        ),
+                        confirm_idx_to_cat_id[other_fold],
                     )
                     confirm_rows.extend(confirm_map[image_id])
 

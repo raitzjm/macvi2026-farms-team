@@ -81,6 +81,24 @@ class TestT014YoloKfoldHelpers(unittest.TestCase):
             )
         )
 
+    def test_remap_prediction_categories_uses_idx_to_cat_id(self):
+        predictions = {
+            101: [
+                {
+                    "category_id": 0,
+                    "bbox_x": 1.0,
+                    "bbox_y": 2.0,
+                    "bbox_width": 3.0,
+                    "bbox_height": 4.0,
+                    "score": 0.9,
+                    "checkpoint": "epoch35.pt",
+                }
+            ]
+        }
+
+        remapped = t014_yolo_kfold.remap_prediction_categories(predictions, {0: 41})
+        self.assertEqual(remapped[101][0]["category_id"], 41)
+
     def test_finalize_image_candidates_rejects_gt_duplicates_and_caps_per_class(self):
         candidates = [
             _pred(7, 10, 10, 40, 20, 0.72, "fused"),
