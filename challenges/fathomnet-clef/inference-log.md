@@ -51,8 +51,8 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | 52368031 |
 | I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | 52368142 |
 | I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | 52368235 |
-| I-034 | 2026-05-07 | Co-DETR | T-013 ep7 best | T-013 Co-DETR R50+2ndPL+restored load_from ep7 best local non-SAHI | — | 0.0567 | see notes |
-| I-035 | 2026-05-07 | Co-DETR | T-013 ep12 last | T-013 Co-DETR R50+2ndPL+restored load_from ep12 last local non-SAHI | — | 0.0525 | see notes |
+| I-034 | 2026-05-07 | Co-DETR | T-013 ep7 best | T-013 Co-DETR R50+2ndPL+restored load_from ep7 best local non-SAHI | — | 0.0567 | 52409380 |
+| I-035 | 2026-05-07 | Co-DETR | T-013 ep12 last | T-013 Co-DETR R50+2ndPL+restored load_from ep12 last local non-SAHI | — | 0.0525 | 52409621 |
 
 ---
 
@@ -1491,7 +1491,7 @@ Early checkpoint (ep8) as hedge per codex recommendation. It finished below both
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-07 |
-| Kaggle submission ID | see Kaggle UI (submitted 2026-05-07 04:01 UTC, filename `submission-I-034-from-T-013.csv`) |
+| Kaggle submission ID | 52409380 |
 | Public LB mAP | **0.0567** |
 | Predictions | 410,155 |
 
@@ -1541,7 +1541,7 @@ Recorded local CSV fingerprint: `sha256=ff32eca285a298a24353660d1b10098f8b69fb4c
 |---|---|
 | Submitted | yes |
 | Date | 2026-05-07 |
-| Kaggle submission ID | see Kaggle UI (submitted 2026-05-07 04:10 UTC, filename `submission-I-035-from-T-013.csv`) |
+| Kaggle submission ID | 52409621 |
 | Public LB mAP | **0.0525** |
 | Predictions | 392,676 |
 

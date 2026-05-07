@@ -6,7 +6,7 @@
   "load_from": "https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth",
   "metrics_artifact": "artifacts/training-runs/T-013/metrics.jsonl",
   "output_root": "outputs/codetr-r50-pseudo-label-T-013",
-  "platform": "local",
+  "platform": "TensorDock fathom1 (2x RTX 4090)",
   "pseudo_label_json": "artifacts/pseudo-labels/pseudo-labels-T-009-ep12-conf0.5-iou0.3-cap3.json",
   "resolved_config": "artifacts/training-runs/T-013/resolved-config.py",
   "run_id": "T-013",
