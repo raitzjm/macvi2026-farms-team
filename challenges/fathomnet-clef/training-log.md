@@ -29,6 +29,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-007 | 2026-05-03 | YOLOv26s | YOLOv26s local: 50 epochs, imgsz=1152, rect=True, batch=4, RTX 3050 4GB, underwater_v1 augmentation profile, shared-train-val-v1 split | 42 | 0.365 (shared-train-val-v1) |
 | T-009 | 2026-05-03 | Co-DETR | Co-DETR-R50 pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, PL from T-004 (1058 anns on 822 imgs), shared split | 42 | **0.407** (shared-train-val-v1, ep7) |
 | T-010 | 2026-05-05 | Co-DETR | Co-DETR-R50 iterative pseudo-label: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, `torchvision://resnet50` init, PL from T-009 ep12 (1370 anns on 1008 imgs), shared split | 42 | **0.353** (shared-train-val-v1, ep10/12 tie) |
+| T-013 | 2026-05-06 | Co-DETR | Co-DETR-R50 iterative pseudo-label rerun: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, official Co-DINO `load_from` restored, PL from T-009 ep12 (1370 anns on 1008 imgs), shared split | 42 | **0.413** (shared-train-val-v1, ep7 best) |
 | T-011 | 2026-05-05 | YOLO26s | YOLO26s Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4239** (ep39 best) |
 | T-012 | 2026-05-05 | YOLO26l | YOLO26l Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4462** (ep39 best) |
 
@@ -596,6 +597,76 @@ Post-hoc regression review after the local `I-031`/`I-032`/`I-033` submissions s
 Recovered locally on 2026-05-05 from the remote `fathom1` clone: the tracked training bundle now lives under `artifacts/training-runs/T-010/`, and a local ignored checkpoint mirror was created under `artifacts/checkpoints/T-010/` for replay and inference. Remote `T-009` and `T-010` checkpoint files were then deleted from `fathom1` after local verification.
 
 WandB: https://wandb.ai/little_farms/fathomnet2026/runs/kvrvlc7i
+
+---
+
+### T-013 — Co-DETR R50 TensorDock iterative pseudo-label rerun with restored Co-DINO load_from (12 epochs)
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-06 |
+| Track | Co-DETR |
+| Env | mmdet (challenges/fathomnet-clef/envs/mmdet/) |
+| Platform | TensorDock (2× RTX 4090, fathom1) |
+| Duration | ~2h42m (21:02–23:44 UTC) |
+| Seed | 42 |
+| Inputs | Co-DINO R50 official pretrain (https://download.openmmlab.com/mmdetection/v3.0/codetr/co_dino_5scale_r50_1x_coco-7481f903.pth) + pseudo-labels from T-009 ep12 |
+| Repo commit | 494deba49d7975623d807f6539afad372da2989e |
+| Config source | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Resolved config | artifacts/training-runs/T-013/resolved-config.py |
+| Stdout log | artifacts/training-runs/T-013/stdout.log |
+| Metrics artifact | artifacts/training-runs/T-013/metrics.jsonl |
+| Selected checkpoint | artifacts/checkpoints/T-013/best_coco_bbox_mAP_epoch_7.pth (epoch 7, framework best; local mirror only, not versioned in git) |
+| Artifacts | artifacts/training-runs/T-013/ (tracked), artifacts/checkpoints/T-013/ (local mirror only) |
+| WandB | https://wandb.ai/little_farms/fathomnet2026/runs/qqz7xv9k |
+| Executor | TensorDock fathom1 |
+
+#### Model & Architecture
+| Field | Value |
+|---|---|
+| Architecture | Co-DETR R50 (5-scale) |
+| Pretrained weights | co_dino_5scale_r50_1x_coco-7481f903.pth (OpenMMLab official COCO pretrain) |
+| Input resolution | 768×432 |
+| Config file | envs/mmdet-src/projects/CO-DETR/configs/codino/co_dino_5scale_r50_8xb2_1x_coco.py |
+| Modifications | Resolution 768×432, batch=5/GPU, AMP, 2-GPU torchrun (DDP), shared-split manifest, pseudo-label merge, max_keep_ckpts=12 |
+
+#### Dataset Config
+| Field | Value |
+|---|---|
+| Train split | shared-train-val-v1 train: 5,816 images / 20,015 GT anns + 1,370 pseudo-label anns = 21,385 total |
+| Val split | shared-train-val-v1 val: 647 images / 2,210 annotations |
+| Split manifest | artifacts/split-manifests/shared-train-val-v1.json |
+| Classes | all 32 |
+| PU strategy | pseudo-labels from T-009 ep12 (conf≥0.5, IoU<0.3 vs GT, cap=3/image) |
+| Pseudo-label source | artifacts/pseudo-labels/pseudo-labels-T-009-ep12-conf0.5-iou0.3-cap3.json (1,008 images, 1,370 annotations) |
+| Augmentation | mmdet defaults (RandomFlip, Normalize, Pad) |
+
+#### Hyperparameters
+| Field | Value |
+|---|---|
+| Epochs | 12 |
+| Batch size | 5 per GPU (10 effective on 2× RTX 4090) |
+| Optimizer | AdamW (mmdet Co-DETR defaults) |
+| LR initial | 1e-4 |
+| AMP | True |
+| max_keep_ckpts | 12 (all epoch checkpoints retained) |
+
+#### Results
+| Metric | Value |
+|---|---|
+| Val mAP@[.5:.95] by epoch | 0.197, 0.291, 0.338, 0.376, 0.392, 0.394, **0.413**, 0.394, 0.390, 0.398, 0.385, 0.401 |
+| Best val mAP@[.5:.95] | **0.413** (epoch 7) |
+| Best val mAP@.50 | **0.553** (epoch 7) |
+| Best epoch | 7 (framework best checkpoint) |
+| Final epoch val mAP@[.5:.95] | 0.401 (epoch 12) |
+| Final epoch val mAP@.50 | 0.525 (epoch 12) |
+
+#### Notes
+T-013 is the controlled rerun of T-010: it keeps the same shared split, pseudo-label source, and training recipe, but restores the official Co-DINO `load_from` warm start that T-010 accidentally omitted. Relative to T-010, val mAP recovers sharply at every stage and peaks at 0.413 instead of 0.353.
+
+Compared against T-009, T-013 slightly improves the best validation checkpoint (0.413 vs 0.407 at epoch 7) while ending slightly below T-009 at the final epoch (0.401 vs 0.404 at epoch 12). That makes T-013 the clean test of whether the larger second-iteration pseudo-label set helps once initialization is held constant; leaderboard inference is required to decide whether the stronger mid-training validation signal translates to a better public-LB checkpoint than T-009's ep12 last.
+
+Recovered locally on 2026-05-07 from the remote `fathom1` clone: the tracked training bundle now lives under `artifacts/training-runs/T-013/`, and a local ignored checkpoint mirror was created under `artifacts/checkpoints/T-013/` for inference. After checksum-by-name verification, the remote `T-013` checkpoint files were deleted from `fathom1` and the remote repo was returned to clean `main`.
 
 ---
 
