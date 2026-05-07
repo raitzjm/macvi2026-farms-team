@@ -52,6 +52,22 @@ class TestT014FinalTrainingHelpers(unittest.TestCase):
             train_yolo_t014_final.write_manifest(path, manifest)
             self.assertIn('"name": "t014-expanded"', path.read_text())
 
+    def test_build_full_yolo_split_map_uses_all_images_for_both_splits(self):
+        coco = {
+            "images": [
+                {"id": 2, "file_name": "b.png", "width": 100, "height": 50},
+                {"id": 1, "file_name": "a.png", "width": 100, "height": 50},
+            ],
+            "annotations": [],
+            "categories": [{"id": 41, "name": "urchin"}],
+        }
+
+        class_names, splits = train_yolo_t014_final.build_full_yolo_split_map(coco)
+
+        self.assertEqual(class_names, ["urchin"])
+        self.assertEqual(splits["train"], [1, 2])
+        self.assertEqual(splits["val"], [1, 2])
+
 
 if __name__ == "__main__":
     unittest.main()

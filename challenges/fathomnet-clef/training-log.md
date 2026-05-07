@@ -748,6 +748,8 @@ Kaggle marked all five notebooks `ERROR`, but all five runs completed the full 5
 
 Lead checkpoint policy for the pseudo-label stage is intentionally **not** to use `best.pt` alone. The locked first-pass teacher set is the late-plateau triplet `epoch35.pt`, `epoch40.pt`, and `epoch45.pt` from each fold, with OOF temporal stability required before any pseudo-label is accepted.
 
+The pre-retrain diagnostic teacher ensemble from these fold teachers is tracked as `I-049`. It fuses the `epoch35/40/45` test-set outputs first within each fold and then across all five folds, and it reached a public LB score of `0.0582`, the strongest tracked public result in the repo so far.
+
 The mandatory final `T-014` model is a later local retrain on the expanded GT + pseudo-label dataset. These fold runs are intermediate teacher artifacts and should not be interpreted as the final experiment result.
 
 ---

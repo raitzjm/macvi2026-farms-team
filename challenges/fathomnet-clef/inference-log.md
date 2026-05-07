@@ -51,6 +51,7 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-031 | 2026-05-05 | Co-DETR | T-010 ep12 last | T-010 Co-DETR R50+2ndPL ep12 last local non-SAHI | — | 0.0503 | 52368031 |
 | I-032 | 2026-05-05 | Co-DETR | T-010 ep10 best | T-010 Co-DETR R50+2ndPL ep10 (best val mAP) local non-SAHI | — | 0.0404 | 52368142 |
 | I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | 52368235 |
+| I-049 | 2026-05-07 | Ensemble | T-014 fold plateau set | 5-fold YOLO26s teacher ensemble, epoch35/40/45 two-stage WBF | — | 0.0582 | see notes |
 
 ---
 
@@ -1447,6 +1448,70 @@ Best val mAP checkpoint for T-010. It underperformed both ep12 and the T-009 bas
 
 #### Notes
 Early checkpoint (ep8) as hedge per codex recommendation. It finished below both ep12 and ep10 on the public LB. Audit rerun on 2026-05-06 reproduced the previously-submitted local CSV byte-for-byte. Recorded local CSV fingerprint: `sha256=7b1f5915657cd494de0974cb05137f702ea59fdd796b31bbeef81b9343175e29`, `298,871` lines including header. The submission CSV itself remains local-only and is ignored by git.
+
+---
+
+### I-049 — T-014 pre-retrain 5-fold YOLO26s teacher ensemble
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-07 |
+| Track | Ensemble |
+| Env | ultralytics |
+| Platform | local RTX 3050 4GB |
+| Duration | ~2h total raw inference + local WBF post-processing |
+| Evaluated split | test set |
+| Inputs | `I-034..I-048` raw fold/checkpoint CSVs from `T-014..T-018` |
+| Repo commit | `845096ed1880ad4e043a2edaf547cfb3de0f3440` |
+| Config source | `scripts/wbf_ensemble.py` |
+| Resolved config | `artifacts/inference-runs/I-049/resolved-config.json` |
+| Stdout log | — (manual assembly; no single launcher stdout) |
+| Artifacts | `artifacts/inference-runs/I-049/`, `artifacts/submissions/submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv` |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| fold0 teachers | T-014 | `artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch35-I-034-from-T-014.csv`, `fold0-epoch40-I-035-from-T-014.csv`, `fold0-epoch45-I-036-from-T-014.csv` |
+| fold1 teachers | T-015 | `artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch35-I-037-from-T-015.csv`, `fold1-epoch40-I-038-from-T-015.csv`, `fold1-epoch45-I-039-from-T-015.csv` |
+| fold2 teachers | T-016 | `artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch35-I-040-from-T-016.csv`, `fold2-epoch40-I-041-from-T-016.csv`, `fold2-epoch45-I-042-from-T-016.csv` |
+| fold3 teachers | T-017 | `artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch35-I-043-from-T-017.csv`, `fold3-epoch40-I-044-from-T-017.csv`, `fold3-epoch45-I-045-from-T-017.csv` |
+| fold4 teachers | T-018 | `artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch35-I-046-from-T-018.csv`, `fold4-epoch40-I-047-from-T-018.csv`, `fold4-epoch45-I-048-from-T-018.csv` |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | `imgsz=1024` |
+| Conf threshold | `0.001` |
+| IoU threshold (NMS) | `0.6` |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Ensemble
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Method | two-stage WBF |
+| Sources | `I-034..I-048` raw plateau CSVs |
+| WBF IoU thresh | `0.55` |
+| WBF skip thresh | `0.001` |
+| Fold coverage | all 5 folds |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | not exposed by current Kaggle CLI output |
+| Date | 2026-05-07 |
+| Public LB mAP | **0.0582** |
+| Notes | filename `submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv`; Kaggle description `T-014 pre-retrain 5-fold YOLO26s teacher ensemble (epoch35/40/45, 2-stage WBF)` |
+
+#### Notes
+This is the pre-retrain diagnostic submission required by the locked `T-014` plan. Stage 1 runs WBF within each fold across `epoch35/40/45` with equal weights (`iou_thr=0.55`, `skip_box_thr=0.001`), producing fold-level fused CSVs with row counts `42465`, `40141`, `41903`, `43116`, and `39419`. Stage 2 runs equal-weight WBF across those five fold-level CSVs to produce the final submission CSV.
+
+The final CSV has `74,110` prediction rows and SHA-256 `43b4ff776d276d20eb3dbc749b4ad1b33a31e8a08010d33f189f32a7ffff4d3a`. On the public leaderboard it scored `0.0582`, which makes it the strongest tracked public result in the repo so far and justifies the mandatory final `T-019` retrain rather than stopping at the teacher-ensemble stage.
 
 ---
 

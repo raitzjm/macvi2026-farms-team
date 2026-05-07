@@ -1,0 +1,14 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-036",
+  "checkpoint_path": "challenges/fathomnet-clef/artifacts/checkpoints/T-014-yolo26s-kfold-fold0/epoch45.pt",
+  "config_source": "scripts/infer_yolo.py",
+  "git_commit": "845096ed1880ad4e043a2edaf547cfb3de0f3440",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch45-I-036-from-T-014.csv",
+  "platform": "local NVIDIA GeForce RTX 3050 Laptop GPU",
+  "resolved_config": "artifacts/inference-runs/I-036/resolved-config.json",
+  "run_id": "I-036",
+  "source_train_id": "T-014",
+  "stdout_log": "artifacts/inference-runs/I-036/stdout.log",
+  "track": "YOLO"
+}

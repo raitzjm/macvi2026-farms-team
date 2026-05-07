@@ -1,0 +1,16 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-049",
+  "checkpoint_path": null,
+  "config_source": "scripts/wbf_ensemble.py",
+  "git_commit": "845096ed1880ad4e043a2edaf547cfb3de0f3440",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv",
+  "platform": "local NVIDIA GeForce RTX 3050 Laptop GPU",
+  "resolved_config": "artifacts/inference-runs/I-049/resolved-config.json",
+  "row_count": 74110,
+  "run_id": "I-049",
+  "sha256": "43b4ff776d276d20eb3dbc749b4ad1b33a31e8a08010d33f189f32a7ffff4d3a",
+  "source_train_id": "T-014",
+  "stdout_log": null,
+  "track": "Ensemble"
+}

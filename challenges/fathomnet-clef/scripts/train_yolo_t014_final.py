@@ -19,12 +19,7 @@ from run_tracking import (  # noqa: E402
     tracked_run_name,
     write_json,
 )
-from train_yolo import (  # noqa: E402
-    build_train_overrides,
-    build_resolved_config_payload,
-    coco_to_yolo,
-    setup_wandb,
-)
+from train_yolo import build_train_overrides, build_resolved_config_payload, setup_wandb  # noqa: E402
 
 
 FINAL_AUGMENT_PROFILE = "t014_final_locked"
@@ -71,6 +66,51 @@ def write_coco(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
+def build_full_yolo_split_map(coco: dict) -> tuple[list[str], dict[str, list[int]]]:
+    cats = sorted(coco["categories"], key=lambda c: c["id"])
+    class_names = [c["name"] for c in cats]
+    image_ids = sorted(int(image["id"]) for image in coco["images"])
+    return class_names, {"train": image_ids, "val": image_ids}
+
+
+def build_full_dataset_yolo_labels(coco: dict, dst_root: Path, train_imgs_dir: Path) -> tuple[list[str], dict[str, list[int]]]:
+    cats = sorted(coco["categories"], key=lambda c: c["id"])
+    cat_id_to_idx = {c["id"]: i for i, c in enumerate(cats)}
+    class_names, splits = build_full_yolo_split_map(coco)
+    img_by_id = {int(im["id"]): im for im in coco["images"]}
+    anns_by_img: dict[int, list] = {}
+    for ann in coco["annotations"]:
+        anns_by_img.setdefault(int(ann["image_id"]), []).append(ann)
+
+    for split_name, ids in splits.items():
+        labels_dir = dst_root / "labels" / split_name
+        images_dir = dst_root / "images" / split_name
+        labels_dir.mkdir(parents=True, exist_ok=True)
+        images_dir.mkdir(parents=True, exist_ok=True)
+        for image_id in ids:
+            image = img_by_id[image_id]
+            src = Path(train_imgs_dir) / image["file_name"]
+            dst = images_dir / image["file_name"]
+            if not dst.exists():
+                try:
+                    dst.symlink_to(src)
+                except OSError:
+                    import shutil
+                    shutil.copy2(src, dst)
+            lines = []
+            for ann in anns_by_img.get(image_id, []):
+                x, y, w, h = ann["bbox"]
+                cx = (x + w / 2) / image["width"]
+                cy = (y + h / 2) / image["height"]
+                wn = w / image["width"]
+                hn = h / image["height"]
+                cls = cat_id_to_idx[int(ann["category_id"])]
+                lines.append(f"{cls} {cx:.6f} {cy:.6f} {wn:.6f} {hn:.6f}")
+            (labels_dir / f"{Path(image['file_name']).stem}.txt").write_text("\n".join(lines))
+
+    return class_names, splits
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pseudo-label-json", required=True)
@@ -112,7 +152,7 @@ def main() -> None:
         write_coco(merged_coco_path, merged_coco)
 
         yolo_data = out_root / "yolo_data"
-        class_names, splits = coco_to_yolo(merged_coco_path, yolo_data, TRAIN_IMGS, manifest_path)
+        class_names, splits = build_full_dataset_yolo_labels(merged_coco, yolo_data, TRAIN_IMGS)
         print(f"Built expanded YOLO data: {len(splits['train'])} train / {len(splits['val'])} val")
 
         yaml_path = yolo_data / "fathomnet.yaml"
