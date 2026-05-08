@@ -1,14 +1,15 @@
 {
   "artifact_dir": "artifacts/inference-runs/I-035",
-  "checkpoint_path": "challenges/fathomnet-clef/artifacts/checkpoints/T-014-yolo26s-kfold-fold0/epoch40.pt",
-  "config_source": "scripts/infer_yolo.py",
-  "git_commit": "845096ed1880ad4e043a2edaf547cfb3de0f3440",
+  "checkpoint_path": "artifacts/checkpoints/T-013/epoch_12.pth",
+  "config_source": "scripts/infer_codetr.py",
+  "git_commit": "5f4d7102217ddefac144d813ac9dbb7a2ab4a591",
+  "kaggle_public_score": "0.0525",
+  "kaggle_submission_id": 52409621,
   "kind": "inference",
-  "output_csv": "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch40-I-035-from-T-014.csv",
-  "platform": "local NVIDIA GeForce RTX 3050 Laptop GPU",
+  "output_csv": "artifacts/submissions/submission-I-035-from-T-013.csv",
   "resolved_config": "artifacts/inference-runs/I-035/resolved-config.json",
   "run_id": "I-035",
-  "source_train_id": "T-014",
+  "source_train_id": "T-013",
   "stdout_log": "artifacts/inference-runs/I-035/stdout.log",
-  "track": "YOLO"
+  "track": "Co-DETR"
 }

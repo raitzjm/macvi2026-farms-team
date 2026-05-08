@@ -1,0 +1,4 @@
+{
+  "relative_path": "artifacts/checkpoints/T-013/best_coco_bbox_mAP_epoch_7.pth",
+  "selection": "training framework best checkpoint (local mirror)"
+}
