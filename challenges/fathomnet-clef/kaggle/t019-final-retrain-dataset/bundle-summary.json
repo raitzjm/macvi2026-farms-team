@@ -1,0 +1,25 @@
+{
+  "dataset_id": "raitzjm/fathomnet-t019-final-retrain-inputs",
+  "file_count": 3,
+  "files": {
+    "expanded_coco_json": {
+      "dst": "t014-expanded-train.json",
+      "sha256": "ea4afa8675e9a7c82fd277eba812eedf7305e95200e78e6cdcb88fe72610963b",
+      "size_bytes": 9519580,
+      "src": "/home/farms/.config/superpowers/worktrees/macvi2026-farms-team/exp-t-014-yolo26s-kfold-kaggle/challenges/fathomnet-clef/outputs/t014-yolo26s-final-T-019/expanded-train.json"
+    },
+    "expanded_manifest_json": {
+      "dst": "t014-expanded-manifest.json",
+      "sha256": "756996128225d1ba4448f93ef944df712a1ae83e16ea3926ba1b7d8684743a18",
+      "size_bytes": 127318,
+      "src": "/home/farms/.config/superpowers/worktrees/macvi2026-farms-team/exp-t-014-yolo26s-kfold-kaggle/challenges/fathomnet-clef/outputs/t014-yolo26s-final-T-019/t014-expanded-manifest.json"
+    },
+    "pseudo_label_json": {
+      "dst": "t014-pseudo-labels.json",
+      "sha256": "048c55ac65fcc2fa52d458991bf1db3ff665f9f8a26c52852759d0d4a18846d5",
+      "size_bytes": 4349290,
+      "src": "/home/farms/.config/superpowers/worktrees/macvi2026-farms-team/exp-t-014-yolo26s-kfold-kaggle/challenges/fathomnet-clef/artifacts/pseudo-labels/t014-yolo26s-kfold-plateau354045-conf025-iou070.json"
+    }
+  },
+  "git_commit": "b6c206819d6cf9b67672c78d5f655651575ffe66"
+}

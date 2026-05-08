@@ -1,0 +1,14 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-051",
+  "checkpoint_path": "challenges/fathomnet-clef/artifacts/checkpoints/T-019-kaggle-final/best.pt",
+  "config_source": "scripts/infer_yolo.py",
+  "git_commit": "b6c206819d6cf9b67672c78d5f655651575ffe66",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/T-019-final/best-I-051-from-T-019.csv",
+  "platform": "local NVIDIA GeForce RTX 3050 Laptop GPU",
+  "resolved_config": "artifacts/inference-runs/I-051/resolved-config.json",
+  "run_id": "I-051",
+  "source_train_id": "T-019",
+  "stdout_log": "artifacts/inference-runs/I-051/stdout.log",
+  "track": "YOLO"
+}

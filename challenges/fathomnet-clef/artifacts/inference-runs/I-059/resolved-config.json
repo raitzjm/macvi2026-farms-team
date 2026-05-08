@@ -1,0 +1,23 @@
+{
+  "config_source": "scripts/wbf_ensemble.py",
+  "description": "T-014 teacher 2-stage WBF using epoch40+45 per fold",
+  "inputs": [
+    "artifacts/submissions/T-019-final/teacher-fold0-epoch40-45-wbf.csv",
+    "artifacts/submissions/T-019-final/teacher-fold1-epoch40-45-wbf.csv",
+    "artifacts/submissions/T-019-final/teacher-fold2-epoch40-45-wbf.csv",
+    "artifacts/submissions/T-019-final/teacher-fold3-epoch40-45-wbf.csv",
+    "artifacts/submissions/T-019-final/teacher-fold4-epoch40-45-wbf.csv"
+  ],
+  "iou_thr": 0.55,
+  "output_csv": "artifacts/submissions/T-019-final/teacher-epoch40-45-2stage-I-059.csv",
+  "row_count": 70575,
+  "sha256": "a07638f757c501131054560d910f9413636737019133c516bb63d6c0d84e0399",
+  "skip_box_thr": 0.001,
+  "weights": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ]
+}

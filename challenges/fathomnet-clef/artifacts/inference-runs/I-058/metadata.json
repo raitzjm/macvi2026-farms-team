@@ -1,0 +1,13 @@
+{
+  "artifact_dir": "artifacts/inference-runs/I-058",
+  "config_source": "scripts/wbf_ensemble.py",
+  "git_commit": "b6c206819d6cf9b67672c78d5f655651575ffe66",
+  "kind": "inference",
+  "output_csv": "artifacts/submissions/T-019-final/teacher-epoch45-5fold-I-058.csv",
+  "platform": "local RTX 3050 4GB",
+  "resolved_config": "artifacts/inference-runs/I-058/resolved-config.json",
+  "run_id": "I-058",
+  "source_train_id": "T-014",
+  "stdout_log": null,
+  "track": "Ensemble"
+}

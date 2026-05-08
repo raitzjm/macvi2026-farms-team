@@ -1,0 +1,17 @@
+{
+  "artifact_dir": "artifacts/training-runs/T-019",
+  "config_source": "scripts/train_yolo_t014_final.py",
+  "git_commit": "845096ed1880ad4e043a2edaf547cfb3de0f3440",
+  "kind": "training",
+  "metrics_artifact": "artifacts/training-runs/T-019/results.csv",
+  "output_root": "outputs/t014-yolo26s-final-T-019",
+  "platform": "local RTX 3050 4GB",
+  "pseudo_label_json": "artifacts/pseudo-labels/t014-yolo26s-kfold-plateau354045-conf025-iou070.json",
+  "resolved_config": "artifacts/training-runs/T-019/resolved-config.json",
+  "run_id": "T-019",
+  "run_name": "t014-yolo26s-final-T-019",
+  "split_manifest": "outputs/t014-yolo26s-final-T-019/t014-expanded-manifest.json",
+  "stdout_log": "artifacts/training-runs/T-019/stdout.log",
+  "track": "YOLO26s",
+  "train_labels_yaml": "outputs/t014-yolo26s-final-T-019/yolo_data/fathomnet.yaml"
+}

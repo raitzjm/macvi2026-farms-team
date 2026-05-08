@@ -750,7 +750,11 @@ Lead checkpoint policy for the pseudo-label stage is intentionally **not** to us
 
 The pre-retrain diagnostic teacher ensemble from these fold teachers is tracked as `I-049`. It fuses the `epoch35/40/45` test-set outputs first within each fold and then across all five folds, and it reached a public LB score of `0.0582`, the strongest tracked public result in the repo so far.
 
-The mandatory final `T-014` model is a later local retrain on the expanded GT + pseudo-label dataset. These fold runs are intermediate teacher artifacts and should not be interpreted as the final experiment result.
+The first `T-019` final-retrain launch was started locally on the RTX 3050 to validate the expanded-dataset builder, the fixed full-dataset YAML policy, and W&B integration. That local run successfully built the expanded YOLO dataset, entered real training, and synced to W&B, but it was intentionally stopped and superseded because the projected local wall time was too high. Final retrain ownership moved to Kaggle after that validation pass while preserving the same locked `T-014` final-training policy.
+
+The mandatory final `T-014` model is a later retrain on the expanded GT + pseudo-label dataset, now migrated to Kaggle after the local runtime validation pass above. These fold runs are intermediate teacher artifacts and should not be interpreted as the final experiment result.
+
+The Kaggle `T-019` final retrain also completed all 50 epochs and exported `best.pt`, `last.pt`, and periodic checkpoints through `epoch45.pt`, but all tested `T-019` single-checkpoint submissions failed decisively on the public leaderboard: `epoch45` = `0.0438`, `best.pt` = `0.0450`, `last.pt` = `0.0461`, and `epoch40` = `0.0444`. In contrast, the teacher-only endgame sweep found a better YOLO operating point than the original `I-049` plateau ensemble: the 5-fold `epoch35`-only WBF submission `I-061` reached **0.0589**, which became the strongest public result in the repo. A final-slot cross-family hedge, `I-063` (`T-009` ep12 Co-DETR + `I-061` equal-weight WBF), finished lower at `0.0562`. That means the controlled k-fold teacher family was useful, but the mandatory final retrain on the expanded GT+pseudo-label dataset did not improve over the teacher stage.
 
 ---
 
