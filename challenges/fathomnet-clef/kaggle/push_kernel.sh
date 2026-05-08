@@ -41,9 +41,18 @@ trap 'rm -rf "$TMP"' EXIT
 cp -r "$KERNEL_DIR_ABS"/. "$TMP/"
 
 if [[ -n "$WANDB_KEY" ]]; then
-    # Substitute placeholder; use | as sed delim to avoid escaping slashes in the key.
-    find "$TMP" -maxdepth 2 -type f -name '*.py' -print0 \
-        | xargs -0 sed -i "s|__WANDB_KEY_PLACEHOLDER__|$WANDB_KEY|g"
+    export TMP WANDB_KEY
+    python3 - <<'PY'
+import os
+from pathlib import Path
+
+tmp = Path(os.environ["TMP"])
+key = os.environ["WANDB_KEY"]
+for path in tmp.rglob("*.py"):
+    text = path.read_text()
+    if "__WANDB_KEY_PLACEHOLDER__" in text:
+        path.write_text(text.replace("__WANDB_KEY_PLACEHOLDER__", key))
+PY
 fi
 
 # Sanity check: if a placeholder remains but no key was provided, error rather than push a blank key.

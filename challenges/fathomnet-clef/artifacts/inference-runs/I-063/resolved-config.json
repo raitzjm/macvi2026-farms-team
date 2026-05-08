@@ -1,0 +1,17 @@
+{
+  "config_source": "scripts/wbf_ensemble.py",
+  "description": "Co-DETR T-009 ep12 + T-014 teacher epoch35 5-fold WBF equal weights",
+  "inputs": [
+    "/home/farms/macvi2026-farms-team/challenges/fathomnet-clef/artifacts/submissions/I-020-from-T-009-codetr-last-ep12/submission-I-017-from-T-009.csv",
+    "artifacts/submissions/T-019-final/teacher-epoch35-5fold-I-061.csv"
+  ],
+  "iou_thr": 0.55,
+  "output_csv": "artifacts/submissions/T-019-final/codetr-t009ep12-plus-teacher-ep35-I-063.csv",
+  "row_count": 336600,
+  "sha256": "ec526e36c045650e24151ec59ec32f70c39cc427896d8d3efa406a42b9673476",
+  "skip_box_thr": 0.001,
+  "weights": [
+    1.0,
+    1.0
+  ]
+}

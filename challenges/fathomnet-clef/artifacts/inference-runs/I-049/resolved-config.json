@@ -1,0 +1,53 @@
+{
+  "config_source": "scripts/wbf_ensemble.py",
+  "kind": "two-stage-wbf",
+  "output_csv": "artifacts/submissions/submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv",
+  "row_count": 74110,
+  "sha256": "43b4ff776d276d20eb3dbc749b4ad1b33a31e8a08010d33f189f32a7ffff4d3a",
+  "stage1": {
+    "inputs": [
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch35-I-034-from-T-014.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch40-I-035-from-T-014.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch45-I-036-from-T-014.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch35-I-037-from-T-015.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch40-I-038-from-T-015.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch45-I-039-from-T-015.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch35-I-040-from-T-016.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch40-I-041-from-T-016.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch45-I-042-from-T-016.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch35-I-043-from-T-017.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch40-I-044-from-T-017.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch45-I-045-from-T-017.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch35-I-046-from-T-018.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch40-I-047-from-T-018.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch45-I-048-from-T-018.csv"
+    ],
+    "within_fold_outputs": [
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold0-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold1-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold2-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold3-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold4-plateau-wbf.csv"
+    ],
+    "within_fold_skip_box_thr": 0.001,
+    "within_fold_wbf_iou_thr": 0.55
+  },
+  "stage2": {
+    "inputs": [
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold0-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold1-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold2-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold3-plateau-wbf.csv",
+      "artifacts/submissions/T-014-test-teacher-ensemble/fold4-plateau-wbf.csv"
+    ],
+    "iou_thr": 0.55,
+    "skip_box_thr": 0.001,
+    "weights": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+}

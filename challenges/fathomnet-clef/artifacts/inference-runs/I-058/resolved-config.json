@@ -1,0 +1,23 @@
+{
+  "config_source": "scripts/wbf_ensemble.py",
+  "description": "T-014 teacher epoch45-only 5-fold WBF equal weights iou=0.55 skip=0.001",
+  "inputs": [
+    "artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch45-I-036-from-T-014.csv",
+    "artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch45-I-039-from-T-015.csv",
+    "artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch45-I-042-from-T-016.csv",
+    "artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch45-I-045-from-T-017.csv",
+    "artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch45-I-048-from-T-018.csv"
+  ],
+  "iou_thr": 0.55,
+  "output_csv": "artifacts/submissions/T-019-final/teacher-epoch45-5fold-I-058.csv",
+  "row_count": 73014,
+  "sha256": "472d6308fd4f42457d5f77197b10e8b97b6bf72cfca549a4fce04922234b98b1",
+  "skip_box_thr": 0.001,
+  "weights": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ]
+}

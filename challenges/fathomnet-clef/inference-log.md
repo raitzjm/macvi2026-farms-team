@@ -53,6 +53,17 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | I-033 | 2026-05-05 | Co-DETR | T-010 ep8 | T-010 Co-DETR R50+2ndPL ep8 local non-SAHI | — | 0.0384 | 52368235 |
 | I-034 | 2026-05-07 | Co-DETR | T-013 ep7 best | T-013 Co-DETR R50+2ndPL+restored load_from ep7 best local non-SAHI | — | 0.0567 | 52409380 |
 | I-035 | 2026-05-07 | Co-DETR | T-013 ep12 last | T-013 Co-DETR R50+2ndPL+restored load_from ep12 last local non-SAHI | — | 0.0525 | 52409621 |
+| I-049 | 2026-05-07 | Ensemble | T-014 fold plateau set | 5-fold YOLO26s teacher ensemble, epoch35/40/45 two-stage WBF | — | 0.0582 | see notes |
+| I-050 | 2026-05-08 | YOLO | T-019 epoch45 | T-019 Kaggle final retrain epoch45 single checkpoint, local non-SAHI | — | 0.0438 | 52441654 |
+| I-051 | 2026-05-08 | YOLO | T-019 best.pt | T-019 Kaggle final retrain best.pt single checkpoint, local non-SAHI | — | 0.0450 | 52441691 |
+| I-052 | 2026-05-08 | YOLO | T-019 last.pt | T-019 Kaggle final retrain last.pt single checkpoint, local non-SAHI | — | 0.0461 | 52441732 |
+| I-053 | 2026-05-08 | YOLO | T-019 epoch40 | T-019 Kaggle final retrain epoch40 single checkpoint, local non-SAHI | — | 0.0444 | 52441772 |
+| I-058 | 2026-05-08 | Ensemble | T-014 fold epoch45 set | 5-fold YOLO teacher epoch45-only equal-weight WBF | — | 0.0545 | 52441209 |
+| I-059 | 2026-05-08 | Ensemble | T-014 fold epoch40+45 set | 2-stage WBF using epoch40+45 within each fold | — | 0.0571 | 52441208 |
+| I-060 | 2026-05-08 | Ensemble | T-014 fold epoch40 set | 5-fold YOLO teacher epoch40-only equal-weight WBF | — | 0.0537 | 52441323 |
+| I-061 | 2026-05-08 | Ensemble | T-014 fold epoch35 set | 5-fold YOLO teacher epoch35-only equal-weight WBF | — | 0.0589 | 52441327 |
+| I-062 | 2026-05-08 | Ensemble | T-014 fold epoch35+40 set | 2-stage WBF using epoch35+40 within each fold | — | 0.0577 | 52441368 |
+| I-063 | 2026-05-08 | Ensemble | T-009 ep12 + I-061 | Equal-weight WBF Co-DETR T-009 ep12 + teacher epoch35 5-fold | — | 0.0562 | 52441824 |
 
 ---
 
@@ -1549,6 +1560,148 @@ Recorded local CSV fingerprint: `sha256=ff32eca285a298a24353660d1b10098f8b69fb4c
 Late-epoch hedge after `I-034` came back competitive. Unlike T-009, T-013 did not improve on the public LB at the final epoch: `I-035` trails `I-034` by `-0.0042` and remains `-0.0051` behind the sprint-best `T-009` ep12 result. So the controlled rerun resolves the T-010 regression diagnosis, but it does not displace T-009 as the preferred Sprint 1 Co-DETR submission.
 
 Recorded local CSV fingerprint: `sha256=21edac0684e2af8e2567402e99af52e827ebf3675b8721327ba476641482a09c`, `392,677` lines including header.
+
+---
+
+### I-049 — T-014 pre-retrain 5-fold YOLO26s teacher ensemble
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-07 |
+| Track | Ensemble |
+| Env | ultralytics |
+| Platform | local RTX 3050 4GB |
+| Duration | ~2h total raw inference + local WBF post-processing |
+| Evaluated split | test set |
+| Inputs | local fold/checkpoint teacher CSVs from `T-014..T-018` |
+| Repo commit | `845096ed1880ad4e043a2edaf547cfb3de0f3440` |
+| Config source | `scripts/wbf_ensemble.py` |
+| Resolved config | `artifacts/inference-runs/I-049/resolved-config.json` |
+| Stdout log | — (manual assembly; no single launcher stdout) |
+| Artifacts | `artifacts/inference-runs/I-049/`, `artifacts/submissions/submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv` |
+
+#### Checkpoints Used
+| Role | Source exp | Path |
+|---|---|---|
+| fold0 teachers | T-014 | `artifacts/submissions/T-014-test-teacher-ensemble/fold0-epoch35-I-034-from-T-014.csv`, `fold0-epoch40-I-035-from-T-014.csv`, `fold0-epoch45-I-036-from-T-014.csv` |
+| fold1 teachers | T-015 | `artifacts/submissions/T-014-test-teacher-ensemble/fold1-epoch35-I-037-from-T-015.csv`, `fold1-epoch40-I-038-from-T-015.csv`, `fold1-epoch45-I-039-from-T-015.csv` |
+| fold2 teachers | T-016 | `artifacts/submissions/T-014-test-teacher-ensemble/fold2-epoch35-I-040-from-T-016.csv`, `fold2-epoch40-I-041-from-T-016.csv`, `fold2-epoch45-I-042-from-T-016.csv` |
+| fold3 teachers | T-017 | `artifacts/submissions/T-014-test-teacher-ensemble/fold3-epoch35-I-043-from-T-017.csv`, `fold3-epoch40-I-044-from-T-017.csv`, `fold3-epoch45-I-045-from-T-017.csv` |
+| fold4 teachers | T-018 | `artifacts/submissions/T-014-test-teacher-ensemble/fold4-epoch35-I-046-from-T-018.csv`, `fold4-epoch40-I-047-from-T-018.csv`, `fold4-epoch45-I-048-from-T-018.csv` |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | `imgsz=1024` |
+| Conf threshold | `0.001` |
+| IoU threshold (NMS) | `0.6` |
+
+#### SAHI Config
+| Field | Value |
+|---|---|
+| Enabled | no |
+
+#### Ensemble
+| Field | Value |
+|---|---|
+| Enabled | yes |
+| Method | two-stage WBF |
+| Sources | local fold plateau CSVs from `T-014..T-018` |
+| WBF IoU thresh | `0.55` |
+| WBF skip thresh | `0.001` |
+| Fold coverage | all 5 folds |
+
+#### Submission
+| Field | Value |
+|---|---|
+| Submitted | yes |
+| Submission ID | not exposed by current Kaggle CLI output |
+| Date | 2026-05-07 |
+| Public LB mAP | **0.0582** |
+| Notes | filename `submission-I-049-from-T-014-yolo5fold-ep35-40-45-wbf2stage.csv`; Kaggle description `T-014 pre-retrain 5-fold YOLO26s teacher ensemble (epoch35/40/45, 2-stage WBF)` |
+
+#### Notes
+This is the pre-retrain diagnostic submission required by the locked `T-014` plan. Stage 1 runs WBF within each fold across `epoch35/40/45` with equal weights (`iou_thr=0.55`, `skip_box_thr=0.001`), producing fold-level fused CSVs with row counts `42465`, `40141`, `41903`, `43116`, and `39419`. Stage 2 runs equal-weight WBF across those five fold-level CSVs to produce the final submission CSV.
+
+The final CSV has `74,110` prediction rows and SHA-256 `43b4ff776d276d20eb3dbc749b4ad1b33a31e8a08010d33f189f32a7ffff4d3a`. On the public leaderboard it scored `0.0582`, which made it the strongest tracked public result in the repo at the time and justified the mandatory final `T-019` retrain rather than stopping at the teacher-ensemble stage.
+
+---
+
+### I-050..I-053 — T-019 final retrain single-checkpoint sweep
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-08 |
+| Track | YOLO |
+| Env | ultralytics |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Inputs | `T-019` Kaggle final retrain checkpoints from `artifacts/checkpoints/T-019-kaggle-final/` |
+| Repo commit | `7cb1e6946f8ff86d17fa0f6a55ed1bf505d96c1a` |
+| Config source | `scripts/infer_yolo.py` |
+| Artifacts | `artifacts/inference-runs/I-050/` .. `I-053/`, `artifacts/submissions/T-019-final/` |
+
+#### Checkpoints Used
+| Run ID | Checkpoint |
+|---|---|
+| I-050 | `artifacts/checkpoints/T-019-kaggle-final/checkpoints/epoch45.pt` |
+| I-051 | `artifacts/checkpoints/T-019-kaggle-final/best.pt` |
+| I-052 | `artifacts/checkpoints/T-019-kaggle-final/last.pt` |
+| I-053 | `artifacts/checkpoints/T-019-kaggle-final/checkpoints/epoch40.pt` |
+
+#### Inference Config
+| Field | Value |
+|---|---|
+| Input resolution | `imgsz=1024` |
+| Conf threshold | `0.001` |
+| IoU threshold (NMS) | `0.6` |
+| SAHI | no |
+
+#### Submission Results
+| Run ID | CSV | Rows | SHA-256 | Kaggle Sub ID | Public LB |
+|---|---|---:|---|---:|---:|
+| I-050 | `epoch45-I-050-from-T-019.csv` | `36,439` | `c2fc7d025306f2a91c72241ec06938cf411ecc2752159db2e3ce6ab976d37668` | `52441654` | `0.0438` |
+| I-051 | `best-I-051-from-T-019.csv` | `36,631` | `68dd9eea66cc37171db7bd86fad27dcfa85498850c2c2b1b510b383af126b95b` | `52441691` | `0.0450` |
+| I-052 | `last-I-052-from-T-019.csv` | `37,101` | `c63b954e2d5f7fafece6852ed0c0bb0f16171a00e3ef99dfb6af80b9ebf50e1e` | `52441732` | `0.0461` |
+| I-053 | `epoch40-I-053-from-T-019.csv` | `40,758` | `51d455a5682dd2fda1f70c402976a780c39633f7eba1c2d85e8a318334ee83ab` | `52441772` | `0.0444` |
+
+#### Notes
+The Kaggle final retrain completed all 50 epochs and exported `best.pt`, `last.pt`, and periodic checkpoints through `epoch45.pt`, but the resulting detector family underperformed badly on the public leaderboard. `best.pt` corresponds to epoch `49` in the exported `results.csv`, and `last.pt` is epoch `50`; both still trailed the best teacher-only submission family by a wide margin.
+
+---
+
+### I-058..I-063 — T-014 endgame ensemble sweep
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-08 |
+| Track | Ensemble |
+| Env | ultralytics |
+| Platform | local RTX 3050 4GB |
+| Evaluated split | test set |
+| Repo commit | `7cb1e6946f8ff86d17fa0f6a55ed1bf505d96c1a` |
+| Config source | `scripts/wbf_ensemble.py` |
+| Artifacts | `artifacts/inference-runs/I-058/` .. `I-063/`, `artifacts/submissions/T-019-final/` |
+
+#### Ensemble Config
+| Field | Value |
+|---|---|
+| Method | WBF |
+| WBF IoU thresh | `0.55` |
+| WBF skip thresh | `0.001` |
+
+#### Submission Results
+| Run ID | Sources | Rows | SHA-256 | Kaggle Sub ID | Public LB |
+|---|---|---:|---|---:|---:|
+| I-058 | fold epoch45-only 5-fold WBF | `73,014` | `472d6308fd4f42457d5f77197b10e8b97b6bf72cfca549a4fce04922234b98b1` | `52441209` | `0.0545` |
+| I-059 | fold `(epoch40, epoch45)` within-fold WBF, then 5-fold WBF | `70,575` | `a07638f757c501131054560d910f9413636737019133c516bb63d6c0d84e0399` | `52441208` | `0.0571` |
+| I-060 | fold epoch40-only 5-fold WBF | `84,709` | `0719b10665215d68858dbea93ebdb551f2279f71ec49d80ae8e791b6f16dbc40` | `52441323` | `0.0537` |
+| I-061 | fold epoch35-only 5-fold WBF | `85,089` | `be0cd0788be81c6e2891ebead89d136ddbd00d2678add92d18fc74abc46095ff` | `52441327` | `0.0589` |
+| I-062 | fold `(epoch35, epoch40)` within-fold WBF, then 5-fold WBF | `78,515` | `99d9e6bdfd609eabee859d783f6e490c6b0054aa21844d6b25cc0be84698af52` | `52441368` | `0.0577` |
+| I-063 | equal-weight WBF of `I-020` (`T-009` ep12 Co-DETR) + `I-061` | `336,600` | `ec526e36c045650e24151ec59ec32f70c39cc427896d8d3efa406a42b9673476` | `52441824` | `0.0562` |
+
+#### Notes
+`I-061` became the strongest public result in the whole repo at `0.0589`, edging out the original `I-049` teacher ensemble (`0.0582`). After the `T-019` final retrain singles all failed, the last submission slot was spent on `I-063`, an equal-weight cross-family WBF hedge between the strongest historical Co-DETR parent (`T-009` ep12, `I-020`, public LB `0.0576`) and the strongest YOLO teacher parent (`I-061`). `I-063` finished at `0.0562`, so the final experiment outcome remained the teacher-only `I-061` operating point rather than the final retrain or the cross-family hedge.
 
 ---
 

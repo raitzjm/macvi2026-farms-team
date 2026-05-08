@@ -1,0 +1,18 @@
+{
+  "id": "raitzjm/fathomnet-yolo26s-t-015-fold-1",
+  "title": "FathomNet YOLO26s T-015 Fold 1",
+  "code_file": "kernel_train.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "machine_shape": "NvidiaTeslaT4",
+  "enable_internet": true,
+  "dataset_sources": [
+    "cosheimil/fathomnetclef2026"
+  ],
+  "competition_sources": [
+    "fathomnet-2026"
+  ],
+  "kernel_sources": []
+}

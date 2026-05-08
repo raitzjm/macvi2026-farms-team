@@ -109,6 +109,7 @@ Required pattern for new tracked Kaggle runs:
 - write resolved config snapshot (`resolved-config.*`)
 - write native metrics artifact when available
 - write the selected checkpoint and any submission CSV to the expected durable locations
+- for FathomNet GPU kernels, keep `kernel-metadata.json` at `"machine_shape": "NvidiaTeslaT4"` unless a lead-approved accelerator change is being tested
 
 When historical Kaggle raw logs need to be recovered and no explicit `train.log` was written, use:
 

@@ -32,6 +32,11 @@ Micro-val: TBD — 200-image hand-audited stratified split (to be defined before
 | T-013 | 2026-05-06 | Co-DETR | Co-DETR-R50 iterative pseudo-label rerun: 12 epochs, 768×432, batch=5/GPU, 2×RTX4090 fathom1, official Co-DINO `load_from` restored, PL from T-009 ep12 (1370 anns on 1008 imgs), shared split | 42 | **0.413** (shared-train-val-v1, ep7 best) |
 | T-011 | 2026-05-05 | YOLO26s | YOLO26s Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4239** (ep39 best) |
 | T-012 | 2026-05-05 | YOLO26l | YOLO26l Kaggle T4×2: 50 epochs, imgsz=1024, rect=False, batch=16, mosaic=0.85, cos_lr, kernel val split 90/10 seed=42 | 42 | **0.4462** (ep39 best) |
+| T-014 | 2026-05-07 | YOLO26s | T-014 fold 0 teacher: 5-fold stratified Kaggle run, imgsz=1024, rect=False, batch=16, T-012 augmentation, val=fold-0 | 42 | **0.3746** (ep35 best) |
+| T-015 | 2026-05-07 | YOLO26s | T-014 fold 1 teacher: 5-fold stratified Kaggle run, imgsz=1024, rect=False, batch=16, T-012 augmentation, val=fold-1 | 42 | **0.3400** (ep41 best) |
+| T-016 | 2026-05-07 | YOLO26s | T-014 fold 2 teacher: 5-fold stratified Kaggle run, imgsz=1024, rect=False, batch=16, T-012 augmentation, val=fold-2 | 42 | **0.3697** (ep33 best) |
+| T-017 | 2026-05-07 | YOLO26s | T-014 fold 3 teacher: 5-fold stratified Kaggle run, imgsz=1024, rect=False, batch=16, T-012 augmentation, val=fold-3 | 42 | **0.3753** (ep39 best) |
+| T-018 | 2026-05-07 | YOLO26s | T-014 fold 4 teacher: 5-fold stratified Kaggle run, imgsz=1024, rect=False, batch=16, T-012 augmentation, val=fold-4 | 42 | **0.3666** (ep38 best) |
 
 ---
 
@@ -778,6 +783,49 @@ Recovered locally on 2026-05-07 from the remote `fathom1` clone: the tracked tra
 
 #### Notes
 T-012 is the YOLO26l counterpart to T-011 (YOLO26s) with identical settings — model size is the only variable. T-012 outperforms T-011 by +0.022 mAP50-95 at best epoch (0.446 vs 0.424). Both peaked at epoch 39. T-012 produced 35,453 inference rows vs T-011's 56,408 — the larger model is more selective. val_cls min is earlier (epoch 25 vs 28), suggesting T-012's classifier fits faster. The raw `stdout.log` was recovered after the fact from `kaggle kernels logs raitzjm/fathomnet-yolo26l-t-012`, so it is a Kaggle console JSON export rather than a tee'd `/kaggle/working/train.log`. Pending LB inference to determine whether the val gain translates.
+
+---
+
+### T-014 to T-018 — YOLO26s 5-fold Kaggle teacher family for k-fold pseudo-labeling
+
+| Field | Value |
+|---|---|
+| Date | 2026-05-07 |
+| Track | YOLO26s |
+| Env | Kaggle kernel (ultralytics==8.4.42, torch==2.4.1+cu121) |
+| Platform | Kaggle T4×2 (NvidiaTeslaT4 x2) |
+| Family purpose | Out-of-fold teacher generation for `T-014` k-fold pseudo-labeling |
+| Pretrained weights | yolo26s.pt (COCO) |
+| Split manifest | artifacts/split-manifests/t014-yolo26s-kfold-v1.json |
+| Stratification | class presence per image + object-count bins (`1`, `2`, `3-4`, `5+`) |
+| Locked augmentation | same as `T-012` first-pass recipe (`mosaic=0.85`, `close_mosaic=10`, `cos_lr=True`, `hsv_h=0.01`, `hsv_s=0.2`, `hsv_v=0.15`, `translate=0.05`, `scale=0.5`, `fliplr=0.5`) |
+| Hyperparameters | 50 epochs, imgsz=1024, rect=False, batch=16 (8/GPU), save_period=5, patience=0 |
+| Artifacts | artifacts/training-runs/T-014..T-018/, artifacts/checkpoints/T-014..T-018-yolo26s-kfold-fold*/ (local only) |
+| WandB | push-time injection was fixed late in the family; no retained online run was verified, so WandB is treated as best-effort / non-blocking for this family |
+
+#### Fold Summary
+| Run ID | Held-out fold | Train / val images | Best epoch | Best val mAP@[.5:.95] | Last epoch mAP@[.5:.95] |
+|---|---:|---:|---:|---:|---:|
+| T-014 | fold-0 | 5,170 / 1,293 | 35 | 0.3746 | 0.3699 |
+| T-015 | fold-1 | 5,170 / 1,293 | 41 | 0.3400 | 0.3339 |
+| T-016 | fold-2 | 5,171 / 1,292 | 33 | 0.3697 | 0.3612 |
+| T-017 | fold-3 | 5,171 / 1,292 | 39 | 0.3753 | 0.3709 |
+| T-018 | fold-4 | 5,170 / 1,293 | 38 | 0.3666 | 0.3543 |
+
+#### Notes
+These five runs are the teacher stage of `T-014`, not the final detector. Each fold trained on `k-1` folds and produced retained periodic checkpoints at epochs `0, 5, 10, 15, 20, 25, 30, 35, 40, 45`, plus `best.pt` and `last.pt`.
+
+Kaggle marked all five notebooks `ERROR`, but all five runs completed the full 50 epochs, copied `best.pt`, `last.pt`, and the periodic checkpoints, and wrote complete `results.csv` artifacts. The error happened after training during Kaggle notebook teardown / `nbconvert`, so the family is treated as successful training with failed post-run export status, not failed optimization.
+
+Lead checkpoint policy for the pseudo-label stage is intentionally **not** to use `best.pt` alone. The locked first-pass teacher set is the late-plateau triplet `epoch35.pt`, `epoch40.pt`, and `epoch45.pt` from each fold, with OOF temporal stability required before any pseudo-label is accepted.
+
+The pre-retrain diagnostic teacher ensemble from these fold teachers is tracked as `I-049`. It fuses the `epoch35/40/45` test-set outputs first within each fold and then across all five folds, and it reached a public LB score of `0.0582`, the strongest tracked public result in the repo so far.
+
+The first `T-019` final-retrain launch was started locally on the RTX 3050 to validate the expanded-dataset builder, the fixed full-dataset YAML policy, and W&B integration. That local run successfully built the expanded YOLO dataset, entered real training, and synced to W&B, but it was intentionally stopped and superseded because the projected local wall time was too high. Final retrain ownership moved to Kaggle after that validation pass while preserving the same locked `T-014` final-training policy.
+
+The mandatory final `T-014` model is a later retrain on the expanded GT + pseudo-label dataset, now migrated to Kaggle after the local runtime validation pass above. These fold runs are intermediate teacher artifacts and should not be interpreted as the final experiment result.
+
+The Kaggle `T-019` final retrain also completed all 50 epochs and exported `best.pt`, `last.pt`, and periodic checkpoints through `epoch45.pt`, but all tested `T-019` single-checkpoint submissions failed decisively on the public leaderboard: `epoch45` = `0.0438`, `best.pt` = `0.0450`, `last.pt` = `0.0461`, and `epoch40` = `0.0444`. In contrast, the teacher-only endgame sweep found a better YOLO operating point than the original `I-049` plateau ensemble: the 5-fold `epoch35`-only WBF submission `I-061` reached **0.0589**, which became the strongest public result in the repo. A final-slot cross-family hedge, `I-063` (`T-009` ep12 Co-DETR + `I-061` equal-weight WBF), finished lower at `0.0562`. That means the controlled k-fold teacher family was useful, but the mandatory final retrain on the expanded GT+pseudo-label dataset did not improve over the teacher stage.
 
 ---
 
